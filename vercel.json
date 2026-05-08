@@ -1,0 +1,40 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "headers": [
+    {
+      "source": "/llms.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, s-maxage=3600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/llms-full.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Cache-Control", "value": "public, s-maxage=3600, stale-while-revalidate=86400" }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ],
+  "redirects": [
+    { "source": "/osszehasonlitas.html", "destination": "/osszehasonlitas",   "permanent": true },
+    { "source": "/compare.html",         "destination": "/osszehasonlitas",   "permanent": true },
+    { "source": "/catalog.html",         "destination": "/kinalat",           "permanent": true },
+    { "source": "/brands.html",          "destination": "/markak",            "permanent": true },
+    { "source": "/markak.html",          "destination": "/markak",            "permanent": true },
+    { "source": "/modellek.html",        "destination": "/modellek",          "permanent": true },
+    { "source": "/tudastar.html",        "destination": "/tudastar",          "permanent": true },
+    { "source": "/index.html",           "destination": "/",                  "permanent": true }
+  ]
+}

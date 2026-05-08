@@ -1,0 +1,257 @@
+/* ====== Modellek browser (sticky strips + empty state) ====== */
+.strip-wrap {
+  position: sticky;
+  top: 64px;
+  z-index: 50;
+  background: rgba(247, 246, 242, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.strip-wrap.models {
+  top: 128px;
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 49;
+}
+@media (max-width: 720px) {
+  .strip-wrap.models {
+    top: 120px;
+  }
+}
+.strip-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.strip-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+.strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 0 12px;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+.strip::-webkit-scrollbar {
+  height: 4px;
+}
+.strip::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 2px;
+}
+.strip-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--ink-soft);
+  transition: all 0.12s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.strip-tab:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+.strip-tab.on {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.strip-tab .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.strip-tab .n {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  color: var(--ink-mute);
+  background: #f3f1ea;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.strip-tab.on .n {
+  background: rgba(255, 255, 255, 0.15);
+  color: #aab;
+}
+.strip-tab.model-tab .drive-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.strip-tab.model-tab[data-drive="Benzin"] .drive-dot {
+  background: #9c8a5a;
+}
+.strip-tab.model-tab[data-drive="Dízel"] .drive-dot {
+  background: #5a4a3a;
+}
+.strip-tab.model-tab[data-drive="Önttöltő hibrid"] .drive-dot {
+  background: oklch(60% 0.10 90);
+}
+.strip-tab.model-tab[data-drive="Plug-in hibrid"] .drive-dot {
+  background: oklch(60% 0.13 50);
+}
+.strip-tab.model-tab[data-drive="Elektromos"] .drive-dot {
+  background: var(--accent);
+}
+
+/* Empty state */
+.empty-host {
+  padding: 60px 0 80px;
+}
+.empty {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 56px 48px;
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 48px;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+.empty::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(20, 24, 28, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(20, 24, 28, 0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 60% 80% at 90% 30%,
+    #000 30%,
+    transparent 70%
+  );
+  mask-image: radial-gradient(
+    ellipse 60% 80% at 90% 30%,
+    #000 30%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+.empty-text {
+  position: relative;
+}
+.empty-text .step {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--accent-ink);
+  letter-spacing: 0.12em;
+  background: var(--accent-soft);
+  padding: 3px 8px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+.empty-text h2 {
+  font-family: var(--font-instrument), serif;
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.05;
+  margin: 0 0 14px;
+}
+.empty-text h2 em {
+  font-style: italic;
+  color: var(--accent-ink);
+}
+.empty-text p {
+  color: var(--ink-soft);
+  font-size: 15.5px;
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 0 20px;
+}
+.empty-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.empty-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--ink);
+  transition: all 0.12s;
+}
+.empty-shortcut:hover {
+  border-color: var(--ink);
+  transform: translateY(-1px);
+}
+.empty-shortcut .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.empty-steps {
+  position: relative;
+}
+.step-row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.step-row:last-child {
+  border-bottom: 0;
+}
+.step-row .num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.step-row .t {
+  font-size: 14.5px;
+  color: var(--ink);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.step-row .d {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+@media (max-width: 1080px) {
+  .empty {
+    grid-template-columns: 1fr;
+    padding: 40px 32px;
+    gap: 32px;
+  }
+}

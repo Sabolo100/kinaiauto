@@ -1,0 +1,215 @@
+/* ====== Brands page ====== */
+
+.brand-strip-wrap {
+  position: sticky;
+  top: 64px;
+  z-index: 40;
+  background: rgba(247, 246, 242, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.brand-strip {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 14px 0;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+.brand-strip::-webkit-scrollbar {
+  height: 4px;
+}
+.brand-strip::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 2px;
+}
+.brand-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.brand-tab:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+.brand-tab.on {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.brand-tab .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.brand-tab .n {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-mute);
+  background: #f3f1ea;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.brand-tab.on .n {
+  background: rgba(255, 255, 255, 0.15);
+  color: #aab;
+}
+
+.brand-hero {
+  position: relative;
+  padding: 56px 0 40px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--line);
+}
+.brand-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.08;
+  background: radial-gradient(
+    circle at 80% 30%,
+    var(--brand-tone, #444) 0,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+.brand-hero-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 48px;
+  align-items: end;
+}
+.brand-name {
+  font-family: var(--font-instrument), serif;
+  font-size: clamp(56px, 8vw, 108px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  margin: 0 0 18px;
+  color: var(--ink);
+  font-weight: 400;
+}
+.brand-name em {
+  font-style: italic;
+  color: var(--brand-tone, var(--accent-ink));
+}
+.brand-tagline {
+  font-size: 18px;
+  color: var(--ink-soft);
+  max-width: 560px;
+  margin: 0 0 28px;
+}
+.brand-quickstats {
+  display: flex;
+  gap: 24px;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.qs {
+  flex: 0 0 auto;
+}
+.qs .l {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-family: var(--font-mono), monospace;
+  margin-bottom: 4px;
+}
+.qs .v {
+  font-family: var(--font-instrument), serif;
+  font-size: 24px;
+  line-height: 1;
+}
+.qs .v small {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-left: 4px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.brand-fact {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-self: stretch;
+}
+.brand-fact .row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--line);
+}
+.brand-fact .row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.brand-fact .k {
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-family: var(--font-mono), monospace;
+  padding-top: 1px;
+}
+.brand-fact .v {
+  font-size: 14px;
+  color: var(--ink);
+}
+.brand-fact .v a {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+@media (max-width: 920px) {
+  .brand-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+}
+@media (max-width: 920px) {
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pill-list span {
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: #f3f1ea;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono), monospace;
+  white-space: nowrap;
+}
