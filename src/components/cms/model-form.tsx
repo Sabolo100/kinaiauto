@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 export type Lookup = { id: number; label_hu: string };
@@ -103,34 +103,6 @@ export function ModelForm({
     setBusy(false);
     if (res.ok) { router.refresh(); router.push("/c4m5s6/modellek"); }
     else setErr("Művelet sikertelen.");
-  }
-
-  async function uploadPhoto(file: File, kind: string, isPrimary: boolean) {
-    if (!v.id) {
-      setErr("Először mentsd a modellt, utána tölts fotót.");
-      return;
-    }
-    setBusy(true); setErr(null);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("model_id", v.id);
-    fd.append("kind", kind);
-    fd.append("is_primary", String(isPrimary));
-    const res = await fetch("/api/cms/upload/photo", { method: "POST", body: fd });
-    const j = await res.json().catch(() => ({}));
-    setBusy(false);
-    if (!res.ok) return setErr(j.error || "Feltöltés sikertelen");
-    setOk("Fotó feltöltve.");
-    router.refresh();
-  }
-
-  async function deletePhoto(id: string) {
-    if (!confirm("Biztosan törlöd a fotót?")) return;
-    setBusy(true);
-    const res = await fetch(`/api/cms/photos/${id}`, { method: "DELETE" });
-    setBusy(false);
-    if (res.ok) router.refresh();
-    else setErr("Törlés sikertelen.");
   }
 
   return (
@@ -285,24 +257,7 @@ export function ModelForm({
       {mode === "edit" && v.id ? (
         <div className="cms-card" style={{ padding: 14 }}>
           <h2 style={{ margin: "0 0 10px", fontSize: 14 }}>Fotók</h2>
-          {photos && photos.length > 0 ? (
-            <ul style={{ listStyle: "none", margin: 0, padding: 0, fontSize: 13 }}>
-              {photos.map((p) => (
-                <li key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #1f2937" }}>
-                  <div>
-                    <code style={{ color: "#94a3b8" }}>{p.storage_path}</code>{" "}
-                    <span className="pill muted">{p.kind}</span>{" "}
-                    {p.is_primary ? <span className="pill ok">primary</span> : null}
-                  </div>
-                  <button className="cms-btn danger" onClick={() => deletePhoto(p.id)} disabled={busy}>
-                    Törlés
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : <div style={{ color: "#94a3b8", fontSize: 13 }}>Nincs fotó.</div>}
-
-          <UploadField onUpload={uploadPhoto} disabled={busy} />
+          <PhotoGallery modelId={v.id} initialPhotos={photos ?? []} />
         </div>
       ) : null}
 
@@ -326,35 +281,203 @@ export function ModelForm({
   );
 }
 
-function UploadField({
-  onUpload,
-  disabled,
-}: {
-  onUpload: (file: File, kind: string, isPrimary: boolean) => void;
-  disabled: boolean;
-}) {
-  const [kind, setKind] = useState("exterior");
-  const [primary, setPrimary] = useState(false);
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const KINDS = ["hero", "exterior", "interior", "dashboard", "rear", "trunk", "gallery"] as const;
+const KIND_LABELS: Record<string, string> = {
+  hero: "Hero", exterior: "Exterior", interior: "Interior",
+  dashboard: "Műszerfal", rear: "Hátul", trunk: "Csomagtartó", gallery: "Galéria",
+};
+
+function thumbUrl(path: string) {
+  if (!SUPABASE_URL) return "";
+  return `${SUPABASE_URL}/storage/v1/object/public/car-photos/${path}`;
+}
+
+type QueueItem = { file: File; preview: string; kind: string; isPrimary: boolean; id: string };
+
+function PhotoGallery({ modelId, initialPhotos }: { modelId: string; initialPhotos: Photo[] }) {
+  const [photos, setPhotos] = useState<Photo[]>(initialPhotos);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [drag, setDrag] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function addFiles(files: FileList | null) {
+    if (!files) return;
+    const items: QueueItem[] = Array.from(files).map((file) => ({
+      file, preview: URL.createObjectURL(file),
+      kind: "exterior", isPrimary: false, id: Math.random().toString(36).slice(2),
+    }));
+    setQueue((q) => [...q, ...items]);
+  }
+
+  function removeFromQueue(id: string) {
+    setQueue((q) => {
+      const item = q.find((x) => x.id === id);
+      if (item) URL.revokeObjectURL(item.preview);
+      return q.filter((x) => x.id !== id);
+    });
+  }
+
+  function updateQueue(id: string, patch: Partial<QueueItem>) {
+    setQueue((q) => q.map((x) => x.id === id ? { ...x, ...patch } : x));
+  }
+
+  async function uploadAll() {
+    if (queue.length === 0) return;
+    setUploading(true); setErr(null);
+    for (const item of queue) {
+      const fd = new FormData();
+      fd.append("file", item.file);
+      fd.append("model_id", modelId);
+      fd.append("kind", item.kind);
+      fd.append("is_primary", String(item.isPrimary));
+      const res = await fetch("/api/cms/upload/photo", { method: "POST", body: fd });
+      const j = await res.json().catch(() => ({})) as Record<string, unknown>;
+      if (!res.ok) { setErr(`Feltöltési hiba (${item.file.name}): ${j.error ?? res.status}`); setUploading(false); return; }
+      const row = j.row as Photo;
+      if (item.isPrimary) {
+        setPhotos((p) => p.map((x) => ({ ...x, is_primary: false })));
+      }
+      setPhotos((p) => [...p, row]);
+      URL.revokeObjectURL(item.preview);
+    }
+    setQueue([]);
+    setUploading(false);
+  }
+
+  async function patchPhoto(id: string, patch: { kind?: string; is_primary?: boolean }) {
+    const res = await fetch(`/api/cms/photos/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) { const j = await res.json().catch(() => ({})) as Record<string, unknown>; setErr(String(j.error ?? "Mentés sikertelen")); return; }
+    if (patch.is_primary) {
+      setPhotos((p) => p.map((x) => ({ ...x, is_primary: x.id === id })));
+    } else {
+      setPhotos((p) => p.map((x) => x.id === id ? { ...x, ...patch } : x));
+    }
+  }
+
+  async function deletePhoto(id: string) {
+    if (!confirm("Biztosan törlöd a fotót?")) return;
+    const res = await fetch(`/api/cms/photos/${id}`, { method: "DELETE" });
+    if (res.ok) setPhotos((p) => p.filter((x) => x.id !== id));
+    else setErr("Törlés sikertelen.");
+  }
+
+  const onDragOver = useCallback((e: React.DragEvent) => { e.preventDefault(); setDrag(true); }, []);
+  const onDragLeave = useCallback(() => setDrag(false), []);
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault(); setDrag(false);
+    addFiles(e.dataTransfer.files);
+  }, []);
+
   return (
-    <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-      <select value={kind} onChange={(e) => setKind(e.target.value)} disabled={disabled}>
-        {["hero","exterior","interior","dashboard","rear","trunk","gallery"].map((k) => (
-          <option key={k} value={k}>{k}</option>
-        ))}
-      </select>
-      <label style={{ display: "flex", gap: 6, alignItems: "center", color: "#cbd5e1", fontSize: 13 }}>
-        <input type="checkbox" checked={primary} onChange={(e) => setPrimary(e.target.checked)} />
-        primary
-      </label>
-      <input
-        type="file"
-        accept="image/png,image/jpeg,image/webp,image/avif"
-        disabled={disabled}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onUpload(f, kind, primary);
-        }}
-      />
+    <div>
+      {err ? <div className="err" style={{ marginBottom: 8 }}>{err}</div> : null}
+
+      {/* Existing photos */}
+      {photos.length > 0 ? (
+        <div className="photo-grid">
+          {photos.map((p) => (
+            <div key={p.id} className={`photo-card${p.is_primary ? " is-primary" : ""}`}>
+              {SUPABASE_URL ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumbUrl(p.storage_path)} alt={p.kind} loading="lazy" />
+              ) : (
+                <div style={{ aspectRatio: "16/9", background: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#475569" }}>no preview</div>
+              )}
+              <div className="photo-controls">
+                <select
+                  value={p.kind}
+                  onChange={(e) => patchPhoto(p.id, { kind: e.target.value })}
+                >
+                  {KINDS.map((k) => <option key={k} value={k}>{KIND_LABELS[k]}</option>)}
+                </select>
+                <div className="photo-row">
+                  <label className={`photo-primary${p.is_primary ? " active" : ""}`}>
+                    <input
+                      type="checkbox"
+                      checked={p.is_primary}
+                      onChange={(e) => { if (e.target.checked) patchPhoto(p.id, { is_primary: true }); }}
+                    />
+                    Primary
+                  </label>
+                  <button className="photo-del" onClick={() => deletePhoto(p.id)} title="Törlés">✕</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ color: "#94a3b8", fontSize: 13, marginBottom: 8 }}>Még nincs feltöltött fotó.</div>
+      )}
+
+      {/* Upload drop zone */}
+      <div
+        className={`photo-upload-drop${drag ? " drag-over" : ""}`}
+        onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
+        onClick={() => inputRef.current?.click()}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          accept="image/png,image/jpeg,image/webp,image/avif"
+          onChange={(e) => addFiles(e.target.files)}
+          onClick={(e) => e.stopPropagation()}
+        />
+        <span>Kattints vagy húzd ide a fotókat (PNG / JPEG / WEBP / AVIF, max 10 MB/db)</span>
+      </div>
+
+      {/* Upload queue */}
+      {queue.length > 0 ? (
+        <>
+          <div className="photo-queue" style={{ marginTop: 10 }}>
+            {queue.map((item) => (
+              <div key={item.id} className={`photo-queue-item${uploading ? " photo-uploading" : ""}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.preview} alt="preview" />
+                <div className="photo-controls">
+                  <div style={{ fontSize: 11, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {item.file.name}
+                  </div>
+                  <select
+                    value={item.kind}
+                    onChange={(e) => updateQueue(item.id, { kind: e.target.value })}
+                    disabled={uploading}
+                  >
+                    {KINDS.map((k) => <option key={k} value={k}>{KIND_LABELS[k]}</option>)}
+                  </select>
+                  <div className="photo-row">
+                    <label className={`photo-primary${item.isPrimary ? " active" : ""}`}>
+                      <input
+                        type="checkbox"
+                        checked={item.isPrimary}
+                        onChange={(e) => updateQueue(item.id, { isPrimary: e.target.checked })}
+                        disabled={uploading}
+                      />
+                      Primary
+                    </label>
+                    <button className="photo-del" onClick={() => removeFromQueue(item.id)} disabled={uploading} title="Eltávolítás">✕</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="cms-actions" style={{ marginTop: 10 }}>
+            <button className="cms-btn primary" onClick={uploadAll} disabled={uploading}>
+              {uploading ? "Feltöltés…" : `${queue.length} fotó feltöltése`}
+            </button>
+            <button className="cms-btn ghost" onClick={() => { queue.forEach((i) => URL.revokeObjectURL(i.preview)); setQueue([]); }} disabled={uploading}>
+              Mégse
+            </button>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
