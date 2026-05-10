@@ -10,6 +10,7 @@ const PUBLIC_CMS_PATHS = new Set<string>([
 
 const PUBLIC_API_PATHS = new Set<string>([
   "/api/cms/login",
+  "/api/cms/logout",
 ]);
 
 export async function middleware(req: NextRequest) {
