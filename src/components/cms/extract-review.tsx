@@ -115,9 +115,15 @@ export function ExtractReview({ extraction }: { extraction: Extraction }) {
 
       {err ? <div className="err">{err}</div> : null}
       {isFailed ? (
-        <div className="cms-card">
-          <h2 style={{ margin: "0 0 6px" }}>Hiba</h2>
-          <div style={{ color: "#fca5a5", fontSize: 13 }}>{extraction.error_message}</div>
+        <div className="cms-card" style={{ border: "1px solid #ef4444" }}>
+          <h2 style={{ margin: "0 0 8px", color: "#ef4444" }}>LLM kinyerés sikertelen</h2>
+          <pre style={{
+            color: "#fca5a5", fontSize: 13, whiteSpace: "pre-wrap",
+            wordBreak: "break-all", margin: 0,
+          }}>{extraction.error_message ?? "Ismeretlen hiba — ellenőrizd a Vercel function logokat."}</pre>
+          <p style={{ marginTop: 10, fontSize: 12, color: "#94a3b8" }}>
+            Lehetséges okok: érvénytelen API kulcs, nem létező model-ID, Vercel timeout (60s), hálózati hiba.
+          </p>
         </div>
       ) : null}
 

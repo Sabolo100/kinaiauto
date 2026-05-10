@@ -48,7 +48,7 @@ const STATUS_PILL: Record<string, string> = {
   pending: "warn",
   approved: "ok",
   rejected: "muted",
-  failed: "muted",
+  failed: "err",
 };
 
 const STATUS_LABEL: Record<string, string> = {

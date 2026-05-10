@@ -116,6 +116,7 @@
 .cms-table .pill.ok { background: #064e3b; color: #6ee7b7; }
 .cms-table .pill.warn { background: #422006; color: #fbbf24; }
 .cms-table .pill.muted { background: #1f2937; color: #94a3b8; }
+.cms-table .pill.err { background: #450a0a; color: #fca5a5; }
 
 /* Forms */
 .cms-form { display: grid; gap: 14px; max-width: 760px; }

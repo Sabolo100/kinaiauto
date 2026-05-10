@@ -110,7 +110,9 @@ export async function POST(req: NextRequest) {
 
   if (!rawText || rawText.length < 80) {
     return NextResponse.json(
-      { error: "A forrásból nem sikerült értelmes szöveget kinyerni." },
+      {
+        error: `A forrásból nem sikerült értelmes szöveget kinyerni. (Kinyert szöveg: ${rawText.length} karakter — lehet, hogy beolvasott/képalapú PDF?)`,
+      },
       { status: 422 },
     );
   }
@@ -126,7 +128,10 @@ export async function POST(req: NextRequest) {
     llmModel = out.model;
   } catch (e) {
     status = "failed";
-    errorMessage = (e as Error).message;
+    const raw = (e as Error).message ?? String(e);
+    // Include provider + model in the error so it's clear what failed.
+    errorMessage = `[${payload.provider} / ${payload.provider === "claude" ? "claude-sonnet-4-6" : "gpt-4.5"}] ${raw}`;
+    console.error("[cms/extract] LLM error:", errorMessage);
   }
 
   const ins = await sa
@@ -138,7 +143,7 @@ export async function POST(req: NextRequest) {
       source_filename,
       storage_path,
       llm_provider: payload.provider,
-      llm_model: llmModel || null,
+      llm_model: llmModel || (payload.provider === "claude" ? "claude-sonnet-4-6" : "gpt-4.5"),
       raw_text: rawText.slice(0, 200_000),
       parsed_json: parsed,
       status,
@@ -146,7 +151,18 @@ export async function POST(req: NextRequest) {
     })
     .select("*")
     .single();
-  if (ins.error) return NextResponse.json({ error: ins.error.message }, { status: 500 });
+  if (ins.error) {
+    console.error("[cms/extract] Supabase insert error:", ins.error);
+    return NextResponse.json(
+      { error: `DB hiba: ${ins.error.message} (code: ${ins.error.code})` },
+      { status: 500 },
+    );
+  }
 
-  return NextResponse.json({ ok: true, id: ins.data.id, status });
+  return NextResponse.json({
+    ok: true,
+    id: ins.data.id,
+    status,
+    error_message: errorMessage,
+  });
 }

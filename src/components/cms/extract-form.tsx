@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type ModelOpt = { id: string; name: string; brand: { name: string } | null };
 
@@ -24,9 +25,10 @@ export function ExtractForm({
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [failedId, setFailedId] = useState<string | null>(null);
 
   async function submit() {
-    setBusy(true); setErr(null);
+    setBusy(true); setErr(null); setFailedId(null);
     if (!modelId) { setErr("Válassz modellt."); setBusy(false); return; }
     const fd = new FormData();
     fd.append("model_id", modelId);
@@ -39,16 +41,55 @@ export function ExtractForm({
       if (!url.trim()) { setErr("Adj meg egy URL-t."); setBusy(false); return; }
       fd.append("url", url.trim());
     }
-    const res = await fetch("/api/cms/extract", { method: "POST", body: fd });
-    const j = await res.json().catch(() => ({}));
+
+    let res: Response;
+    try {
+      res = await fetch("/api/cms/extract", { method: "POST", body: fd });
+    } catch (netErr) {
+      setBusy(false);
+      setErr(`Hálózati hiba: ${(netErr as Error).message}`);
+      return;
+    }
+
+    let j: Record<string, unknown> = {};
+    try {
+      j = await res.json();
+    } catch {
+      setBusy(false);
+      setErr(`Szerver válasz nem értelmezhető (HTTP ${res.status})`);
+      return;
+    }
+
     setBusy(false);
-    if (!res.ok) return setErr(j.error || "Sikertelen");
+
+    if (!res.ok) {
+      setErr(`Hiba (HTTP ${res.status}): ${j.error ?? "ismeretlen hiba"}`);
+      return;
+    }
+
+    if (j.status === "failed") {
+      setFailedId(String(j.id));
+      setErr(`LLM kinyerés sikertelen: ${j.error_message ?? "ismeretlen LLM hiba"}`);
+      return;
+    }
+
     router.push(`/c4m5s6/extract/${j.id}`);
   }
 
   return (
     <div className="cms-form">
-      {err ? <div className="err">{err}</div> : null}
+      {err ? (
+        <div className="err" style={{ whiteSpace: "pre-wrap" }}>
+          {err}
+          {failedId ? (
+            <div style={{ marginTop: 8 }}>
+              <Link className="cms-btn ghost" href={`/c4m5s6/extract/${failedId}`}>
+                Részletek megtekintése →
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <div className="row3">
         <label><span>Modell *</span>
           <select value={modelId} onChange={(e) => setModelId(e.target.value)}>

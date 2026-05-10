@@ -56,7 +56,7 @@ export type ExtractedFields = {
 export type LlmProvider = "claude" | "openai";
 
 export const CLAUDE_MODEL = "claude-sonnet-4-6";
-export const OPENAI_MODEL = "gpt-4o-2024-08-06";
+export const OPENAI_MODEL = "gpt-4.5";
 
 const SYSTEM_PROMPT = `You are an automotive data extractor for a Hungarian car-comparison website (kinaiauto.com).
 Read the supplied source text (a manufacturer pricelist PDF or product webpage, often Hungarian) and extract the model's technical specifications.
