@@ -483,6 +483,16 @@ footer.foot .foot-disclaimer {
 .card:hover .photo img {
   transform: scale(1.03);
 }
+.card .photo .photo-secondary {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.35s ease, transform 0.4s ease;
+}
+.card:hover .photo .photo-secondary {
+  opacity: 1;
+}
 .card .photo.placeholder {
   display: flex;
   align-items: center;

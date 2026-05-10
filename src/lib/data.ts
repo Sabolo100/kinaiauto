@@ -22,6 +22,7 @@ import type {
   Brand,
   Category,
   Drive,
+  ModelPhoto,
   ModelRow,
   ModelTrim,
   PriceBand,
@@ -177,6 +178,39 @@ function formatDate(iso: string): string {
 export async function getArticleIndex() {
   // For now, articles index is identical regardless of source — bodies live in DB only.
   return ARTICLE_INDEX;
+}
+
+// -----------------------------------------------------------------------------
+// Photos
+// -----------------------------------------------------------------------------
+
+export async function getPhotosForModel(modelId: string): Promise<ModelPhoto[]> {
+  if (HAS_SUPABASE && supabase) {
+    const { data, error } = await supabase
+      .from("model_photos")
+      .select("*")
+      .eq("model_id", modelId)
+      .order("sort_order");
+    if (!error && data) return data as ModelPhoto[];
+  }
+  return [];
+}
+
+export async function getPhotoMapForModels(
+  modelIds: string[],
+): Promise<Record<string, ModelPhoto[]>> {
+  if (modelIds.length === 0 || !HAS_SUPABASE || !supabase) return {};
+  const { data, error } = await supabase
+    .from("model_photos")
+    .select("*")
+    .in("model_id", modelIds)
+    .order("sort_order");
+  if (error || !data) return {};
+  const map: Record<string, ModelPhoto[]> = {};
+  for (const p of data as ModelPhoto[]) {
+    (map[p.model_id] ??= []).push(p);
+  }
+  return map;
 }
 
 // -----------------------------------------------------------------------------

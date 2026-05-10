@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Check, GitCompareArrows, Plus } from "lucide-react";
-import type { ModelRow } from "@/lib/types";
+import type { ModelPhoto, ModelRow } from "@/lib/types";
 import { fmtPrice, fmtNumber } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 
@@ -13,14 +13,18 @@ export function ModelCard({
   zoom = 2,
   isSelected,
   onToggleCompare,
+  photos,
 }: {
   model: ModelRow;
   zoom?: CardZoom;
   isSelected?: boolean;
   onToggleCompare?: (model: ModelRow) => void;
+  photos?: ModelPhoto[];
 }) {
   const tone = model.brand_tone ?? "#374151";
   const photo = photoUrl(model.primary_photo_path);
+  const hoverPhoto = photos?.find((p) => !p.is_primary && p.kind !== "hero") ?? null;
+  const hoverUrl = hoverPhoto ? photoUrl(hoverPhoto.storage_path) : null;
 
   return (
     <article className={`card zoom-${zoom}`}>
@@ -35,6 +39,16 @@ export function ModelCard({
           <span>
             {model.brand_name} {model.name} — fotó
           </span>
+        )}
+        {hoverUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={hoverUrl}
+            alt=""
+            className="photo-secondary"
+            aria-hidden
+            loading="lazy"
+          />
         )}
         {model.is_deal ? (
           <span className="badge deal">Akció</span>

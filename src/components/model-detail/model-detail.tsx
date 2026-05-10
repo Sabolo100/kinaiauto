@@ -19,7 +19,8 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import type { Brand, ModelRow, ModelTrim } from "@/lib/types";
+import type { Brand, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
+import { ModelGallery } from "./model-gallery";
 import { fmtPrice, fmtNumber } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 import "./model-detail.css";
@@ -29,11 +30,13 @@ export function ModelDetail({
   brand,
   trims,
   similar,
+  photos,
 }: {
   model: ModelRow;
   brand: Brand;
   trims: ModelTrim[];
   similar: ModelRow[];
+  photos: ModelPhoto[];
 }) {
   const tone = model.brand_tone ?? "#374151";
   const isEV = model.drive === "Elektromos";
@@ -184,24 +187,13 @@ export function ModelDetail({
                 Külső, belső, <em>részletek</em>.
               </h2>
             </div>
-            <div className="sub">
-              A hivatalos sajtófotók a kereskedői átvételt követően frissülnek.
-              Most placeholder képeket látsz.
-            </div>
-          </div>
-          <div className="gallery">
-            {[
-              "Külső fő nézet",
-              "Belső",
-              "Műszerfal",
-              "Hátsó nézet",
-              "Csomagtartó",
-            ].map((tag, i) => (
-              <div key={i} className="slot placeholder">
-                <span className="tag">{tag}</span>
+            {photos.length === 0 && (
+              <div className="sub">
+                A hivatalos sajtófotók a kereskedői átvételt követően frissülnek.
               </div>
-            ))}
+            )}
           </div>
+          <ModelGallery photos={photos} />
         </div>
       </section>
 

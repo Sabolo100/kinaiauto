@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Grid2x2, LayoutGrid } from "lucide-react";
-import type { Brand, ModelRow } from "@/lib/types";
+import type { Brand, ModelPhoto, ModelRow } from "@/lib/types";
 import { ModelCard } from "@/components/model-card";
 import { CompareProvider, useCompare } from "@/components/compare-context";
 import { CompareBar } from "@/components/compare-bar";
@@ -14,6 +14,7 @@ type Props = {
   brands: Brand[];
   models: ModelRow[];
   brandCounts: Record<string, number>;
+  photoMap?: Record<string, ModelPhoto[]>;
 };
 
 export function BrandPage(props: Props) {
@@ -25,7 +26,7 @@ export function BrandPage(props: Props) {
   );
 }
 
-function BrandPageInner({ brand, brands, models, brandCounts }: Props) {
+function BrandPageInner({ brand, brands, models, brandCounts, photoMap = {} }: Props) {
   const [zoom, setZoom] = useState<1 | 2>(2);
   const compare = useCompare();
   const tone = brand.brand_tone ?? "#444";
@@ -164,6 +165,7 @@ function BrandPageInner({ brand, brands, models, brandCounts }: Props) {
                 onToggleCompare={() =>
                   compare.toggle({ brand: m.brand_name, name: m.name })
                 }
+                photos={photoMap[m.id]}
               />
             ))}
           </div>
