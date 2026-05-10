@@ -8,6 +8,18 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handlePost(req);
+  } catch (fatal) {
+    console.error("[cms/extract] Unhandled exception:", fatal);
+    return NextResponse.json(
+      { error: `Szerver hiba: ${(fatal as Error)?.message ?? String(fatal)}` },
+      { status: 500 },
+    );
+  }
+}
+
+async function handlePost(req: NextRequest) {
   const j = await req.json().catch(() => null);
   if (!j) return NextResponse.json({ error: "invalid body" }, { status: 400 });
 
