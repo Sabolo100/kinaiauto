@@ -52,6 +52,6 @@ export const COOKIE_OPTS = {
   httpOnly: true,
   secure: true,
   sameSite: "lax" as const,
-  path: CMS_BASE,
+  path: "/",
   maxAge: SESSION_SECONDS,
 };
