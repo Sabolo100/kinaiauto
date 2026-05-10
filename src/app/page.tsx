@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema } from "@/lib/seo";
