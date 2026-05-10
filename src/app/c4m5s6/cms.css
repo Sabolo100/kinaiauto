@@ -1,0 +1,212 @@
+/* ===== CMS — admin shell styles =====================================
+   Self-contained dark admin UI. Independent from the public site CSS,
+   only relies on `globals.css` font + reset.
+   =================================================================== */
+
+.cms-shell {
+  min-height: 100vh;
+  background: #0b1018;
+  color: #e2e8f0;
+  font-family: var(--font-sans, ui-sans-serif, system-ui);
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+
+.cms-sidebar {
+  background: #0a0f17;
+  border-right: 1px solid #1f2937;
+  padding: 22px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.cms-brand {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #f1f5f9;
+  margin-bottom: 2px;
+}
+.cms-brand-sub {
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 22px;
+}
+
+.cms-nav { display: flex; flex-direction: column; gap: 2px; }
+.cms-nav a {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.cms-nav a:hover { background: #111827; color: #f1f5f9; }
+.cms-nav a.active { background: #1d4ed8; color: white; }
+
+.cms-foot {
+  margin-top: 30px;
+  padding-top: 18px;
+  border-top: 1px solid #1f2937;
+  font-size: 12px;
+  color: #64748b;
+}
+.cms-foot form { margin-top: 8px; }
+.cms-foot button {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.cms-foot button:hover { background: #1f2937; color: white; }
+
+.cms-main {
+  padding: 28px 32px 80px;
+  max-width: 1400px;
+}
+.cms-main h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; color: #f1f5f9; }
+.cms-main h2 { font-size: 17px; font-weight: 600; margin: 24px 0 10px; color: #e2e8f0; }
+.cms-main p.lede { color: #94a3b8; font-size: 14px; margin-bottom: 22px; }
+
+.cms-card {
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.cms-grid-cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+.cms-stat {
+  display: block;
+  padding: 18px;
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+.cms-stat:hover { border-color: #2563eb; }
+.cms-stat .num { font-size: 28px; font-weight: 700; color: #f1f5f9; }
+.cms-stat .lab { font-size: 13px; color: #94a3b8; }
+
+/* Tables */
+.cms-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cms-table th {
+  text-align: left; font-weight: 600; padding: 10px 12px;
+  background: #0f172a; color: #94a3b8; font-size: 12px;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid #1f2937;
+}
+.cms-table td { padding: 11px 12px; border-bottom: 1px solid #1f2937; }
+.cms-table tr:hover td { background: #0f172a; }
+.cms-table .pill {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+}
+.cms-table .pill.ok { background: #064e3b; color: #6ee7b7; }
+.cms-table .pill.warn { background: #422006; color: #fbbf24; }
+.cms-table .pill.muted { background: #1f2937; color: #94a3b8; }
+
+/* Forms */
+.cms-form { display: grid; gap: 14px; max-width: 760px; }
+.cms-form .row2 { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+.cms-form .row3 { display: grid; gap: 14px; grid-template-columns: 1fr 1fr 1fr; }
+.cms-form label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 13px; color: #cbd5e1;
+}
+.cms-form label > span:first-child {
+  font-size: 12px; font-weight: 600; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.cms-form input, .cms-form select, .cms-form textarea {
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.cms-form input:focus, .cms-form select:focus, .cms-form textarea:focus {
+  outline: 2px solid #2563eb;
+  border-color: #2563eb;
+}
+.cms-form textarea { min-height: 90px; resize: vertical; }
+.cms-form .err {
+  background: #450a0a; border: 1px solid #7f1d1d;
+  color: #fca5a5; padding: 9px 12px; border-radius: 6px; font-size: 13px;
+}
+.cms-form .ok {
+  background: #064e3b; border: 1px solid #047857;
+  color: #6ee7b7; padding: 9px 12px; border-radius: 6px; font-size: 13px;
+}
+
+.cms-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.cms-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  font-family: inherit;
+}
+.cms-btn.primary { background: #2563eb; color: white; }
+.cms-btn.primary:hover { background: #1d4ed8; }
+.cms-btn.ghost { background: #1f2937; color: #e2e8f0; border-color: #334155; }
+.cms-btn.ghost:hover { background: #111827; }
+.cms-btn.danger { background: transparent; color: #f87171; border-color: #7f1d1d; }
+.cms-btn.danger:hover { background: #450a0a; color: white; }
+
+.cms-toolbar {
+  display: flex; gap: 8px; align-items: center;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.cms-toolbar input[type="search"], .cms-toolbar input[type="text"] {
+  flex: 1; min-width: 220px; max-width: 360px;
+  background: #0f172a; color: #e2e8f0;
+  border: 1px solid #334155; border-radius: 6px;
+  padding: 9px 11px; font-size: 14px;
+}
+
+/* Login */
+.cms-login-wrap {
+  min-height: 100vh; background: #0b1018;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.cms-login {
+  width: 100%; max-width: 360px;
+  background: #111827; border: 1px solid #1f2937;
+  border-radius: 12px; padding: 28px;
+}
+.cms-login h1 { font-size: 18px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
+.cms-login .sub { font-size: 13px; color: #94a3b8; margin-bottom: 18px; }
+
+/* Diff (extract review) */
+.cms-diff { display: grid; gap: 8px; grid-template-columns: 1.4fr 1fr 1fr; align-items: start; }
+.cms-diff > div {
+  background: #0f172a; padding: 9px 12px; border-radius: 6px; font-size: 13px;
+  border: 1px solid #1f2937;
+}
+.cms-diff .label { color: #94a3b8; font-weight: 600; }
+.cms-diff .changed { border-color: #1d4ed8; background: #0f1729; }
+
+@media (max-width: 880px) {
+  .cms-shell { grid-template-columns: 1fr; }
+  .cms-sidebar { position: static; height: auto; }
+  .cms-main { padding: 18px 16px 60px; }
+  .cms-form .row2, .cms-form .row3 { grid-template-columns: 1fr; }
+  .cms-diff { grid-template-columns: 1fr; }
+}

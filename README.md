@@ -77,6 +77,13 @@ adatkészlet, ami a `supabase/schema.sql`-be is bekerül.
 5. (Opció) tölts fel egy Tiggo 8 fotót a Storage `car-photos` bucketbe
    `models/tiggo-8/hero.avif` útvonalra. A seedben a `model_photos` rekord már
    regisztrálva van — automatikusan megjelenik.
+6. **CMS séma + production seed.** Futtasd sorrendben az SQL Editorban:
+   - `supabase/cms-schema.sql` — `archived_at` oszlopok, `model_extractions`
+     tábla és `pdf-uploads` privát storage bucket.
+   - `supabase/production-seed.sql` — kitisztítja a tesztárakat /
+     specifikációkat, csak a márka- és modell-azonosítást hagyja meg
+     (a tényleges adatok a CMS-en át / extract-pipeline-en keresztül kerülnek
+     be).
 
 ## Mezőnév-egyezőség
 
@@ -147,13 +154,41 @@ A `vercel.json` tartalmaz:
 - Tudástár TOC mobilon vízszintes pirula-sorba rendezve
 - Min 16px érintési target minden interaktív elemen
 
+## CMS — `/c4m5s6`
+
+Belső adminfelület a Supabase backend kezelésére. Belépés: `https://www.kinaiauto.com/c4m5s6`. Nem indexelt, robotok elől tiltott (`robots: noindex`), middleware védi.
+
+**Belépés:** `CMS_PASSWORD` env-változóban beállított jelszó. Sikeres belépés után 7 napig érvényes, HMAC-aláírt session cookie. Minden CMS-route és `/api/cms/*` végpont ezt ellenőrzi a `src/middleware.ts`-ben.
+
+**Funkciók:**
+
+1. **Manuális szerkesztés** — Márkák / Modellek lista, részletes űrlapok, archiválás (soft delete), logó- és fotófeltöltés (`brand-logos` és `car-photos` Supabase Storage bucketekbe).
+2. **PDF / URL kinyerés** — feltöltesz egy PDF-et vagy beadsz egy URL-t, a rendszer:
+   - Kinyeri a szöveget (`pdf-parse` v2 vagy HTML→szöveg konverzió)
+   - Elküldi az LLM-nek (Claude Sonnet 4.6 vagy OpenAI GPT-4o, választható)
+   - Strukturált JSON-t kap vissza (ár, méretek, akku, hatótáv, garancia, töltés, stb.)
+   - `model_extractions` táblába menti `pending` státusszal
+   - Az admin a review-oldalon mezőről-mezőre összehasonlítja a meglévő modellel, módosíthatja, jóváhagyhatja vagy elutasíthatja
+   - Jóváhagyáskor a kinyert mezők bekerülnek a `models` rekordba (csak nem-üres mezők)
+
+**A CMS-hez szükséges env-változók:**
+
+```
+SUPABASE_SERVICE_ROLE_KEY=...        # service role — bypass RLS
+CMS_PASSWORD=...                     # admin jelszó
+CMS_SESSION_SECRET=...               # 64 hex char (crypto.randomBytes(32))
+ANTHROPIC_API_KEY=...                # opcionális, Claude használathoz
+OPENAI_API_KEY=...                   # opcionális, OpenAI használathoz
+```
+
+Legalább az egyik LLM-kulcs kell ahhoz, hogy a 2-es Mód működjön.
+
 ## Skálázás később
 
-- **Admin CMS:** külön Next route + service role kliens, eredeti spec szerint nem most.
-- **Real photos:** csak a `model_photos` táblába kell INSERT-elni storage path-okat.
-- **Új modell:** INSERT a `models`-be, a `v_models` view automatikusan tartalmazza.
-- **Új márka:** INSERT a `brands`-be — a `[slug]/page.tsx` route automatikusan generálódik.
+- **Új modell:** INSERT a `models`-be, a `v_models` view automatikusan tartalmazza. (Vagy a CMS-en keresztül.)
+- **Új márka:** INSERT a `brands`-be — a `[slug]/page.tsx` route automatikusan generálódik. (Vagy a CMS-en keresztül.)
 - **Új cikk:** INSERT az `articles`-be — a `body_blocks` JSONB struktúrát ki kell tölteni; a renderer most placeholder, később bővítés.
+- **Auto-research mód (3.):** A jelenlegi extract pipeline készen áll arra, hogy a forrásszöveget ne ember adja meg, hanem ütemező / scraper. Az LLM-réteg és az approval-folyamat változatlan marad.
 
 ## Licenc
 
