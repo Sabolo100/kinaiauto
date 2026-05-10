@@ -24,30 +24,81 @@ export function ExtractForm({
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
+  const [step, setStep] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [failedId, setFailedId] = useState<string | null>(null);
 
   async function submit() {
-    setBusy(true); setErr(null); setFailedId(null);
+    setBusy(true); setErr(null); setFailedId(null); setStep(null);
+
     if (!modelId) { setErr("Válassz modellt."); setBusy(false); return; }
-    const fd = new FormData();
-    fd.append("model_id", modelId);
-    fd.append("provider", provider);
-    fd.append("source_kind", kind);
+
+    let body: Record<string, unknown>;
+
     if (kind === "pdf") {
       if (!file) { setErr("Csatolj PDF-et."); setBusy(false); return; }
-      fd.append("file", file);
+
+      // Step 1: get presigned upload URL from server
+      setStep("1/3 — Feltöltési URL lekérése…");
+      let presignRes: Response;
+      try {
+        presignRes = await fetch(
+          `/api/cms/extract/presign?model_id=${encodeURIComponent(modelId)}&filename=${encodeURIComponent(file.name)}`,
+        );
+      } catch (e) {
+        setBusy(false); setStep(null);
+        setErr(`Hálózati hiba (presign): ${(e as Error).message}`);
+        return;
+      }
+      if (!presignRes.ok) {
+        const pj = await presignRes.json().catch(() => ({})) as Record<string, unknown>;
+        setBusy(false); setStep(null);
+        setErr(`Presigned URL hiba (HTTP ${presignRes.status}): ${pj.error ?? "ismeretlen"}`);
+        return;
+      }
+      const { path, signedUrl } = await presignRes.json() as { path: string; signedUrl: string };
+
+      // Step 2: upload PDF directly to Supabase Storage (bypasses Vercel body limit)
+      setStep(`2/3 — PDF feltöltése (${(file.size / 1024 / 1024).toFixed(1)} MB)…`);
+      try {
+        const upRes = await fetch(signedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": "application/pdf" },
+          body: file,
+        });
+        if (!upRes.ok) {
+          throw new Error(`HTTP ${upRes.status}`);
+        }
+      } catch (e) {
+        setBusy(false); setStep(null);
+        setErr(`PDF feltöltési hiba a Storage-ba: ${(e as Error).message}`);
+        return;
+      }
+
+      body = {
+        model_id: modelId,
+        provider,
+        source_kind: "pdf",
+        storage_path: path,
+        source_filename: file.name,
+      };
     } else {
       if (!url.trim()) { setErr("Adj meg egy URL-t."); setBusy(false); return; }
-      fd.append("url", url.trim());
+      body = { model_id: modelId, provider, source_kind: "url", url: url.trim() };
     }
 
+    // Step 3: trigger LLM extraction
+    setStep(kind === "pdf" ? "3/3 — LLM kinyerés…" : "LLM kinyerés…");
     let res: Response;
     try {
-      res = await fetch("/api/cms/extract", { method: "POST", body: fd });
-    } catch (netErr) {
-      setBusy(false);
-      setErr(`Hálózati hiba: ${(netErr as Error).message}`);
+      res = await fetch("/api/cms/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    } catch (e) {
+      setBusy(false); setStep(null);
+      setErr(`Hálózati hiba (extract): ${(e as Error).message}`);
       return;
     }
 
@@ -55,12 +106,12 @@ export function ExtractForm({
     try {
       j = await res.json();
     } catch {
-      setBusy(false);
+      setBusy(false); setStep(null);
       setErr(`Szerver válasz nem értelmezhető (HTTP ${res.status})`);
       return;
     }
 
-    setBusy(false);
+    setBusy(false); setStep(null);
 
     if (!res.ok) {
       setErr(`Hiba (HTTP ${res.status}): ${j.error ?? "ismeretlen hiba"}`);
@@ -90,6 +141,7 @@ export function ExtractForm({
           ) : null}
         </div>
       ) : null}
+
       <div className="row3">
         <label><span>Modell *</span>
           <select value={modelId} onChange={(e) => setModelId(e.target.value)}>
@@ -122,6 +174,11 @@ export function ExtractForm({
             accept="application/pdf"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
+          {file ? (
+            <span style={{ fontSize: 12, color: "#94a3b8", marginTop: 4, display: "block" }}>
+              {file.name} — {(file.size / 1024 / 1024).toFixed(2)} MB
+            </span>
+          ) : null}
         </label>
       ) : (
         <label><span>URL</span>
@@ -136,7 +193,7 @@ export function ExtractForm({
 
       <div className="cms-actions">
         <button className="cms-btn primary" onClick={submit} disabled={busy}>
-          {busy ? "Feldolgozás…" : "Kinyerés indítása"}
+          {step ?? "Kinyerés indítása"}
         </button>
       </div>
     </div>

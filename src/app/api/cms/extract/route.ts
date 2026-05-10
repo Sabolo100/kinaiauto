@@ -2,40 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { extractPdfText } from "@/lib/pdf-text";
 import { fetchUrlText } from "@/lib/url-text";
-import {
-  extractWith,
-  type LlmProvider,
-} from "@/lib/llm-extract";
+import { extractWith, type LlmProvider } from "@/lib/llm-extract";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const PDF_MAX = 25 * 1024 * 1024;
-
 export async function POST(req: NextRequest) {
-  const ct = req.headers.get("content-type") || "";
-  let payload: {
+  const j = await req.json().catch(() => null);
+  if (!j) return NextResponse.json({ error: "invalid body" }, { status: 400 });
+
+  const payload = j as {
     model_id: string;
     provider: LlmProvider;
     source_kind: "pdf" | "url";
+    // PDF: storage_path + source_filename from presigned upload
+    storage_path?: string;
+    source_filename?: string;
+    // URL
     url?: string;
-    file?: File | null;
   };
-
-  if (ct.includes("multipart/form-data")) {
-    const fd = await req.formData();
-    payload = {
-      model_id: String(fd.get("model_id") || ""),
-      provider: (String(fd.get("provider") || "claude") as LlmProvider),
-      source_kind: (String(fd.get("source_kind") || "pdf") as "pdf" | "url"),
-      url: fd.get("url") ? String(fd.get("url")) : undefined,
-      file: fd.get("file") as File | null,
-    };
-  } else {
-    const j = await req.json().catch(() => null);
-    if (!j) return NextResponse.json({ error: "invalid body" }, { status: 400 });
-    payload = j;
-  }
 
   if (!payload.model_id) {
     return NextResponse.json({ error: "model_id kötelező" }, { status: 400 });
@@ -54,7 +39,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "modell nem található" }, { status: 404 });
   }
 
-  // Build hint string from current model state for the LLM context.
   const r = m.data as Record<string, unknown> & { brand: { name: string; slug: string } | null };
   const hint = [
     `Brand: ${r.brand?.name ?? "-"}`,
@@ -65,7 +49,6 @@ export async function POST(req: NextRequest) {
     `Current range_km: ${r.range_km ?? "-"}`,
   ].join("\n");
 
-  // 1) Get raw text + (for PDFs) optionally store the file.
   let rawText = "";
   let storage_path: string | null = null;
   let source_filename: string | null = null;
@@ -73,26 +56,26 @@ export async function POST(req: NextRequest) {
 
   try {
     if (payload.source_kind === "pdf") {
-      if (!payload.file) {
-        return NextResponse.json({ error: "nincs PDF csatolva" }, { status: 400 });
+      if (!payload.storage_path) {
+        return NextResponse.json(
+          { error: "storage_path hiányzik — a PDF feltöltés nem fejeződött be" },
+          { status: 400 },
+        );
       }
-      if (payload.file.size > PDF_MAX) {
-        return NextResponse.json({ error: "PDF max 25 MB" }, { status: 400 });
+
+      // Download from Supabase Storage (private bucket, no Vercel body limit)
+      const dl = await sa.storage.from("pdf-uploads").download(payload.storage_path);
+      if (dl.error || !dl.data) {
+        return NextResponse.json(
+          { error: `PDF letöltési hiba a Storage-ból: ${dl.error?.message ?? "ismeretlen"}` },
+          { status: 400 },
+        );
       }
-      if (payload.file.type && payload.file.type !== "application/pdf") {
-        return NextResponse.json({ error: "csak PDF" }, { status: 400 });
-      }
-      const buf = Buffer.from(await payload.file.arrayBuffer());
+
+      const buf = Buffer.from(await dl.data.arrayBuffer());
       rawText = await extractPdfText(buf);
-      source_filename = payload.file.name || "upload.pdf";
-      storage_path = `${payload.model_id}/${Date.now()}-${source_filename.replace(/[^a-z0-9.\-_]/gi, "_")}`;
-      const up = await sa.storage
-        .from("pdf-uploads")
-        .upload(storage_path, buf, { contentType: "application/pdf", upsert: false });
-      if (up.error) {
-        // non-fatal — keep extraction even if archive upload fails
-        storage_path = null;
-      }
+      storage_path = payload.storage_path;
+      source_filename = payload.source_filename ?? storage_path.split("/").pop() ?? "upload.pdf";
     } else {
       if (!payload.url) {
         return NextResponse.json({ error: "URL kötelező" }, { status: 400 });
@@ -111,26 +94,25 @@ export async function POST(req: NextRequest) {
   if (!rawText || rawText.length < 80) {
     return NextResponse.json(
       {
-        error: `A forrásból nem sikerült értelmes szöveget kinyerni. (Kinyert szöveg: ${rawText.length} karakter — lehet, hogy beolvasott/képalapú PDF?)`,
+        error: `A forrásból nem sikerült értelmes szöveget kinyerni. (${rawText.length} karakter — lehet, hogy beolvasott/képalapú PDF?)`,
       },
       { status: 422 },
     );
   }
 
-  // 2) Run LLM extraction.
+  const llmProviderLabel = payload.provider === "claude" ? "claude-sonnet-4-6" : "gpt-4.5";
   let parsed: Record<string, unknown> = {};
   let llmModel = "";
   let status: "pending" | "failed" = "pending";
   let errorMessage: string | null = null;
+
   try {
     const out = await extractWith(payload.provider, rawText, hint);
     parsed = out.json as Record<string, unknown>;
     llmModel = out.model;
   } catch (e) {
     status = "failed";
-    const raw = (e as Error).message ?? String(e);
-    // Include provider + model in the error so it's clear what failed.
-    errorMessage = `[${payload.provider} / ${payload.provider === "claude" ? "claude-sonnet-4-6" : "gpt-4.5"}] ${raw}`;
+    errorMessage = `[${payload.provider} / ${llmProviderLabel}] ${(e as Error).message ?? String(e)}`;
     console.error("[cms/extract] LLM error:", errorMessage);
   }
 
@@ -143,7 +125,7 @@ export async function POST(req: NextRequest) {
       source_filename,
       storage_path,
       llm_provider: payload.provider,
-      llm_model: llmModel || (payload.provider === "claude" ? "claude-sonnet-4-6" : "gpt-4.5"),
+      llm_model: llmModel || llmProviderLabel,
       raw_text: rawText.slice(0, 200_000),
       parsed_json: parsed,
       status,
@@ -151,6 +133,7 @@ export async function POST(req: NextRequest) {
     })
     .select("*")
     .single();
+
   if (ins.error) {
     console.error("[cms/extract] Supabase insert error:", ins.error);
     return NextResponse.json(
