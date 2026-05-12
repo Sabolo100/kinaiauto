@@ -69,16 +69,41 @@ export async function getPriceBands(): Promise<PriceBand[]> {
 // Brands
 // -----------------------------------------------------------------------------
 
+async function fetchBrandLogoMap(): Promise<Record<string, string>> {
+  if (!HAS_SUPABASE || !supabase) return {};
+  const { data, error } = await supabase
+    .from("brand_logos")
+    .select("brand_id, storage_path")
+    .eq("variant", "primary");
+  if (error || !data) return {};
+  const map: Record<string, string> = {};
+  for (const r of data as { brand_id: string; storage_path: string }[]) {
+    if (!map[r.brand_id]) map[r.brand_id] = r.storage_path;
+  }
+  return map;
+}
+
 export async function getBrands(): Promise<Brand[]> {
   if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("brands")
-      .select("*")
-      .eq("is_active", true)
-      .order("sort_order");
-    if (!error && data) return data as Brand[];
+    const [brandsRes, logoMap] = await Promise.all([
+      supabase.from("brands").select("*").eq("is_active", true).order("sort_order"),
+      fetchBrandLogoMap(),
+    ]);
+    if (!brandsRes.error && brandsRes.data) {
+      return (brandsRes.data as Brand[]).map((b) => ({
+        ...b,
+        logo_path: logoMap[b.id] ?? null,
+      }));
+    }
   }
   return [...SEED_BRANDS].sort((a, b) => a.sort_order - b.sort_order);
+}
+
+export function brandLogoUrl(storagePath: string | null | undefined): string | null {
+  if (!storagePath) return null;
+  if (storagePath.startsWith("http")) return storagePath;
+  if (!STORAGE_PUBLIC_BASE) return null;
+  return `${STORAGE_PUBLIC_BASE}/brand-logos/${storagePath}`;
 }
 
 export async function getBrandBySlug(slug: string): Promise<Brand | null> {

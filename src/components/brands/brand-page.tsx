@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Grid2x2, LayoutGrid } from "lucide-react";
 import type { Brand, ModelPhoto, ModelRow } from "@/lib/types";
+import { brandLogoUrl } from "@/lib/data";
 import { ModelCard } from "@/components/model-card";
 import { CompareProvider, useCompare } from "@/components/compare-context";
 import { CompareBar } from "@/components/compare-bar";
@@ -31,6 +32,7 @@ function BrandPageInner({ brand, brands, models, brandCounts, photoMap = {} }: P
   const compare = useCompare();
   const tone = brand.brand_tone ?? "#444";
   const heroColor = brand.hero_color ?? "#444";
+  const heroLogo = brandLogoUrl(brand.logo_path);
   const minP = Math.min(...models.map((m) => m.price_min_m_ft ?? 0));
   const maxP = Math.max(...models.map((m) => m.price_max_m_ft ?? 0));
   const drives = Array.from(new Set(models.map((m) => m.drive)));
@@ -44,16 +46,29 @@ function BrandPageInner({ brand, brands, models, brandCounts, photoMap = {} }: P
           <div className="brand-strip">
             {brands.map((b) => {
               const count = brandCounts[b.slug] ?? 0;
+              const tabLogo = brandLogoUrl(b.logo_path);
               return (
                 <Link
                   key={b.id}
                   href={`/markak/${b.slug}`}
                   className={`brand-tab ${b.id === brand.id ? "on" : ""}`}
                 >
-                  <span
-                    className="swatch"
-                    style={{ background: b.brand_tone ?? "#666" }}
-                  />
+                  {tabLogo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={tabLogo}
+                      alt={b.name}
+                      className="brand-tab-logo"
+                      loading="lazy"
+                      width={40}
+                      height={18}
+                    />
+                  ) : (
+                    <span
+                      className="swatch"
+                      style={{ background: b.brand_tone ?? "#666" }}
+                    />
+                  )}
                   {b.name}
                   {count > 0 ? <span className="n">{count}</span> : null}
                 </Link>
@@ -70,9 +85,22 @@ function BrandPageInner({ brand, brands, models, brandCounts, photoMap = {} }: P
       >
         <div className="container brand-hero-inner">
           <div>
-            <h1 className="brand-name">
-              <em>{brand.name}</em>
-            </h1>
+            {heroLogo ? (
+              <div className="brand-logo-wrap">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={heroLogo}
+                  alt={brand.name}
+                  className="brand-logo-hero"
+                  loading="eager"
+                />
+                <h1 className="sr-only">{brand.name}</h1>
+              </div>
+            ) : (
+              <h1 className="brand-name">
+                <em>{brand.name}</em>
+              </h1>
+            )}
             <p className="brand-tagline">{brand.tagline}</p>
             <div className="brand-quickstats">
               <div className="qs">

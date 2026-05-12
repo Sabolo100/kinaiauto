@@ -53,6 +53,17 @@
   height: 8px;
   border-radius: 50%;
 }
+.brand-tab-logo {
+  height: 16px;
+  width: auto;
+  max-width: 44px;
+  object-fit: contain;
+  display: block;
+  /* Invert to white when tab is active (dark background) */
+}
+.brand-tab.on .brand-tab-logo {
+  filter: brightness(0) invert(1);
+}
 .brand-tab .n {
   font-family: var(--font-mono), monospace;
   font-size: 11px;
@@ -91,6 +102,29 @@
   gap: 48px;
   align-items: end;
 }
+.brand-logo-wrap {
+  margin-bottom: 20px;
+}
+.brand-logo-hero {
+  height: 56px;
+  width: auto;
+  max-width: 260px;
+  object-fit: contain;
+  display: block;
+}
+/* accessibility: visually hidden h1 when logo is shown */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 .brand-name {
   font-family: var(--font-instrument), serif;
   font-size: clamp(56px, 8vw, 108px);

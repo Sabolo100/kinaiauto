@@ -20,6 +20,7 @@ export type Brand = {
   brand_tone: string | null;
   sort_order: number;
   is_active: boolean;
+  logo_path?: string | null;
 };
 
 export type Category = {
