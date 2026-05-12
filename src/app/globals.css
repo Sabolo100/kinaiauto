@@ -812,6 +812,95 @@ footer.foot .foot-disclaimer {
   }
 }
 
+/* ================================================================
+   Shared brand strip — used on /markak AND /modellek
+   ================================================================ */
+.brand-strip-wrap {
+  position: sticky;
+  top: 64px;
+  z-index: 40;
+  background: rgba(247, 246, 242, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.brand-strip {
+  display: flex;
+  flex-wrap: wrap;   /* ← wraps to multiple rows, no horizontal scroll */
+  gap: 6px;
+  padding: 14px 0;
+}
+.brand-tab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  transition: all 0.12s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.brand-tab:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+.brand-tab.on {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+}
+.brand-tab .swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.brand-tab-logo {
+  height: 16px;
+  width: auto;
+  max-width: 44px;
+  object-fit: contain;
+  display: block;
+}
+.brand-tab.on .brand-tab-logo {
+  filter: brightness(0) invert(1);
+}
+.brand-tab .n {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-mute);
+  background: #f3f1ea;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.brand-tab.on .n {
+  background: rgba(255, 255, 255, 0.15);
+  color: #aab;
+}
+/* Strip label reused across brand/model strips */
+.strip-section-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  color: var(--ink-mute);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 12px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.strip-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
 /* Visually hidden — for SEO h1s when needed */
 .sr-only {
   position: absolute;

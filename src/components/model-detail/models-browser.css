@@ -1,22 +1,11 @@
-/* ====== Modellek browser (sticky strips + empty state) ====== */
-.strip-wrap {
-  position: sticky;
-  top: 64px;
-  z-index: 50;
-  background: rgba(247, 246, 242, 0.94);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--line);
-}
+/* ====== Modellek browser (model strip + empty state) ====== */
+/* .brand-strip-wrap and .brand-tab are now in globals.css */
+
+/* Model strip — NOT sticky (brand strip wraps to variable height) */
 .strip-wrap.models {
-  top: 128px;
+  position: relative;
   background: rgba(255, 255, 255, 0.95);
-  z-index: 49;
-}
-@media (max-width: 720px) {
-  .strip-wrap.models {
-    top: 120px;
-  }
+  border-bottom: 1px solid var(--line);
 }
 .strip-label {
   font-family: var(--font-mono), monospace;

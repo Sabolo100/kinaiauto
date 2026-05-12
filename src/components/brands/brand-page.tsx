@@ -40,11 +40,13 @@ function BrandPageInner({ brand, brands, models, brandCounts, photoMap = {} }: P
 
   return (
     <>
-      {/* Brand strip (sticky) */}
+      {/* Brand strip (sticky) — ABC sorted, wraps to multiple rows */}
       <div className="brand-strip-wrap">
         <div className="container">
           <div className="brand-strip">
-            {brands.map((b) => {
+            {[...brands]
+              .sort((a, b) => a.name.localeCompare(b.name, "hu"))
+              .map((b) => {
               const count = brandCounts[b.slug] ?? 0;
               const tabLogo = brandLogoUrl(b.logo_path);
               return (
