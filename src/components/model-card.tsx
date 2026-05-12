@@ -14,12 +14,14 @@ export function ModelCard({
   isSelected,
   onToggleCompare,
   photos,
+  hideTags,
 }: {
   model: ModelRow;
   zoom?: CardZoom;
   isSelected?: boolean;
   onToggleCompare?: (model: ModelRow) => void;
   photos?: ModelPhoto[];
+  hideTags?: { category?: boolean; drive?: boolean };
 }) {
   const tone = model.brand_tone ?? "#374151";
   const photo = photoUrl(model.primary_photo_path);
@@ -90,10 +92,12 @@ export function ModelCard({
         >
           {model.name}
         </Link>
-        <div className="meta">
-          <span className="tag">{model.category}</span>
-          <span className="tag">{model.drive}</span>
-        </div>
+        {(!hideTags?.category || !hideTags?.drive) && (
+          <div className="meta">
+            {!hideTags?.category && <span className="tag">{model.category}</span>}
+            {!hideTags?.drive && <span className="tag">{model.drive}</span>}
+          </div>
+        )}
         <div className="price">
           <span className="from">Listaár</span>
           <span className="val">{fmtPrice(model.price_min_m_ft)}</span>

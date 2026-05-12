@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import Link from "next/link";
 import {
   ArrowDownUp,
@@ -124,6 +124,61 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
               <h2>Válaszd ki, melyik tetszik!</h2>
             </div>
           </div>
+
+          {/* Active filter summary */}
+          {(cats.size > 0 || drv.size > 0 || brSel.size > 0 || prices.size > 0 || priceRange) && (
+            <div className="active-filters">
+              <span className="af-label">Szűrők:</span>
+              <FilterPill
+                label="Kategória"
+                selected={[...cats]}
+                options={categories.map((c) => c.label_hu)}
+                onToggle={(v) => setCats((p) => { const n = new Set(p); n.has(v) ? n.delete(v) : n.add(v); return n; })}
+                onClear={() => setCats(new Set())}
+              />
+              <FilterPill
+                label="Hajtás"
+                selected={[...drv]}
+                options={drives.map((d) => d.label_hu)}
+                onToggle={(v) => setDrv((p) => { const n = new Set(p); n.has(v) ? n.delete(v) : n.add(v); return n; })}
+                onClear={() => setDrv(new Set())}
+              />
+              <FilterPill
+                label="Márka"
+                selected={[...brSel]}
+                options={brands.map((b) => b.name)}
+                onToggle={(v) => setBrSel((p) => { const n = new Set(p); n.has(v) ? n.delete(v) : n.add(v); return n; })}
+                onClear={() => setBrSel(new Set())}
+              />
+              <FilterPill
+                label="Ár"
+                selected={[...prices].map((id) => bands.find((b) => b.id === id)?.label_hu ?? id)}
+                options={bands.map((b) => b.label_hu)}
+                onToggle={(v) => {
+                  const band = bands.find((b) => b.label_hu === v);
+                  if (!band) return;
+                  setPrices((p) => { const n = new Set(p); n.has(band.id) ? n.delete(band.id) : n.add(band.id); return n; });
+                }}
+                onClear={() => setPrices(new Set())}
+              />
+              {priceRange && (
+                <div className="fpill-wrap">
+                  <div className="fpill">
+                    <span className="fpill-k">Ár</span>
+                    <span className="fpill-v">{priceRange.min}–{priceRange.max} M Ft</span>
+                    <button className="fpill-x" onClick={() => setPriceRange(null)} aria-label="Szűrő törlése">×</button>
+                  </div>
+                </div>
+              )}
+              <button
+                className="af-clear-all"
+                onClick={() => { setCats(new Set()); setDrv(new Set()); setBrSel(new Set()); setPrices(new Set()); setPriceRange(null); }}
+              >
+                Összes törlése
+              </button>
+            </div>
+          )}
+
           <div className="grid-controls">
             <div className="left">
               <div className="zoom-toggle">
@@ -208,6 +263,10 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
                       name: m.name,
                     })
                   }
+                  hideTags={{
+                    category: cats.size > 0,
+                    drive: drv.size > 0,
+                  }}
                 />
               ))}
             </div>
@@ -257,6 +316,63 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
         </Link>
       </div>
     </>
+  );
+}
+
+function FilterPill({
+  label,
+  selected,
+  options,
+  onToggle,
+  onClear,
+}: {
+  label: string;
+  selected: string[];
+  options: string[];
+  onToggle: (v: string) => void;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  if (!selected.length) return null;
+
+  const handleEnter = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setOpen(true);
+  };
+  const handleLeave = () => {
+    timerRef.current = setTimeout(() => setOpen(false), 120);
+  };
+
+  return (
+    <div className="fpill-wrap" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <div className="fpill">
+        <span className="fpill-k">{label}:</span>
+        <span className="fpill-v">{selected.join(", ")}</span>
+        <button
+          className="fpill-x"
+          onClick={(e) => { e.stopPropagation(); onClear(); }}
+          aria-label={`${label} szűrő törlése`}
+        >×</button>
+      </div>
+      {open && (
+        <div className="fpill-dd">
+          {options.map((opt) => {
+            const on = selected.includes(opt);
+            return (
+              <button
+                key={opt}
+                className={`fpill-opt ${on ? "on" : ""}`}
+                onClick={() => onToggle(opt)}
+              >
+                <span className="fpill-check">{on ? "✓" : ""}</span>
+                {opt}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

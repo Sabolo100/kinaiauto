@@ -736,3 +736,137 @@ h1.headline em {
   outline: 0;
   cursor: pointer;
 }
+
+/* ——— ACTIVE FILTERS SUMMARY ——— */
+.active-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 14px 0 20px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+.af-label {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  flex-shrink: 0;
+}
+.af-clear-all {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-mute);
+  background: none;
+  border: 1px dashed var(--line-strong);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all .12s;
+}
+.af-clear-all:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  background: #f3f1ea;
+}
+
+/* Filter pill */
+.fpill-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.fpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 8px 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12.5px;
+  cursor: default;
+  transition: border-color .12s;
+}
+.fpill-wrap:hover .fpill {
+  border-color: var(--ink-soft);
+}
+.fpill-k {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.fpill-v {
+  color: var(--ink);
+  font-weight: 500;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fpill-x {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e8e5dc;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: all .1s;
+  flex-shrink: 0;
+}
+.fpill-x:hover {
+  background: var(--ink);
+  color: #fff;
+}
+
+/* Filter pill dropdown */
+.fpill-dd {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 200;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  padding: 6px;
+  min-width: 200px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.fpill-opt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--ink);
+  background: none;
+  cursor: pointer;
+  transition: background .1s;
+}
+.fpill-opt:hover {
+  background: #f3f1ea;
+}
+.fpill-opt.on {
+  color: var(--ink);
+  font-weight: 500;
+}
+.fpill-check {
+  width: 14px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--accent-ink);
+}

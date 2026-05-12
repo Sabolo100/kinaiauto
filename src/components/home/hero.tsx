@@ -41,21 +41,6 @@ export function Hero({
             width={1023}
             height={420}
           />
-          <div className="hero-tags hero-tag-1">
-            SUV · 7 ülés
-            <br />
-            Önttöltő hibrid
-          </div>
-          <div className="hero-tags hero-tag-2">
-            15 980 000 Ft
-            <br />
-            alaplistaár
-          </div>
-          <div className="hero-tags hero-tag-3">
-            {modelsCount} modell · {brandsCount} márka
-            <br />
-            egy szűrőfelületen
-          </div>
         </div>
       </div>
     </section>
