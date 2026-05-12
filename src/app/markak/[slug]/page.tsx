@@ -1,9 +1,12 @@
-export const dynamic = "force-dynamic";
+// ISR: revalidate every 2 minutes — brand/model data changes rarely,
+// so caching is safe. Force-dynamic caused a full server render + 6 DB
+// queries on every brand tab click, making navigation feel slow.
+export const revalidate = 120;
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBrandBySlug, getBrands, getModels, getPhotoMapForModels } from "@/lib/data";
+import { getBrands, getModels, getPhotoMapForModels } from "@/lib/data";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
@@ -18,7 +21,8 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const brand = await getBrandBySlug(slug);
+  const brands = await getBrands();
+  const brand = brands.find((b) => b.slug === slug);
   if (!brand) return { title: "Márka" };
   return {
     title: `${brand.name} — modellek és háttér`,
@@ -29,11 +33,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function BrandDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [brand, allBrands, models] = await Promise.all([
-    getBrandBySlug(slug),
-    getBrands(),
-    getModels(),
-  ]);
+
+  // Single getBrands() call — eliminates the duplicate that getBrandBySlug caused
+  const [allBrands, models] = await Promise.all([getBrands(), getModels()]);
+  const brand = allBrands.find((b) => b.slug === slug);
   if (!brand) notFound();
 
   const brandModels = models.filter((m) => m.brand_slug === slug);
@@ -41,6 +44,8 @@ export default async function BrandDetailPage({ params }: Props) {
   for (const m of models) {
     brandCounts[m.brand_slug] = (brandCounts[m.brand_slug] ?? 0) + 1;
   }
+  // Run photoMap fetch in parallel with above (it depends on brandModels, so sequential
+  // relative to models but as early as possible)
   const photoMap = await getPhotoMapForModels(brandModels.map((m) => m.id));
 
   return (
