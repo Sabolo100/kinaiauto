@@ -549,6 +549,26 @@ footer.foot .foot-disclaimer {
 .card .photo-dots span.on {
   background: #fff;
 }
+/* Stretch-link overlay — makes the whole card clickable */
+.card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 6px;
+}
+/* Arrow icon that appears on card hover as a "clickable" cue */
+.card-goto-icon {
+  opacity: 0;
+  margin-left: auto;
+  color: var(--ink-mute);
+  transition: opacity 0.15s, transform 0.15s;
+  transform: translate(-2px, 2px);
+  flex-shrink: 0;
+}
+.card:hover .card-goto-icon {
+  opacity: 1;
+  transform: translate(0, 0);
+}
 .card .compare-btn {
   position: absolute;
   top: 10px;
@@ -562,6 +582,7 @@ footer.foot .foot-disclaimer {
   justify-content: center;
   border: 1px solid var(--line);
   transition: all 0.15s;
+  z-index: 1;
 }
 .card .compare-btn:hover,
 .card .compare-btn.on {
@@ -585,6 +606,9 @@ footer.foot .foot-disclaimer {
   text-transform: uppercase;
   color: var(--ink-mute);
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .card .model {
   font-family: var(--font-instrument), serif;

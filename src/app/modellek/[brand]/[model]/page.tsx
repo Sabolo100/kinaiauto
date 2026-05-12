@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  getBrandBySlug,
+  getBrands,
   getModelByBrandAndSlug,
   getModels,
   getTrimsForModel,
@@ -14,6 +14,7 @@ import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema, vehicleSchema } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
 import { ModelDetail } from "@/components/model-detail/model-detail";
+import { ModelsBrowser } from "@/components/model-detail/models-browser";
 
 type Props = {
   params: Promise<{ brand: string; model: string }>;
@@ -43,11 +44,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ModelPage({ params }: Props) {
   const { brand, model } = await params;
-  const [m, b, allModels] = await Promise.all([
+  const [m, allBrands, allModels] = await Promise.all([
     getModelByBrandAndSlug(brand, model),
-    getBrandBySlug(brand),
+    getBrands(),
     getModels(),
   ]);
+  const b = allBrands.find((x) => x.slug === brand);
   if (!m || !b) notFound();
   const [trims, photos] = await Promise.all([
     getTrimsForModel(m.id),
@@ -86,6 +88,14 @@ export default async function ModelPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      <ModelsBrowser
+        brands={allBrands}
+        models={allModels}
+        initialBrand={m.brand_slug}
+        selectedModelSlug={m.slug}
+        hideEmpty
+      />
 
       <ModelDetail model={m} brand={b} trims={trims} similar={similar} photos={photos} />
 

@@ -1,10 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, GitCompareArrows, Plus } from "lucide-react";
+import { ArrowUpRight, Check, GitCompareArrows, Plus } from "lucide-react";
 import type { ModelPhoto, ModelRow } from "@/lib/types";
 import { fmtPrice, fmtNumber } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
+
+/** Returns #fff or #1a1a1a depending on which has better contrast against `hex`. */
+function contrastColor(hex: string): string {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) return "#ffffff";
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? "#1a1a1a" : "#ffffff";
+}
 
 export type CardZoom = 1 | 2 | 3;
 
@@ -30,6 +40,13 @@ export function ModelCard({
 
   return (
     <article className={`card zoom-${zoom}`}>
+      {/* Stretch-link: makes the whole card a clickable area; interactive children sit above it via z-index */}
+      <Link
+        href={`/modellek/${model.brand_slug}/${model.slug}`}
+        className="card-link"
+        aria-label={`${model.brand_name} ${model.name} részletei`}
+        tabIndex={-1}
+      />
       <div className={`photo ${photo ? "" : "placeholder"}`}>
         {photo ? (
           <img
@@ -55,7 +72,7 @@ export function ModelCard({
         {model.is_deal ? (
           <span className="badge deal">Akció</span>
         ) : (
-          <span className="badge" style={{ background: tone }}>
+          <span className="badge" style={{ background: tone, color: contrastColor(tone) }}>
             {model.brand_name}
           </span>
         )}
@@ -85,7 +102,10 @@ export function ModelCard({
         ) : null}
       </div>
       <div className="body">
-        <div className="brand">{model.brand_name}</div>
+        <div className="brand">
+          {model.brand_name}
+          <ArrowUpRight size={13} className="card-goto-icon" aria-hidden />
+        </div>
         <Link
           href={`/modellek/${model.brand_slug}/${model.slug}`}
           className="model"
@@ -135,7 +155,7 @@ export function ModelCard({
             </div>
           </div>
         </div>
-        <div className="actions">
+        <div className="actions" style={{ position: "relative", zIndex: 1 }}>
           <Link
             href={`/osszehasonlitas?models=${encodeURIComponent(
               model.brand_name,
@@ -149,7 +169,7 @@ export function ModelCard({
             href={`/modellek/${model.brand_slug}/${model.slug}`}
             className="btn primary"
           >
-            Részletek <ArrowRight size={14} />
+            Részletek <ArrowUpRight size={14} />
           </Link>
         </div>
       </div>

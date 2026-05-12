@@ -8,11 +8,20 @@ import "./models-browser.css";
 export function ModelsBrowser({
   brands,
   models,
+  initialBrand,
+  selectedModelSlug,
+  hideEmpty,
 }: {
   brands: Brand[];
   models: ModelRow[];
+  /** Pre-select this brand slug on mount */
+  initialBrand?: string;
+  /** Highlight this model slug in the model strip */
+  selectedModelSlug?: string;
+  /** Hide the empty-state / instructions block */
+  hideEmpty?: boolean;
 }) {
-  const [activeBrand, setActiveBrand] = useState<string | null>(null);
+  const [activeBrand, setActiveBrand] = useState<string | null>(initialBrand ?? null);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
@@ -70,7 +79,7 @@ export function ModelsBrowser({
                 <Link
                   key={m.id}
                   href={`/modellek/${m.brand_slug}/${m.slug}`}
-                  className="strip-tab model-tab"
+                  className={`strip-tab model-tab${m.slug === selectedModelSlug ? " on" : ""}`}
                   data-drive={m.drive}
                 >
                   <span className="drive-dot" />
@@ -82,8 +91,8 @@ export function ModelsBrowser({
         </div>
       ) : null}
 
-      {/* Empty state */}
-      <div className="empty-host">
+      {/* Empty state — hidden when a model is already loaded */}
+      {!hideEmpty && <div className="empty-host">
         <div className="container">
           <div className="empty">
             <div className="empty-text">
@@ -148,7 +157,7 @@ export function ModelsBrowser({
             </div>
           </div>
         </div>
-      </div>
+      </div>}
     </>
   );
 }
