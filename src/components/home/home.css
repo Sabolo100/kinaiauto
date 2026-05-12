@@ -614,12 +614,18 @@ h1.headline em {
   border-radius: 4px;
   border: 1.5px solid var(--surface);
   box-shadow: 0 2px 6px rgba(20, 24, 28, 0.18);
-  overflow: hidden;
+  overflow: visible;
   cursor: pointer;
   background: #e9e6dc;
   transition:
     transform 0.15s ease,
     box-shadow 0.15s ease;
+}
+.viz-thumb-img {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 3px;
 }
 .viz-thumb:hover {
   transform: translate(var(--tx), var(--ty)) scale(1.55);

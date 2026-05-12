@@ -120,7 +120,7 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">05 · Modellek</div>
+              <div className="step">04 · Modellek</div>
               <h2>Válaszd ki, melyik tetszik!</h2>
             </div>
           </div>
@@ -279,7 +279,7 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">04 · Kínálat-vizualizáció</div>
+              <div className="step">05 · Kínálat-vizualizáció</div>
               <h2>
                 Lásd a <em>különbségek</em> méretét.
               </h2>

@@ -211,13 +211,15 @@ export function Visualization({ models }: { models: ModelRow[] }) {
                       ["--ty" as string]: `0px`,
                     }}
                   >
-                    {photo ? (
-                      <img src={photo} alt={`${m.brand_name} ${m.name}`} />
-                    ) : (
-                      <div className="ph" style={{ background: tone }}>
-                        {brandInitials(m.brand_name)}
-                      </div>
-                    )}
+                    <div className="viz-thumb-img">
+                      {photo ? (
+                        <img src={photo} alt={`${m.brand_name} ${m.name}`} />
+                      ) : (
+                        <div className="ph" style={{ background: tone }}>
+                          {brandInitials(m.brand_name)}
+                        </div>
+                      )}
+                    </div>
                     <div className="viz-thumb-name">
                       <b>{m.brand_name}</b>
                       {m.name}

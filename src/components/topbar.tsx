@@ -43,7 +43,7 @@ export function Topbar({ lastUpdated }: { lastUpdated: string }) {
           <Link href="/" className="logo" aria-label="kinaiauto.com — főoldal">
             <b>kinaiauto</b>
             <span className="dot" />
-            <span className="tld">.com</span>
+            <span className="tld">com</span>
           </Link>
           <nav className="menu desktop" aria-label="Főnavigáció">
             {NAV.map((item) => (
