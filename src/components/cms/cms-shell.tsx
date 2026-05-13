@@ -7,7 +7,7 @@ const ITEMS = [
   { href: "/c4m5s6", label: "Áttekintés" },
   { href: "/c4m5s6/markak", label: "Márkák" },
   { href: "/c4m5s6/modellek", label: "Modellek" },
-  { href: "/c4m5s6/extract", label: "PDF / URL kinyerés" },
+  { href: "/c4m5s6/extract", label: "PDF / URL / Kép kinyerés" },
   { href: "/c4m5s6/export", label: "⎙ Export / Nyomtatás" },
 ];
 

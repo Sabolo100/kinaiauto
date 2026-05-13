@@ -180,6 +180,79 @@ export async function extractWith(
     : extractWithOpenAI(text, hint);
 }
 
+// ─── Vision extraction (image input) ─────────────────────────────────────────
+
+type ImageMediaType = "image/jpeg" | "image/png" | "image/webp" | "image/gif";
+
+const IMAGE_USER_TEXT = (hint: string) =>
+  `Existing record context:\n${hint}\n\nThis image shows a car spec sheet or pricelist. Extract all relevant data and return the JSON only.`;
+
+export async function extractWithClaudeVision(
+  imageBase64: string,
+  mediaType: ImageMediaType,
+  hint: string,
+): Promise<{ json: ExtractedFields; model: string }> {
+  if (!HAS_ANTHROPIC) throw new Error("ANTHROPIC_API_KEY hiányzik");
+  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+  const msg = await client.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 2000,
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: imageBase64 },
+          },
+          { type: "text", text: IMAGE_USER_TEXT(hint) },
+        ],
+      },
+    ],
+  });
+  const block = msg.content.find((b) => b.type === "text");
+  const out = block && "text" in block ? block.text : "";
+  return { json: safeParse(out) as ExtractedFields, model: CLAUDE_MODEL };
+}
+
+export async function extractWithOpenAIVision(
+  imageBase64: string,
+  mediaType: string,
+  hint: string,
+): Promise<{ json: ExtractedFields; model: string }> {
+  if (!HAS_OPENAI) throw new Error("OPENAI_API_KEY hiányzik");
+  const client = new OpenAI({ apiKey: OPENAI_API_KEY });
+  const dataUrl = `data:${mediaType};base64,${imageBase64}`;
+  const resp = await client.chat.completions.create({
+    model: OPENAI_MODEL,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: [
+          { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
+          { type: "text", text: IMAGE_USER_TEXT(hint) },
+        ],
+      },
+    ],
+  });
+  const out = resp.choices[0]?.message?.content ?? "";
+  return { json: safeParse(out) as ExtractedFields, model: OPENAI_MODEL };
+}
+
+export async function extractWithVision(
+  provider: LlmProvider,
+  imageBase64: string,
+  mediaType: string,
+  hint: string,
+): Promise<{ json: ExtractedFields; model: string }> {
+  return provider === "claude"
+    ? extractWithClaudeVision(imageBase64, mediaType as ImageMediaType, hint)
+    : extractWithOpenAIVision(imageBase64, mediaType, hint);
+}
+
 // Maps the LLM's JSON to a partial models-row update payload, used when
 // the admin approves an extraction.
 export function extractedToModelPatch(

@@ -20,7 +20,7 @@ export function ExtractForm({
   const [provider, setProvider] = useState<"claude" | "openai">(
     hasClaude ? "claude" : hasOpenAI ? "openai" : "claude",
   );
-  const [kind, setKind] = useState<"pdf" | "url">("pdf");
+  const [kind, setKind] = useState<"pdf" | "url" | "image">("pdf");
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
@@ -35,8 +35,11 @@ export function ExtractForm({
 
     let body: Record<string, unknown>;
 
-    if (kind === "pdf") {
-      if (!file) { setErr("Csatolj PDF-et."); setBusy(false); return; }
+    if (kind === "pdf" || kind === "image") {
+      if (!file) {
+        setErr(kind === "pdf" ? "Csatolj PDF-et." : "Csatolj képet.");
+        setBusy(false); return;
+      }
 
       // Step 1: get presigned upload URL from server
       setStep("1/3 — Feltöltési URL lekérése…");
@@ -58,12 +61,13 @@ export function ExtractForm({
       }
       const { path, signedUrl } = await presignRes.json() as { path: string; signedUrl: string };
 
-      // Step 2: upload PDF directly to Supabase Storage (bypasses Vercel body limit)
-      setStep(`2/3 — PDF feltöltése (${(file.size / 1024 / 1024).toFixed(1)} MB)…`);
+      // Step 2: upload file directly to Supabase Storage (bypasses Vercel body limit)
+      const contentType = kind === "pdf" ? "application/pdf" : (file.type || "image/jpeg");
+      setStep(`2/3 — ${kind === "pdf" ? "PDF" : "Kép"} feltöltése (${(file.size / 1024 / 1024).toFixed(1)} MB)…`);
       try {
         const upRes = await fetch(signedUrl, {
           method: "PUT",
-          headers: { "Content-Type": "application/pdf" },
+          headers: { "Content-Type": contentType },
           body: file,
         });
         if (!upRes.ok) {
@@ -71,24 +75,35 @@ export function ExtractForm({
         }
       } catch (e) {
         setBusy(false); setStep(null);
-        setErr(`PDF feltöltési hiba a Storage-ba: ${(e as Error).message}`);
+        setErr(`${kind === "pdf" ? "PDF" : "Kép"} feltöltési hiba a Storage-ba: ${(e as Error).message}`);
         return;
       }
 
-      body = {
-        model_id: modelId,
-        provider,
-        source_kind: "pdf",
-        storage_path: path,
-        source_filename: file.name,
-      };
+      if (kind === "pdf") {
+        body = {
+          model_id: modelId,
+          provider,
+          source_kind: "pdf",
+          storage_path: path,
+          source_filename: file.name,
+        };
+      } else {
+        body = {
+          model_id: modelId,
+          provider,
+          source_kind: "image",
+          storage_path: path,
+          source_filename: file.name,
+          image_media_type: file.type || "image/jpeg",
+        };
+      }
     } else {
       if (!url.trim()) { setErr("Adj meg egy URL-t."); setBusy(false); return; }
       body = { model_id: modelId, provider, source_kind: "url", url: url.trim() };
     }
 
     // Step 3: trigger LLM extraction
-    setStep(kind === "pdf" ? "3/3 — LLM kinyerés…" : "LLM kinyerés…");
+    setStep(kind === "pdf" ? "3/3 — LLM kinyerés…" : kind === "image" ? "3/3 — Képelemzés (LLM)…" : "LLM kinyerés…");
     let res: Response;
     try {
       res = await fetch("/api/cms/extract", {
@@ -160,9 +175,10 @@ export function ExtractForm({
           </select>
         </label>
         <label><span>Forrás típus</span>
-          <select value={kind} onChange={(e) => setKind(e.target.value as "pdf" | "url")}>
+          <select value={kind} onChange={(e) => { setKind(e.target.value as "pdf" | "url" | "image"); setFile(null); }}>
             <option value="pdf">PDF feltöltés</option>
             <option value="url">URL</option>
+            <option value="image">Kép / specifikáció (JPG, PNG)</option>
           </select>
         </label>
       </div>
@@ -179,6 +195,23 @@ export function ExtractForm({
               {file.name} — {(file.size / 1024 / 1024).toFixed(2)} MB
             </span>
           ) : null}
+        </label>
+      ) : kind === "image" ? (
+        <label><span>Kép feltöltése</span>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+          />
+          {file ? (
+            <span style={{ fontSize: 12, color: "#94a3b8", marginTop: 4, display: "block" }}>
+              {file.name} — {(file.size / 1024 / 1024).toFixed(2)} MB
+            </span>
+          ) : (
+            <span style={{ fontSize: 12, color: "#64748b", marginTop: 4, display: "block" }}>
+              Adj meg egy specifikációs lapot vagy árlistát képként (max. ~5 MB). A Claude vision API elemzi.
+            </span>
+          )}
         </label>
       ) : (
         <label><span>URL</span>

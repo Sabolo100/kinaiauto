@@ -62,11 +62,10 @@ export default async function ExtractPage() {
   const { extractions, models } = await getData();
   return (
     <CmsShell>
-      <h1>PDF / URL kinyerés</h1>
+      <h1>PDF / URL / Kép kinyerés</h1>
       <p className="lede">
-        Tölts fel egy PDF-et vagy adj meg egy URL-t. A rendszer kinyeri a
-        szöveget, az LLM strukturált adatokat javasol, te pedig jóváhagyod
-        vagy módosítod a végleges modell-rekordot.
+        Tölts fel egy PDF-et, adj meg egy URL-t, vagy tölts fel egy specifikációs képet (JPG, PNG).
+        Az LLM strukturált adatokat javasol, te pedig jóváhagyod vagy módosítod a végleges modell-rekordot.
       </p>
 
       <div className="cms-card">
@@ -101,6 +100,8 @@ export default async function ExtractPage() {
                 <td style={{ fontSize: 12, color: "#94a3b8" }}>
                   {e.source_kind === "pdf"
                     ? `PDF · ${e.source_filename ?? "—"}`
+                    : e.source_kind === "image"
+                    ? `Kép · ${e.source_filename ?? "—"}`
                     : `URL · ${e.source_url ?? "—"}`}
                 </td>
                 <td>{e.llm_provider}{e.llm_model ? ` · ${e.llm_model}` : ""}</td>

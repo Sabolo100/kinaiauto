@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { extractPdfText } from "@/lib/pdf-text";
 import { fetchUrlText } from "@/lib/url-text";
-import { extractWith, type LlmProvider } from "@/lib/llm-extract";
+import { extractWith, extractWithVision, type LlmProvider } from "@/lib/llm-extract";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -26,10 +26,12 @@ async function handlePost(req: NextRequest) {
   const payload = j as {
     model_id: string;
     provider: LlmProvider;
-    source_kind: "pdf" | "url";
-    // PDF: storage_path + source_filename from presigned upload
+    source_kind: "pdf" | "url" | "image";
+    // PDF / image: storage_path + source_filename from presigned upload
     storage_path?: string;
     source_filename?: string;
+    // image only: MIME type
+    image_media_type?: string;
     // URL
     url?: string;
   };
@@ -62,6 +64,8 @@ async function handlePost(req: NextRequest) {
   ].join("\n");
 
   let rawText = "";
+  let imageBase64 = "";
+  let imageMediaType = "";
   let storage_path: string | null = null;
   let source_filename: string | null = null;
   let source_url: string | null = null;
@@ -88,6 +92,28 @@ async function handlePost(req: NextRequest) {
       rawText = await extractPdfText(buf);
       storage_path = payload.storage_path;
       source_filename = payload.source_filename ?? storage_path.split("/").pop() ?? "upload.pdf";
+    } else if (payload.source_kind === "image") {
+      if (!payload.storage_path) {
+        return NextResponse.json(
+          { error: "storage_path hiányzik — a kép feltöltése nem fejeződött be" },
+          { status: 400 },
+        );
+      }
+
+      const dl = await sa.storage.from("pdf-uploads").download(payload.storage_path);
+      if (dl.error || !dl.data) {
+        return NextResponse.json(
+          { error: `Kép letöltési hiba a Storage-ból: ${dl.error?.message ?? "ismeretlen"}` },
+          { status: 400 },
+        );
+      }
+
+      const buf = Buffer.from(await dl.data.arrayBuffer());
+      imageBase64 = buf.toString("base64");
+      imageMediaType = payload.image_media_type ?? "image/jpeg";
+      storage_path = payload.storage_path;
+      source_filename = payload.source_filename ?? storage_path.split("/").pop() ?? "upload.jpg";
+      rawText = `[image: ${source_filename}]`; // placeholder stored in DB
     } else {
       if (!payload.url) {
         return NextResponse.json({ error: "URL kötelező" }, { status: 400 });
@@ -103,7 +129,8 @@ async function handlePost(req: NextRequest) {
     );
   }
 
-  if (!rawText || rawText.length < 80) {
+  // Text-based sources need minimum content; images skip this check
+  if (payload.source_kind !== "image" && (!rawText || rawText.length < 80)) {
     return NextResponse.json(
       {
         error: `A forrásból nem sikerült értelmes szöveget kinyerni. (${rawText.length} karakter — lehet, hogy beolvasott/képalapú PDF?)`,
@@ -119,7 +146,10 @@ async function handlePost(req: NextRequest) {
   let errorMessage: string | null = null;
 
   try {
-    const out = await extractWith(payload.provider, rawText, hint);
+    const out =
+      payload.source_kind === "image"
+        ? await extractWithVision(payload.provider, imageBase64, imageMediaType, hint)
+        : await extractWith(payload.provider, rawText, hint);
     parsed = out.json as Record<string, unknown>;
     llmModel = out.model;
   } catch (e) {
