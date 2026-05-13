@@ -175,6 +175,24 @@
   display: flex; gap: 8px; align-items: center;
   margin-bottom: 16px; flex-wrap: wrap;
 }
+.cms-sort-group {
+  display: flex; align-items: center; gap: 4px;
+  background: #0f172a; border: 1px solid #1f2937;
+  border-radius: 8px; padding: 3px;
+}
+.cms-sort-label {
+  font-size: 11px; color: #475569;
+  padding: 0 8px; white-space: nowrap;
+}
+.cms-sort-group .cms-btn.ghost {
+  padding: 5px 12px; font-size: 12px;
+  border: none; background: transparent;
+}
+.cms-sort-group .cms-btn.ghost:hover { background: #1f2937; }
+.cms-sort-group .cms-btn.ghost.active {
+  background: #1e3a5f; color: #93c5fd;
+  border-radius: 5px;
+}
 .cms-toolbar input[type="search"], .cms-toolbar input[type="text"] {
   flex: 1; min-width: 220px; max-width: 360px;
   background: #0f172a; color: #e2e8f0;
