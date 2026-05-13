@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { Fragment } from "react";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { PrintBtn } from "@/components/cms/print-btn";
 import { CmsShell } from "@/components/cms/cms-shell";
@@ -18,7 +19,6 @@ type RawRow = {
   length_mm: number | null;
   battery_kwh: number | null;
   trunk_l: number | null;
-  description: string | null;
   brand: { name: string; slug: string } | null;
   category: { label_hu: string } | null;
   drive: { label_hu: string } | null;
@@ -60,7 +60,6 @@ async function fetchExportData(): Promise<BrandGroup[]> {
         "id, name, slug, is_available",
         "price_min_m_ft, price_max_m_ft",
         "power_hp, range_km, length_mm, battery_kwh, trunk_l",
-        "description",
         "brand:brands!inner(name, slug)",
         "category:categories(label_hu)",
         "drive:drives(label_hu)",
@@ -203,9 +202,9 @@ export default async function ExportPage() {
           </thead>
           <tbody>
             {groups.map((g) => (
-              <>
+              <Fragment key={g.brand_slug}>
                 {/* Brand header row */}
-                <tr key={`brand-${g.brand_slug}`} className="export-brand-row">
+                <tr className="export-brand-row">
                   <td colSpan={9}>
                     <strong>{g.brand_name}</strong>
                     <span className="export-brand-count">
@@ -243,7 +242,7 @@ export default async function ExportPage() {
                     </td>
                   </tr>
                 ))}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
