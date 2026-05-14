@@ -409,8 +409,8 @@ h1.headline em {
 .brandbar {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 14px 24px;
+  gap: 16px;
+  padding: 12px 24px;
   border-top: 1px solid var(--line);
   background: #fbfaf6;
 }
@@ -420,23 +420,31 @@ h1.headline em {
   text-transform: uppercase;
   color: var(--ink-mute);
   flex-shrink: 0;
+  align-self: center;
 }
 .brandbar-chips {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
   flex: 1;
+  justify-content: center;
 }
 .brand-chip {
-  font-size: 12.5px;
-  height: 28px;
-  padding: 0 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  font-size: 11.5px;
+  padding: 6px 10px 5px;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 8px;
   color: var(--ink-soft);
-  transition: all 0.12s;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
   white-space: nowrap;
   background: none;
+  cursor: pointer;
+  min-width: 52px;
 }
 .brand-chip:hover {
   background: #fff;
@@ -446,6 +454,24 @@ h1.headline em {
 .brand-chip.on {
   background: var(--ink);
   color: #fff;
+}
+.brand-chip-logo {
+  height: 22px;
+  width: auto;
+  max-width: 56px;
+  object-fit: contain;
+  opacity: 0.65;
+  transition: opacity 0.12s, filter 0.12s;
+}
+.brand-chip:hover .brand-chip-logo {
+  opacity: 0.9;
+}
+.brand-chip.on .brand-chip-logo {
+  opacity: 1;
+  filter: brightness(0) invert(1);
+}
+.brand-chip-name {
+  line-height: 1;
 }
 
 @media (max-width: 920px) {
@@ -462,10 +488,11 @@ h1.headline em {
   .brandbar {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 10px;
   }
   .brandbar-chips {
     width: 100%;
+    justify-content: flex-start;
   }
 }
 

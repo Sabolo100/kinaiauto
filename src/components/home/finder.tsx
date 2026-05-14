@@ -9,6 +9,7 @@ import type {
   PriceBand,
 } from "@/lib/types";
 import { fmtMFt, CATEGORY_SEGMENT } from "@/lib/format";
+import { brandLogoUrl } from "@/lib/data";
 
 type Props = {
   models: ModelRow[];
@@ -164,16 +165,31 @@ export function Finder(p: Props) {
               >
                 Összes
               </button>
-              {p.brands.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  className={`brand-chip ${p.brSel.has(b.name) ? "on" : ""}`}
-                  onClick={() => p.setBrSel(toggleSet(p.brSel, b.name))}
-                >
-                  {b.name}
-                </button>
-              ))}
+              {[...p.brands]
+                .sort((a, b) => a.name.localeCompare(b.name, "hu"))
+                .map((b) => {
+                  const logo = brandLogoUrl(b.logo_path);
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      className={`brand-chip ${p.brSel.has(b.name) ? "on" : ""}`}
+                      onClick={() => p.setBrSel(toggleSet(p.brSel, b.name))}
+                    >
+                      {logo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={logo}
+                          alt=""
+                          aria-hidden
+                          className="brand-chip-logo"
+                        />
+                      )}
+                      <span className="brand-chip-name">{b.name}</span>
+                    </button>
+                  );
+                })
+              }
             </div>
           </div>
         </div>
