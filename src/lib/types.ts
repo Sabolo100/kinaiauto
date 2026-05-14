@@ -93,6 +93,7 @@ export type ModelRow = {
   drive: string;
   drive_code: string;
   primary_photo_path: string | null;
+  segment: string | null;
 };
 
 export type ModelTrim = {

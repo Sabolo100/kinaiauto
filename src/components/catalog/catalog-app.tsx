@@ -20,7 +20,7 @@ import type {
   ModelRow,
   PriceBand,
 } from "@/lib/types";
-import { fmtPrice } from "@/lib/format";
+import { fmtPrice, catLabel, CATEGORY_SEGMENT } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 import "./catalog.css";
 
@@ -154,7 +154,7 @@ export function CatalogApp({ models, brands, categories, drives, bands }: Props)
                   className={`cat-chip ${cats.has(c.label_hu) ? "on" : ""}`}
                   onClick={() => setCats(toggleSet(cats, c.label_hu))}
                 >
-                  {c.label_hu}
+                  {c.label_hu}{CATEGORY_SEGMENT[c.slug] ? ` (${CATEGORY_SEGMENT[c.slug]})` : ""}
                 </button>
               ))}
             </div>
@@ -520,7 +520,7 @@ function DetailCard({ model }: { model: ModelRow }) {
         <div className="b">{model.brand_name}</div>
         <h3>{model.name}</h3>
         <div className="meta">
-          <span className="tag">{model.category}</span>
+          <span className="tag">{catLabel(model.category, model.segment)}</span>
           <span className="tag">{model.drive}</span>
           {model.is_deal ? (
             <span

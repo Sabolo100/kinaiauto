@@ -814,6 +814,7 @@ select
   d.slug          as drive_slug,
   d.label_hu      as drive,
   d.short_code    as drive_code,
+  m.segment,
   -- primary photo storage path if any
   (select mp.storage_path
      from model_photos mp

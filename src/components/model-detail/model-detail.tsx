@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import type { Brand, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
 import { ModelGallery } from "./model-gallery";
-import { fmtPrice, fmtNumber } from "@/lib/format";
+import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 import "./model-detail.css";
 
@@ -68,7 +68,7 @@ export function ModelDetail({
               </Link>
               <span className="pill-tag">
                 <Layers size={12} />
-                {model.category}
+                {catLabel(model.category, model.segment)}
               </span>
               <span className="pill-tag">
                 {driveIcon}
@@ -86,8 +86,8 @@ export function ModelDetail({
             </h1>
             <p className="model-tagline">
               {model.is_deal
-                ? `${model.category}, ${model.drive.toLowerCase()} hajtás. Aktuálisan akciós listaárral elérhető a hazai kereskedői hálózatban.`
-                : `${model.category}, ${model.drive.toLowerCase()} hajtás. ${model.seats ?? 5} ülőhely, ${model.length_mm ? `${model.length_mm} mm hossz` : "—"}.`}
+                ? `${catLabel(model.category, model.segment)}, ${model.drive.toLowerCase()} hajtás. Aktuálisan akciós listaárral elérhető a hazai kereskedői hálózatban.`
+                : `${catLabel(model.category, model.segment)}, ${model.drive.toLowerCase()} hajtás. ${model.seats ?? 5} ülőhely, ${model.length_mm ? `${model.length_mm} mm hossz` : "—"}.`}
             </p>
             <div className={`price-row ${model.is_deal ? "deal" : ""}`}>
               <span className="lbl">
@@ -130,7 +130,7 @@ export function ModelDetail({
                   fontFamily: "var(--font-inter), sans-serif",
                 }}
               >
-                {model.category}
+                {catLabel(model.category, model.segment)}
               </div>
             </div>
             <div className="qb">
@@ -449,7 +449,7 @@ export function ModelDetail({
                   lineHeight: 1.5,
                 }}
               >
-                {model.category} kategória és {model.drive.toLowerCase()} hajtás
+                {catLabel(model.category, model.segment)} kategória és {model.drive.toLowerCase()} hajtás
                 összes modellje, ár szerint szűrve.
               </div>
             </Link>

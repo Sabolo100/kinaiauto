@@ -1,5 +1,30 @@
 // Hungarian-locale formatting helpers used across the UI.
 
+// Default EU segment letter for each category slug.
+// Per-model overrides are stored in models.segment; use catLabel() to display.
+export const CATEGORY_SEGMENT: Record<string, string> = {
+  "varosi-kisauto":    "A",
+  "mini-suv":          "B",
+  "kompakt-suv":       "C",
+  "kozepmeretu-suv":   "D",
+  "nagy-suv":          "J",
+  "kompakt-ferdehatu": "C",
+  "premium-limuzin":   "F",
+  "kombi":             "D",
+  "mpv":               "M",
+  "pickup":            "J",
+  "sedan":             "D",
+  "roadster":          "S",
+};
+
+/** "Kompakt SUV (C)" — appends segment letter in brackets when present. */
+export function catLabel(
+  category: string,
+  segment: string | null | undefined,
+): string {
+  return segment ? `${category} (${segment})` : category;
+}
+
 export function fmtPrice(v: number | null | undefined): string {
   if (v == null) return "—";
   return `${v.toFixed(1).replace(".", ",")} M Ft`;

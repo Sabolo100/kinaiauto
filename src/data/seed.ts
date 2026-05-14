@@ -210,6 +210,7 @@ function buildModels(): ModelRow[] {
       // Tiggo 8 has the supplied photo
       primary_photo_path:
         s.is_featured ? "models/tiggo-8/hero.avif" : null,
+      segment: null,
     };
   });
 }

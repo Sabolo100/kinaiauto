@@ -8,7 +8,7 @@ import type {
   ModelRow,
   PriceBand,
 } from "@/lib/types";
-import { fmtMFt } from "@/lib/format";
+import { fmtMFt, CATEGORY_SEGMENT } from "@/lib/format";
 
 type Props = {
   models: ModelRow[];
@@ -76,7 +76,7 @@ export function Finder(p: Props) {
                     className={`chip ${p.cats.has(c.label_hu) ? "on" : ""}`}
                     onClick={() => p.setCats(toggleSet(p.cats, c.label_hu))}
                   >
-                    {c.label_hu}
+                    {c.label_hu}{CATEGORY_SEGMENT[c.slug] ? ` (${CATEGORY_SEGMENT[c.slug]})` : ""}
                   </button>
                 ))}
               </div>

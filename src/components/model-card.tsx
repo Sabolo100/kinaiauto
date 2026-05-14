@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Check, GitCompareArrows, Plus } from "lucide-react";
 import type { ModelPhoto, ModelRow } from "@/lib/types";
-import { fmtPrice, fmtNumber } from "@/lib/format";
+import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 
 /** Returns #fff or #1a1a1a depending on which has better contrast against `hex`. */
@@ -114,7 +114,7 @@ export function ModelCard({
         </Link>
         {(!hideTags?.category || !hideTags?.drive) && (
           <div className="meta">
-            {!hideTags?.category && <span className="tag">{model.category}</span>}
+            {!hideTags?.category && <span className="tag">{catLabel(model.category, model.segment)}</span>}
             {!hideTags?.drive && <span className="tag">{model.drive}</span>}
           </div>
         )}

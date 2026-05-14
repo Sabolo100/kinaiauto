@@ -5,7 +5,7 @@
 
 import { getBrands, getModels, getCategories, getDrives } from "@/lib/data";
 import { SITE_URL } from "@/lib/env";
-import { fmtPrice } from "@/lib/format";
+import { fmtPrice, catLabel } from "@/lib/format";
 
 export const dynamic = "force-static";
 export const revalidate = 3600;
@@ -61,7 +61,7 @@ export async function GET() {
   for (const m of models) {
     lines.push(`### ${m.brand_name} ${m.name}`);
     lines.push(`URL: ${SITE_URL}/modellek/${m.brand_slug}/${m.slug}`);
-    lines.push(`Kategória: ${m.category}`);
+    lines.push(`Kategória: ${catLabel(m.category, m.segment)}`);
     lines.push(`Hajtás: ${m.drive}`);
     lines.push(`Listaár: ${fmtPrice(m.price_min_m_ft)} — ${fmtPrice(m.price_max_m_ft)}`);
     if (m.is_deal) lines.push(`Akciós: igen`);
