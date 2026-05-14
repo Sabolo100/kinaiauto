@@ -865,22 +865,29 @@ grant select on v_data_freshness to anon, authenticated;
 
 -- ---- Dealers (márkakereskedők) ----------------------------------------
 create table if not exists dealers (
-  id          uuid primary key default uuid_generate_v4(),
-  brand_id    uuid not null references brands(id) on delete cascade,
-  name        text not null,
-  city        text not null,
-  zip_code    text,
-  street      text,
-  lat         numeric(9,6),
-  lng         numeric(9,6),
-  email       text,
-  phone       text,
-  website     text,
-  notes       text,
-  is_active   boolean not null default true,
-  sort_order  integer not null default 0,
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
+  id              uuid primary key default uuid_generate_v4(),
+  brand_id        uuid not null references brands(id) on delete cascade,
+  name            text not null,
+  city            text not null,
+  zip_code        text,
+  street          text,
+  lat             numeric(9,6),
+  lng             numeric(9,6),
+  email           text,
+  phone           text,
+  website         text,
+  notes           text,
+  is_active       boolean not null default true,
+  sort_order      integer not null default 0,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+  -- Import columns
+  extra_emails    jsonb not null default '[]'::jsonb,
+  extra_phones    jsonb not null default '[]'::jsonb,
+  source_url      text,
+  data_quality    text,
+  data_source     text,
+  last_checked_at timestamptz
 );
 
 create table if not exists dealer_contacts (
@@ -915,3 +922,12 @@ end $$;
 --   select count(*) from models;       -- expect 60
 --   select count(*) from model_trims;  -- expect 180
 --   select * from v_data_freshness;    -- expect 2026-05-04
+
+
+-- ---- Migration: add import columns to dealers ----------------------
+ALTER TABLE dealers ADD COLUMN IF NOT EXISTS extra_emails jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE dealers ADD COLUMN IF NOT EXISTS extra_phones jsonb DEFAULT '[]'::jsonb;
+ALTER TABLE dealers ADD COLUMN IF NOT EXISTS source_url text;
+ALTER TABLE dealers ADD COLUMN IF NOT EXISTS data_quality text;
+ALTER TABLE dealers ADD COLUMN IF NOT EXISTS data_source text;
+ALTER TABLE dealers ADD COLUMN IF NOT EXISTS last_checked_at timestamptz;

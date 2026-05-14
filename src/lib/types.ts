@@ -185,6 +185,13 @@ export type Dealer = {
   sort_order: number;
   created_at: string;
   contacts: DealerContact[];
+  // Import columns
+  extra_emails: string[];
+  extra_phones: string[];
+  source_url: string | null;
+  data_quality: string | null;
+  data_source: string | null;
+  last_checked_at: string | null;
 };
 
 export type DealerContact = {

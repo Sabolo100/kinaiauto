@@ -30,6 +30,7 @@ export default async function DealersListPage() {
       <div className="cms-toolbar">
         <h1 style={{ margin: 0 }}>Kereskedők ({dealers.length})</h1>
         <div style={{ flex: 1 }} />
+        <Link className="cms-btn" href="/c4m5s6/kereskedok/import">⬆ Import</Link>
         <Link className="cms-btn primary" href="/c4m5s6/kereskedok/uj">+ Új kereskedő</Link>
       </div>
 
