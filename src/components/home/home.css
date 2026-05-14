@@ -421,21 +421,11 @@ h1.headline em {
   color: var(--ink-mute);
   flex-shrink: 0;
 }
-.brandbar-scroll {
+.brandbar-chips {
   display: flex;
   gap: 6px;
-  overflow-x: auto;
+  flex-wrap: wrap;
   flex: 1;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
-  scroll-behavior: smooth;
-}
-.brandbar-scroll::-webkit-scrollbar {
-  height: 4px;
-}
-.brandbar-scroll::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 2px;
 }
 .brand-chip {
   font-size: 12.5px;
@@ -474,7 +464,7 @@ h1.headline em {
     align-items: flex-start;
     gap: 8px;
   }
-  .brandbar-scroll {
+  .brandbar-chips {
     width: 100%;
   }
 }

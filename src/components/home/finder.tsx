@@ -155,26 +155,14 @@ export function Finder(p: Props) {
             </div>
           </div>
           <div className="brandbar">
-            <span className="lbl">
-              Márka{" "}
-              <span
-                className="mono"
-                style={{
-                  color: "var(--ink-mute)",
-                  textTransform: "none",
-                  letterSpacing: 0,
-                }}
-              >
-                / másodlagos szűrő
-              </span>
-            </span>
-            <div className="brandbar-scroll">
+            <span className="lbl">Gyártó</span>
+            <div className="brandbar-chips">
               <button
                 type="button"
                 className={`brand-chip ${p.brSel.size === 0 ? "on" : ""}`}
                 onClick={() => p.setBrSel(new Set())}
               >
-                Összes márka
+                Összes
               </button>
               {p.brands.map((b) => (
                 <button
