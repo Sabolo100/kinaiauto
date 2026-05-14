@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { extractPdfText } from "@/lib/pdf-text";
 import { fetchUrlText } from "@/lib/url-text";
-import { extractWith, extractWithVision, type LlmProvider } from "@/lib/llm-extract";
+import { extractWith, extractWithVision, type LlmProvider, type VisionMediaType } from "@/lib/llm-extract";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -64,8 +64,9 @@ async function handlePost(req: NextRequest) {
   ].join("\n");
 
   let rawText = "";
-  let imageBase64 = "";
-  let imageMediaType = "";
+  let visionBase64 = "";
+  let visionMediaType: VisionMediaType = "image/jpeg";
+  let useVision = false;
   let storage_path: string | null = null;
   let source_filename: string | null = null;
   let source_url: string | null = null;
@@ -92,6 +93,15 @@ async function handlePost(req: NextRequest) {
       rawText = await extractPdfText(buf);
       storage_path = payload.storage_path;
       source_filename = payload.source_filename ?? storage_path.split("/").pop() ?? "upload.pdf";
+
+      // Image-based (scanned/Photoshop) PDF — no extractable text layer.
+      // Auto-fall-through to Claude's native PDF document API instead.
+      if (rawText.length < 80) {
+        visionBase64 = buf.toString("base64");
+        visionMediaType = "application/pdf";
+        rawText = `[image-pdf: ${source_filename}]`;
+        useVision = true;
+      }
     } else if (payload.source_kind === "image") {
       if (!payload.storage_path) {
         return NextResponse.json(
@@ -109,11 +119,12 @@ async function handlePost(req: NextRequest) {
       }
 
       const buf = Buffer.from(await dl.data.arrayBuffer());
-      imageBase64 = buf.toString("base64");
-      imageMediaType = payload.image_media_type ?? "image/jpeg";
+      visionBase64 = buf.toString("base64");
+      visionMediaType = (payload.image_media_type ?? "image/jpeg") as VisionMediaType;
       storage_path = payload.storage_path;
       source_filename = payload.source_filename ?? storage_path.split("/").pop() ?? "upload.jpg";
-      rawText = `[image: ${source_filename}]`; // placeholder stored in DB
+      rawText = `[image: ${source_filename}]`;
+      useVision = true;
     } else {
       if (!payload.url) {
         return NextResponse.json({ error: "URL kötelező" }, { status: 400 });
@@ -129,11 +140,11 @@ async function handlePost(req: NextRequest) {
     );
   }
 
-  // Text-based sources need minimum content; images skip this check
-  if (payload.source_kind !== "image" && (!rawText || rawText.length < 80)) {
+  // Text-based sources need minimum content; vision paths skip this check
+  if (!useVision && (!rawText || rawText.length < 80)) {
     return NextResponse.json(
       {
-        error: `A forrásból nem sikerült értelmes szöveget kinyerni. (${rawText.length} karakter — lehet, hogy beolvasott/képalapú PDF?)`,
+        error: `A forrásból nem sikerült értelmes szöveget kinyerni. (${rawText.length} karakter)`,
       },
       { status: 422 },
     );
@@ -146,10 +157,9 @@ async function handlePost(req: NextRequest) {
   let errorMessage: string | null = null;
 
   try {
-    const out =
-      payload.source_kind === "image"
-        ? await extractWithVision(payload.provider, imageBase64, imageMediaType, hint)
-        : await extractWith(payload.provider, rawText, hint);
+    const out = useVision
+      ? await extractWithVision(payload.provider, visionBase64, visionMediaType, hint)
+      : await extractWith(payload.provider, rawText, hint);
     parsed = out.json as Record<string, unknown>;
     llmModel = out.model;
   } catch (e) {

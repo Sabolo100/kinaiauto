@@ -180,20 +180,36 @@ export async function extractWith(
     : extractWithOpenAI(text, hint);
 }
 
-// ─── Vision extraction (image input) ─────────────────────────────────────────
+// ─── Vision extraction (image / image-PDF input) ─────────────────────────────
 
 type ImageMediaType = "image/jpeg" | "image/png" | "image/webp" | "image/gif";
 
-const IMAGE_USER_TEXT = (hint: string) =>
-  `Existing record context:\n${hint}\n\nThis image shows a car spec sheet or pricelist. Extract all relevant data and return the JSON only.`;
+// All media types accepted by the vision path (images + native PDF document)
+export type VisionMediaType = ImageMediaType | "application/pdf";
+
+const VISION_USER_TEXT = (hint: string) =>
+  `Existing record context:\n${hint}\n\nThis is a car spec sheet or pricelist. Extract all relevant data and return the JSON only.`;
 
 export async function extractWithClaudeVision(
-  imageBase64: string,
-  mediaType: ImageMediaType,
+  dataBase64: string,
+  mediaType: VisionMediaType,
   hint: string,
 ): Promise<{ json: ExtractedFields; model: string }> {
   if (!HAS_ANTHROPIC) throw new Error("ANTHROPIC_API_KEY hiányzik");
   const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+
+  // PDFs are sent as a `document` content block; images use `image`.
+  const sourceBlock =
+    mediaType === "application/pdf"
+      ? ({
+          type: "document" as const,
+          source: { type: "base64" as const, media_type: "application/pdf" as const, data: dataBase64 },
+        })
+      : ({
+          type: "image" as const,
+          source: { type: "base64" as const, media_type: mediaType, data: dataBase64 },
+        });
+
   const msg = await client.messages.create({
     model: CLAUDE_MODEL,
     max_tokens: 2000,
@@ -202,11 +218,8 @@ export async function extractWithClaudeVision(
       {
         role: "user",
         content: [
-          {
-            type: "image",
-            source: { type: "base64", media_type: mediaType, data: imageBase64 },
-          },
-          { type: "text", text: IMAGE_USER_TEXT(hint) },
+          sourceBlock,
+          { type: "text", text: VISION_USER_TEXT(hint) },
         ],
       },
     ],
@@ -218,9 +231,14 @@ export async function extractWithClaudeVision(
 
 export async function extractWithOpenAIVision(
   imageBase64: string,
-  mediaType: string,
+  mediaType: VisionMediaType,
   hint: string,
 ): Promise<{ json: ExtractedFields; model: string }> {
+  if (mediaType === "application/pdf") {
+    throw new Error(
+      "Ez képalapú PDF (nincs szöveges réteg). Az OpenAI nem támogatja a natív PDF-dokumentumokat — válassz Claude providert a kinyeréshez.",
+    );
+  }
   if (!HAS_OPENAI) throw new Error("OPENAI_API_KEY hiányzik");
   const client = new OpenAI({ apiKey: OPENAI_API_KEY });
   const dataUrl = `data:${mediaType};base64,${imageBase64}`;
@@ -233,7 +251,7 @@ export async function extractWithOpenAIVision(
         role: "user",
         content: [
           { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
-          { type: "text", text: IMAGE_USER_TEXT(hint) },
+          { type: "text", text: VISION_USER_TEXT(hint) },
         ],
       },
     ],
@@ -244,13 +262,13 @@ export async function extractWithOpenAIVision(
 
 export async function extractWithVision(
   provider: LlmProvider,
-  imageBase64: string,
-  mediaType: string,
+  dataBase64: string,
+  mediaType: VisionMediaType,
   hint: string,
 ): Promise<{ json: ExtractedFields; model: string }> {
   return provider === "claude"
-    ? extractWithClaudeVision(imageBase64, mediaType as ImageMediaType, hint)
-    : extractWithOpenAIVision(imageBase64, mediaType, hint);
+    ? extractWithClaudeVision(dataBase64, mediaType, hint)
+    : extractWithOpenAIVision(dataBase64, mediaType, hint);
 }
 
 // Maps the LLM's JSON to a partial models-row update payload, used when
