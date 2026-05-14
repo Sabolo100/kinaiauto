@@ -48,6 +48,7 @@ export default async function NewModelPage() {
           is_available: true,
           is_featured: false,
           archived_at: null,
+          segment: null,
         }}
       />
     </CmsShell>

@@ -37,10 +37,10 @@ create table if not exists model_extractions (
   id              uuid primary key default uuid_generate_v4(),
   model_id        uuid references models(id) on delete cascade,
   -- Source descriptor
-  source_kind     text not null check (source_kind in ('pdf','url')),
-  source_url      text,                              -- the original URL (or blank for PDF uploads)
-  source_filename text,                              -- original PDF filename
-  storage_path    text,                              -- path in 'pdf-uploads' bucket (PDFs only)
+  source_kind     text not null check (source_kind in ('pdf','url','image')),
+  source_url      text,                              -- the original URL (or blank for PDF/image uploads)
+  source_filename text,                              -- original filename
+  storage_path    text,                              -- path in 'pdf-uploads' bucket (PDFs and images)
   -- Extraction
   llm_provider    text not null check (llm_provider in ('claude','openai')),
   llm_model       text,                              -- e.g. "claude-sonnet-4-6", "gpt-4o"

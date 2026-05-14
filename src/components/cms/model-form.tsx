@@ -3,7 +3,35 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
-export type Lookup = { id: number; label_hu: string };
+export type Lookup = { id: number; slug?: string; label_hu: string };
+
+// European segment letter auto-suggested from category slug
+const CATEGORY_SEGMENT: Record<string, string> = {
+  "varosi-kisauto":   "A",
+  "mini-suv":         "B",
+  "kompakt-suv":      "C",
+  "kozepmeretu-suv":  "D",
+  "nagy-suv":         "J",
+  "kompakt-ferdehatu":"C",
+  "premium-limuzin":  "F",
+  "kombi":            "D",
+  "mpv":              "M",
+  "pickup":           "J",
+  "sedan":            "D",
+  "roadster":         "S",
+};
+
+const SEGMENTS = [
+  { value: "A", label: "A – Kisváros" },
+  { value: "B", label: "B – Kisautó" },
+  { value: "C", label: "C – Kompakt" },
+  { value: "D", label: "D – Középméretű" },
+  { value: "E", label: "E – Executive" },
+  { value: "F", label: "F – Luxus" },
+  { value: "J", label: "J – SUV / Terepjáró" },
+  { value: "M", label: "M – Egyterű (MPV)" },
+  { value: "S", label: "S – Sport" },
+];
 export type BrandLite = { id: string; name: string };
 
 type Photo = { id: string; storage_path: string; kind: string; is_primary: boolean };
@@ -42,6 +70,7 @@ export type ModelInput = {
   is_available: boolean;
   is_featured: boolean;
   archived_at: string | null;
+  segment: string | null;
 };
 
 export function ModelForm({
@@ -125,11 +154,27 @@ export function ModelForm({
         </label>
       </div>
 
-      <div className="row2">
+      <div className="row3">
         <label><span>Kategória *</span>
-          <select value={v.category_id} onChange={(e) => set("category_id", Number(e.target.value))}>
+          <select value={v.category_id} onChange={(e) => {
+            const id = Number(e.target.value);
+            const cat = categories.find((c) => c.id === id);
+            const suggested = cat?.slug ? (CATEGORY_SEGMENT[cat.slug] ?? null) : null;
+            setV((s) => ({
+              ...s,
+              category_id: id,
+              // auto-fill segment only when it is currently empty
+              segment: s.segment ? s.segment : suggested,
+            }));
+          }}>
             <option value="">— válassz —</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.label_hu}</option>)}
+          </select>
+        </label>
+        <label><span>Szegmens (EU)</span>
+          <select value={v.segment ?? ""} onChange={(e) => set("segment", e.target.value || null)}>
+            <option value="">— válassz —</option>
+            {SEGMENTS.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
         </label>
         <label><span>Hajtás *</span>

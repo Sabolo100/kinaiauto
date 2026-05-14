@@ -12,7 +12,7 @@ const ALLOWED = [
   "warranty_text","warranty_years","warranty_km",
   "battery_warranty_years","battery_warranty_km",
   "is_available","is_featured","source_url",
-  "meta_title","meta_description","data_updated_at","archived_at",
+  "meta_title","meta_description","data_updated_at","archived_at","segment",
 ] as const;
 
 function pick(input: Record<string, unknown>) {

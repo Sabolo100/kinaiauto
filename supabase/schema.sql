@@ -119,6 +119,8 @@ create table if not exists models (
   warranty_km     integer,
   battery_warranty_years smallint,
   battery_warranty_km    integer,
+  -- EU segment letter (A/B/C/D/E/F/J/M/S); auto-suggested from category, manually overrideable
+  segment         text,
   -- Availability
   is_available    boolean not null default true,
   is_featured     boolean not null default false, -- sets the "hero" model that uses the supplied photo
@@ -363,7 +365,9 @@ insert into categories (slug, label_hu, sort_order) values
   ('premium-limuzin',    'Prémium limuzin',         70),
   ('kombi',              'Kombi',                   80),
   ('mpv',                'Egyterű / MPV',           90),
-  ('pickup',             'Pickup',                 100)
+  ('pickup',             'Pickup',                 100),
+  ('sedan',              'Szedán',                 110),
+  ('roadster',           'Roadster',               120)
 on conflict (slug) do update set
   label_hu = excluded.label_hu,
   sort_order = excluded.sort_order;

@@ -70,6 +70,7 @@ export default async function EditModelPage({
           is_available: r.is_available ?? true,
           is_featured: r.is_featured ?? false,
           archived_at: r.archived_at,
+          segment: r.segment ?? null,
         }}
       />
     </CmsShell>
