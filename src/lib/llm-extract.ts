@@ -271,6 +271,145 @@ export async function extractWithVision(
     : extractWithOpenAIVision(dataBase64, mediaType, hint);
 }
 
+// ─── Dealer extraction ────────────────────────────────────────────────────────
+
+export type ExtractedDealerInfo = {
+  name: string | null;
+  city: string | null;
+  zip_code: string | null;
+  street: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  lat: number | null;
+  lng: number | null;
+  notes: string | null;
+  contacts: Array<{
+    name: string | null;
+    phone: string | null;
+    email: string | null;
+    position: string | null;
+  }> | null;
+};
+
+const DEALER_SYSTEM_PROMPT = `You are a car dealer data extractor for a Hungarian car website (kinaiauto.com).
+Extract structured dealer/showroom information from the supplied source (webpage, PDF, or image).
+
+Output STRICT JSON with this exact shape (no markdown, no commentary):
+
+{
+  "name": string | null,
+  "city": string | null,
+  "zip_code": string | null,
+  "street": string | null,
+  "phone": string | null,
+  "email": string | null,
+  "website": string | null,
+  "lat": number | null,
+  "lng": number | null,
+  "notes": string | null,
+  "contacts": [
+    { "name": string | null, "phone": string | null, "email": string | null, "position": string | null }
+  ] | null
+}
+
+Rules:
+- Extract a single dealer location.
+- zip_code: Hungarian postal code (4 digits), e.g. "1234".
+- street: include street name + house number, e.g. "Váci út 15".
+- lat/lng: only if explicitly stated on the source (do NOT guess from address).
+- contacts: list of named people with roles (sales, service, manager, etc.). null if none.
+- notes: one short Hungarian sentence if something important is flagged.
+- Use null for missing fields.`;
+
+export async function extractDealerWithClaude(
+  text: string,
+  hint: string,
+): Promise<{ json: ExtractedDealerInfo; model: string }> {
+  if (!HAS_ANTHROPIC) throw new Error("ANTHROPIC_API_KEY hiányzik");
+  const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+  const msg = await client.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 1500,
+    system: DEALER_SYSTEM_PROMPT,
+    messages: [{ role: "user", content: `Context:\n${hint}\n\nSource:\n---\n${clamp(text, 40000)}\n---\n\nReturn the JSON only.` }],
+  });
+  const block = msg.content.find((b) => b.type === "text");
+  const out = block && "text" in block ? block.text : "";
+  return { json: safeParse(out) as ExtractedDealerInfo, model: CLAUDE_MODEL };
+}
+
+export async function extractDealerWithOpenAI(
+  text: string,
+  hint: string,
+): Promise<{ json: ExtractedDealerInfo; model: string }> {
+  if (!HAS_OPENAI) throw new Error("OPENAI_API_KEY hiányzik");
+  const client = new OpenAI({ apiKey: OPENAI_API_KEY });
+  const resp = await client.chat.completions.create({
+    model: OPENAI_MODEL,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: DEALER_SYSTEM_PROMPT },
+      { role: "user", content: `Context:\n${hint}\n\nSource:\n---\n${clamp(text, 40000)}\n---\n\nReturn the JSON only.` },
+    ],
+  });
+  const out = resp.choices[0]?.message?.content ?? "";
+  return { json: safeParse(out) as ExtractedDealerInfo, model: OPENAI_MODEL };
+}
+
+export async function extractDealerWithVision(
+  dataBase64: string,
+  mediaType: VisionMediaType,
+  hint: string,
+  provider: LlmProvider,
+): Promise<{ json: ExtractedDealerInfo; model: string }> {
+  if (mediaType === "application/pdf" || mediaType.startsWith("image/")) {
+    if (!HAS_ANTHROPIC && provider === "claude") throw new Error("ANTHROPIC_API_KEY hiányzik");
+    if (mediaType === "application/pdf" && provider === "openai") throw new Error("Az OpenAI nem támogatja a PDF dokumentumokat — válassz Claude providert.");
+
+    if (provider === "claude") {
+      if (!HAS_ANTHROPIC) throw new Error("ANTHROPIC_API_KEY hiányzik");
+      const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+      const sourceBlock = mediaType === "application/pdf"
+        ? ({ type: "document" as const, source: { type: "base64" as const, media_type: "application/pdf" as const, data: dataBase64 } })
+        : ({ type: "image" as const, source: { type: "base64" as const, media_type: mediaType as ImageMediaType, data: dataBase64 } });
+      const msg = await client.messages.create({
+        model: CLAUDE_MODEL,
+        max_tokens: 1500,
+        system: DEALER_SYSTEM_PROMPT,
+        messages: [{ role: "user", content: [sourceBlock, { type: "text", text: "Extract the dealer information and return the JSON only." }] }],
+      });
+      const block = msg.content.find((b) => b.type === "text");
+      const out = block && "text" in block ? block.text : "";
+      return { json: safeParse(out) as ExtractedDealerInfo, model: CLAUDE_MODEL };
+    } else {
+      if (!HAS_OPENAI) throw new Error("OPENAI_API_KEY hiányzik");
+      const client = new OpenAI({ apiKey: OPENAI_API_KEY });
+      const resp = await client.chat.completions.create({
+        model: OPENAI_MODEL,
+        response_format: { type: "json_object" },
+        messages: [
+          { role: "system", content: DEALER_SYSTEM_PROMPT },
+          { role: "user", content: [{ type: "image_url", image_url: { url: `data:${mediaType};base64,${dataBase64}`, detail: "high" } }, { type: "text", text: "Extract the dealer information and return the JSON only." }] },
+        ],
+      });
+      const out = resp.choices[0]?.message?.content ?? "";
+      return { json: safeParse(out) as ExtractedDealerInfo, model: OPENAI_MODEL };
+    }
+  }
+  throw new Error("Ismeretlen media type: " + mediaType);
+}
+
+export async function extractDealerWith(
+  provider: LlmProvider,
+  text: string,
+  hint: string,
+): Promise<{ json: ExtractedDealerInfo; model: string }> {
+  return provider === "claude"
+    ? extractDealerWithClaude(text, hint)
+    : extractDealerWithOpenAI(text, hint);
+}
+
 // Maps the LLM's JSON to a partial models-row update payload, used when
 // the admin approves an extraction.
 export function extractedToModelPatch(

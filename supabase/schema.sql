@@ -863,6 +863,50 @@ from models m;
 grant select on v_data_freshness to anon, authenticated;
 
 
+-- ---- Dealers (márkakereskedők) ----------------------------------------
+create table if not exists dealers (
+  id          uuid primary key default uuid_generate_v4(),
+  brand_id    uuid not null references brands(id) on delete cascade,
+  name        text not null,
+  city        text not null,
+  zip_code    text,
+  street      text,
+  lat         numeric(9,6),
+  lng         numeric(9,6),
+  email       text,
+  phone       text,
+  website     text,
+  notes       text,
+  is_active   boolean not null default true,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create table if not exists dealer_contacts (
+  id          uuid primary key default uuid_generate_v4(),
+  dealer_id   uuid not null references dealers(id) on delete cascade,
+  name        text,
+  email       text,
+  phone       text,
+  position    text,
+  sort_order  integer not null default 0,
+  created_at  timestamptz not null default now()
+);
+
+alter table dealers        enable row level security;
+alter table dealer_contacts enable row level security;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where policyname = 'public_read_dealers') then
+    create policy public_read_dealers on dealers for select using (true);
+  end if;
+  if not exists (select 1 from pg_policies where policyname = 'public_read_dealer_contacts') then
+    create policy public_read_dealer_contacts on dealer_contacts for select using (true);
+  end if;
+end $$;
+
+
 -- =====================================================================
 -- DONE.
 -- =====================================================================

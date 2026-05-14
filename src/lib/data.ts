@@ -21,6 +21,8 @@ import {
 import type {
   Brand,
   Category,
+  Dealer,
+  DealerContact,
   Drive,
   ModelPhoto,
   ModelRow,
@@ -243,6 +245,39 @@ export async function getPhotoMapForModels(
 // -----------------------------------------------------------------------------
 
 import { STORAGE_PUBLIC_BASE } from "./env";
+
+// -----------------------------------------------------------------------------
+// Dealers
+// -----------------------------------------------------------------------------
+
+export async function getDealersForBrand(brandId: string): Promise<Dealer[]> {
+  if (HAS_SUPABASE && supabase) {
+    const { data, error } = await supabase
+      .from("dealers")
+      .select("*, contacts:dealer_contacts(*)")
+      .eq("brand_id", brandId)
+      .eq("is_active", true)
+      .order("sort_order");
+    if (!error && data) {
+      return (data as Dealer[]).map((d) => ({
+        ...d,
+        contacts: (d.contacts ?? []).sort((a: DealerContact, b: DealerContact) => a.sort_order - b.sort_order),
+      }));
+    }
+  }
+  return [];
+}
+
+export async function getAllDealers(): Promise<(Dealer & { brand_name: string; brand_slug: string })[]> {
+  if (HAS_SUPABASE && supabase) {
+    const { data, error } = await supabase
+      .from("dealers")
+      .select("*, contacts:dealer_contacts(*), brand:brands(name,slug)")
+      .order("sort_order");
+    if (!error && data) return data as (Dealer & { brand_name: string; brand_slug: string })[];
+  }
+  return [];
+}
 
 export function photoUrl(storagePath: string | null | undefined): string | null {
   if (!storagePath) return null;

@@ -167,3 +167,32 @@ export type ArticleBlock =
     };
 
 export type SiteSettings = Record<string, string>;
+
+export type Dealer = {
+  id: string;
+  brand_id: string;
+  name: string;
+  city: string;
+  zip_code: string | null;
+  street: string | null;
+  lat: number | null;
+  lng: number | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  notes: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  contacts: DealerContact[];
+};
+
+export type DealerContact = {
+  id: string;
+  dealer_id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  position: string | null;
+  sort_order: number;
+};

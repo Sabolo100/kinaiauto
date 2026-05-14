@@ -6,7 +6,7 @@ export const revalidate = 120;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBrands, getModels, getPhotoMapForModels } from "@/lib/data";
+import { getBrands, getDealersForBrand, getModels, getPhotoMapForModels } from "@/lib/data";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
@@ -44,9 +44,11 @@ export default async function BrandDetailPage({ params }: Props) {
   for (const m of models) {
     brandCounts[m.brand_slug] = (brandCounts[m.brand_slug] ?? 0) + 1;
   }
-  // Run photoMap fetch in parallel with above (it depends on brandModels, so sequential
-  // relative to models but as early as possible)
-  const photoMap = await getPhotoMapForModels(brandModels.map((m) => m.id));
+  // Run photoMap and dealers fetch in parallel
+  const [photoMap, dealers] = await Promise.all([
+    getPhotoMapForModels(brandModels.map((m) => m.id)),
+    getDealersForBrand(brand.id),
+  ]);
 
   return (
     <main>
@@ -63,6 +65,7 @@ export default async function BrandDetailPage({ params }: Props) {
         brand={brand}
         brands={allBrands}
         models={brandModels}
+        dealers={dealers}
         brandCounts={brandCounts}
         photoMap={photoMap}
       />
