@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -31,6 +32,10 @@ type Ctx = {
   has: (modelId: string) => boolean;
   clear: () => void;
   count: number;
+  /** Currently visible toast message (null = hidden) */
+  toastMsg: string | null;
+  /** Show a toast for ~2.2 s, then auto-hide */
+  showToast: (msg: string) => void;
 };
 
 const QuoteCtx = createContext<Ctx | null>(null);
@@ -39,6 +44,14 @@ const STORAGE_KEY = "kinaiauto:quote";
 export function QuoteProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function showToast(msg: string) {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToastMsg(msg);
+    toastTimer.current = setTimeout(() => setToastMsg(null), 2200);
+  }
 
   // Hydrate from localStorage
   useEffect(() => {
@@ -80,6 +93,8 @@ export function QuoteProvider({ children }: { children: ReactNode }) {
       items,
       count: items.length,
       has,
+      toastMsg,
+      showToast,
       add: (i) =>
         setItems((prev) =>
           prev.some((x) => x.modelId === i.modelId) ? prev : [...prev, i],
@@ -95,7 +110,8 @@ export function QuoteProvider({ children }: { children: ReactNode }) {
         }),
       clear: () => setItems([]),
     };
-  }, [items]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, toastMsg]);
 
   return <QuoteCtx.Provider value={value}>{children}</QuoteCtx.Provider>;
 }
@@ -115,6 +131,8 @@ export function useQuoteCart(): Ctx {
       remove: () => {},
       toggle: () => {},
       clear: () => {},
+      toastMsg: null,
+      showToast: () => {},
     };
   }
   return ctx;

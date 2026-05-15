@@ -5,8 +5,8 @@ import { ShoppingBag } from "lucide-react";
 import { useQuoteCart } from "./quote-context";
 
 /**
- * Topbar cart button. Always renders a link to /ajanlatkeres.
- * Shows a small numeric badge when the cart is non-empty.
+ * Topbar cart button — pill with icon + label text.
+ * Red dot indicator (no number) appears on the icon when cart is non-empty.
  */
 export function QuoteCartButton() {
   const { count } = useQuoteCart();
@@ -19,14 +19,12 @@ export function QuoteCartButton() {
           ? `Ajánlatkérési kosár · ${count} modell`
           : "Ajánlatkérési kosár"
       }
-      title="Ajánlatkérési kosár"
     >
-      <ShoppingBag size={16} aria-hidden />
-      {count > 0 ? (
-        <span className="quote-cart-badge" aria-hidden>
-          {count}
-        </span>
-      ) : null}
+      <span className="quote-cart-icon">
+        <ShoppingBag size={15} aria-hidden />
+        {count > 0 ? <span className="quote-cart-dot" aria-hidden /> : null}
+      </span>
+      <span className="quote-cart-label">Ajánlatkérések</span>
     </Link>
   );
 }

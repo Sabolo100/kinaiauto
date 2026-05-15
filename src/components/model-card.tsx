@@ -42,6 +42,21 @@ export function ModelCard({
   const quoteCart = useQuoteCart();
   const isInQuote = quoteCart.has(model.id);
 
+  function handleQuoteToggle(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const item = {
+      modelId: model.id,
+      brandId: model.brand_id,
+      modelName: model.name,
+      brandName: model.brand_name,
+      modelSlug: model.slug,
+      brandSlug: model.brand_slug,
+    };
+    if (!isInQuote) quoteCart.showToast("Ajánlatkérésekhez hozzáadva");
+    quoteCart.toggle(item);
+  }
+
   return (
     <article className={`card zoom-${zoom}`}>
       {/* Stretch-link: makes the whole card a clickable area; interactive children sit above it via z-index */}
@@ -98,6 +113,19 @@ export function ModelCard({
             {isSelected ? <Check size={14} /> : <Plus size={14} />}
           </button>
         ) : null}
+        <button
+          type="button"
+          className={`quote-photo-btn ${isInQuote ? "on" : ""}`}
+          aria-label={
+            isInQuote
+              ? "Eltávolítás az ajánlatkérési listából"
+              : "Hozzáadás az ajánlatkérési listához"
+          }
+          aria-pressed={isInQuote}
+          onClick={handleQuoteToggle}
+        >
+          {isInQuote ? <Check size={13} /> : <ShoppingBag size={13} />}
+        </button>
         {zoom !== 1 ? (
           <div className="photo-dots" aria-hidden>
             <span className="on" />
@@ -178,18 +206,7 @@ export function ModelCard({
                 ? "Eltávolítás az ajánlatkérési listából"
                 : "Hozzáadás az ajánlatkérési listához"
             }
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              quoteCart.toggle({
-                modelId: model.id,
-                brandId: model.brand_id,
-                modelName: model.name,
-                brandName: model.brand_name,
-                modelSlug: model.slug,
-                brandSlug: model.brand_slug,
-              });
-            }}
+            onClick={handleQuoteToggle}
           >
             {isInQuote ? <Check size={14} /> : <ShoppingBag size={14} />}
             {isInQuote ? "Kosárban" : "Ajánlat"}

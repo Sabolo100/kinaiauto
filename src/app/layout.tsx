@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Topbar } from "@/components/topbar";
 import { Footer } from "@/components/footer";
 import { QuoteProvider } from "@/components/quote-context";
+import { QuoteToast } from "@/components/quote-toast";
 import { getDataLastUpdated } from "@/lib/data";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { JsonLd } from "@/components/json-ld";
@@ -124,6 +125,7 @@ export default async function RootLayout({
           <Topbar lastUpdated={lastUpdated} />
           {children}
           <Footer lastUpdated={lastUpdated} />
+          <QuoteToast />
         </QuoteProvider>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />

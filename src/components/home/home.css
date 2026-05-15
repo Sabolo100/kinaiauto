@@ -918,21 +918,22 @@ h1.headline em {
 }
 
 /* ——— CATEGORY CHIPS (row view) ——— */
+/* Sized to match .brand-chip for visual consistency */
 .cat-chip {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
-  gap: 5px;
-  padding: 8px 10px 7px;
-  border: 1px solid transparent;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px 5px;
+  border: 1px solid var(--line);
   border-radius: 8px;
   cursor: pointer;
-  background: none;
+  background: var(--surface);
   color: var(--ink-soft);
   font-size: inherit;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
-  min-width: 60px;
+  min-width: 52px;
 }
 .cat-chip:hover {
   background: #fff;
@@ -945,17 +946,17 @@ h1.headline em {
   border-color: var(--ink);
 }
 .cat-chip-icon {
-  height: 34px;
+  height: 22px;
   width: auto;
-  max-width: 60px;
+  max-width: 56px;
   object-fit: contain;
   display: block;
-  opacity: 0.55;
+  opacity: 0.65;
   mix-blend-mode: multiply;
   transition: opacity 0.12s, filter 0.12s;
 }
 .cat-chip:hover .cat-chip-icon {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 .cat-chip.on .cat-chip-icon {
   opacity: 1;
@@ -964,16 +965,16 @@ h1.headline em {
 }
 .cat-chip-icon-placeholder {
   display: block;
-  height: 34px;
+  height: 22px;
   width: 40px;
 }
 .cat-chip-name {
-  font-size: 11px;
-  line-height: 1.2;
+  font-size: 11.5px;
+  line-height: 1;
   text-align: center;
   white-space: nowrap;
 }
-/* "Összes" cat chip — no icon, so center vertically too */
+/* "Összes" cat chip — same layout as others */
 .cat-chip--all {
   justify-content: center;
 }
