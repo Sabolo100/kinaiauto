@@ -251,9 +251,6 @@ export function Finder(p: Props) {
 
               {/* Row 1 — Hajtásmód */}
               <div className="filter-row-band">
-                <div className="filter-row-label">
-                  <span className="num">01</span>Hajtásmód
-                </div>
                 <div className="filter-row-chips">
                   <button
                     type="button"
@@ -277,9 +274,6 @@ export function Finder(p: Props) {
 
               {/* Row 2 — Ársáv */}
               <div className="filter-row-band">
-                <div className="filter-row-label">
-                  <span className="num">02</span>Ársáv (M Ft)
-                </div>
                 <div className="filter-row-chips">
                   <button
                     type="button"
@@ -306,9 +300,6 @@ export function Finder(p: Props) {
 
               {/* Row 3 — Kategória with icons */}
               <div className="filter-row-band">
-                <div className="filter-row-label">
-                  <span className="num">03</span>Kategória
-                </div>
                 <div className="filter-row-chips filter-row-chips--cat">
                   <button
                     type="button"
@@ -320,7 +311,6 @@ export function Finder(p: Props) {
                   </button>
                   {sortedCats.map((c) => {
                     const short = CAT_SHORT[c.slug] ?? c.label_hu;
-                    const seg   = CATEGORY_SEGMENT[c.slug];
                     const icon  = CAT_ICON[c.slug];
                     const isOn  = p.cats.has(c.label_hu);
                     return (
@@ -341,9 +331,7 @@ export function Finder(p: Props) {
                         ) : (
                           <span className="cat-chip-icon-placeholder" />
                         )}
-                        <span className="cat-chip-name">
-                          {short}{seg ? ` (${seg})` : ""}
-                        </span>
+                        <span className="cat-chip-name">{short}</span>
                       </button>
                     );
                   })}
@@ -355,7 +343,6 @@ export function Finder(p: Props) {
 
           {/* ── Brand bar (both views) ── */}
           <div className="brandbar">
-            <span className="lbl">Gyártó</span>
             <div className="brandbar-chips">
               <button
                 type="button"

@@ -409,40 +409,31 @@ h1.headline em {
 .brandbar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
   padding: 12px 24px;
   border-top: 1px solid var(--line);
   background: #fbfaf6;
-}
-.brandbar .lbl {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  flex-shrink: 0;
-  align-self: center;
 }
 .brandbar-chips {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  flex: 1;
   justify-content: center;
 }
 .brand-chip {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 4px;
   font-size: 11.5px;
   padding: 6px 10px 5px;
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink-soft);
   transition: background 0.12s, border-color 0.12s, color 0.12s;
   white-space: nowrap;
-  background: none;
+  background: var(--surface);
   cursor: pointer;
   min-width: 52px;
 }
@@ -454,6 +445,7 @@ h1.headline em {
 .brand-chip.on {
   background: var(--ink);
   color: #fff;
+  border-color: var(--ink);
 }
 .brand-chip-logo {
   height: 22px;
@@ -486,13 +478,10 @@ h1.headline em {
     border-bottom: 0;
   }
   .brandbar {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    padding: 12px 16px;
   }
   .brandbar-chips {
-    width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
   }
 }
 
@@ -929,44 +918,25 @@ h1.headline em {
 /* ——— ROW VIEW (horizontal filter bands) ——— */
 .filter-row-band {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  padding: 16px 24px;
-  border-top: 1px solid var(--line);
-}
-.filter-row-label {
-  flex-shrink: 0;
-  width: 120px;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
-}
-.filter-row-label .num {
-  font-family: var(--font-mono), monospace;
-  color: var(--accent-ink);
-  background: var(--accent-soft);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 10px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--line);
 }
 .filter-row-chips {
-  flex: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  justify-content: center;
+  width: 100%;
 }
 .filter-row-chips--cat {
-  gap: 4px;
+  gap: 3px;
   align-items: flex-end;
 }
 .filter-row-slider {
   width: 100%;
-  padding-left: 136px; /* label 120px + gap 16px */
 }
 
 /* ——— CATEGORY CHIPS (row view) ——— */
@@ -1028,14 +998,6 @@ h1.headline em {
 
 @media (max-width: 920px) {
   .filter-row-band {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .filter-row-label {
-    width: auto;
-  }
-  .filter-row-slider {
-    padding-left: 0;
-    width: 100%;
+    padding: 12px 16px;
   }
 }
