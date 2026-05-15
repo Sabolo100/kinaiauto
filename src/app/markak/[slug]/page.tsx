@@ -6,7 +6,7 @@ export const revalidate = 120;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBrands, getDealersForBrand, getModels, getPhotoMapForModels } from "@/lib/data";
+import { getCachedBrands, getCachedModels, getDealersForBrand, getPhotoMapForModels } from "@/lib/data";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema } from "@/lib/seo";
 import { SITE_URL } from "@/lib/env";
@@ -15,13 +15,13 @@ import { BrandPage } from "@/components/brands/brand-page";
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {
-  const brands = await getBrands();
+  const brands = await getCachedBrands();
   return brands.map((b) => ({ slug: b.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const brands = await getBrands();
+  const brands = await getCachedBrands();
   const brand = brands.find((b) => b.slug === slug);
   if (!brand) return { title: "Márka" };
   return {
@@ -35,7 +35,7 @@ export default async function BrandDetailPage({ params }: Props) {
   const { slug } = await params;
 
   // Single getBrands() call — eliminates the duplicate that getBrandBySlug caused
-  const [allBrands, models] = await Promise.all([getBrands(), getModels()]);
+  const [allBrands, models] = await Promise.all([getCachedBrands(), getCachedModels()]);
   const brand = allBrands.find((b) => b.slug === slug);
   if (!brand) notFound();
 

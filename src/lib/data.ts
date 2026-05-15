@@ -7,6 +7,7 @@
 // All return values strictly conform to the SQL column shapes (snake_case),
 // so the components can be authored against one schema.
 
+import { cache } from "react";
 import { supabase } from "./supabase";
 import { HAS_SUPABASE } from "./env";
 import {
@@ -38,7 +39,7 @@ export async function getCategories(): Promise<Category[]> {
   if (HAS_SUPABASE && supabase) {
     const { data, error } = await supabase
       .from("categories")
-      .select("*")
+      .select("id, slug, label_hu, sort_order")
       .order("sort_order");
     if (!error && data) return data as Category[];
   }
@@ -49,7 +50,7 @@ export async function getDrives(): Promise<Drive[]> {
   if (HAS_SUPABASE && supabase) {
     const { data, error } = await supabase
       .from("drives")
-      .select("*")
+      .select("id, label_hu, sort_order")
       .order("sort_order");
     if (!error && data) return data as Drive[];
   }
@@ -60,7 +61,7 @@ export async function getPriceBands(): Promise<PriceBand[]> {
   if (HAS_SUPABASE && supabase) {
     const { data, error } = await supabase
       .from("price_bands")
-      .select("*")
+      .select("id, min_m_ft, max_m_ft, label_hu, sort_order")
       .order("sort_order");
     if (!error && data) return data as PriceBand[];
   }
@@ -215,7 +216,7 @@ export async function getPhotosForModel(modelId: string): Promise<ModelPhoto[]> 
   if (HAS_SUPABASE && supabase) {
     const { data, error } = await supabase
       .from("model_photos")
-      .select("*")
+      .select("id, model_id, storage_path, is_primary, kind, sort_order")
       .eq("model_id", modelId)
       .order("sort_order");
     if (!error && data) return data as ModelPhoto[];
@@ -229,7 +230,7 @@ export async function getPhotoMapForModels(
   if (modelIds.length === 0 || !HAS_SUPABASE || !supabase) return {};
   const { data, error } = await supabase
     .from("model_photos")
-    .select("*")
+    .select("id, model_id, storage_path, is_primary, kind, sort_order")
     .in("model_id", modelIds)
     .order("sort_order");
   if (error || !data) return {};
@@ -290,3 +291,10 @@ export function photoUrl(storagePath: string | null | undefined): string | null 
   if (!HAS_SUPABASE) return null;
   return `${STORAGE_PUBLIC_BASE}/car-photos/${storagePath}`;
 }
+
+// -----------------------------------------------------------------------------
+// Per-request cached wrappers (React.cache — dedupes identical calls within one
+// server render pass, e.g. generateMetadata + page component both calling getBrands)
+// -----------------------------------------------------------------------------
+export const getCachedBrands = cache(getBrands);
+export const getCachedModels = cache(getModels);

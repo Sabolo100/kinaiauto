@@ -1,13 +1,13 @@
 // The <main>, pagehead and brand/model strip are provided by
 // /app/modellek/layout.tsx so they persist across navigations.
-export const dynamic = "force-dynamic";
+export const revalidate = 120;
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  getBrands,
+  getCachedBrands,
+  getCachedModels,
   getModelByBrandAndSlug,
-  getModels,
   getTrimsForModel,
   getPhotosForModel,
 } from "@/lib/data";
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const models = await getModels();
+  const models = await getCachedModels();
   return models.map((m) => ({ brand: m.brand_slug, model: m.slug }));
 }
 
@@ -46,8 +46,8 @@ export default async function ModelPage({ params }: Props) {
   const { brand, model } = await params;
   const [m, allBrands, allModels] = await Promise.all([
     getModelByBrandAndSlug(brand, model),
-    getBrands(),
-    getModels(),
+    getCachedBrands(),
+    getCachedModels(),
   ]);
   const b = allBrands.find((x) => x.slug === brand);
   if (!m || !b) notFound();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useDeferredValue } from "react";
 import Link from "next/link";
 import {
   ArrowDownUp,
@@ -52,17 +52,28 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
   const [sort, setSort] = useState<string>("priceMin");
   const compare = useCompare();
 
+  // Deferred filter values — chips/bar update instantly (immediate state),
+  // the expensive model-grid re-render runs in the background (deferred).
+  const dCats = useDeferredValue(cats);
+  const dDrv = useDeferredValue(drv);
+  const dBrSel = useDeferredValue(brSel);
+  const dPrices = useDeferredValue(prices);
+  const dPriceRange = useDeferredValue(priceRange);
+  const isFiltering =
+    dCats !== cats || dDrv !== drv || dBrSel !== brSel ||
+    dPrices !== prices || dPriceRange !== priceRange;
+
   const filtered = useMemo(() => {
     return models.filter((m) => {
-      if (cats.size && !cats.has(m.category)) return false;
-      if (brSel.size && !brSel.has(m.brand_name)) return false;
-      if (drv.size && !drv.has(m.drive)) return false;
+      if (dCats.size && !dCats.has(m.category)) return false;
+      if (dBrSel.size && !dBrSel.has(m.brand_name)) return false;
+      if (dDrv.size && !dDrv.has(m.drive)) return false;
       const pmin = m.price_min_m_ft ?? 0;
       const pmax = m.price_max_m_ft ?? 0;
-      if (priceRange) {
-        if (pmin > priceRange.max || pmax < priceRange.min) return false;
-      } else if (prices.size) {
-        const hit = [...prices].some((id) => {
+      if (dPriceRange) {
+        if (pmin > dPriceRange.max || pmax < dPriceRange.min) return false;
+      } else if (dPrices.size) {
+        const hit = [...dPrices].some((id) => {
           const b = bands.find((x) => x.id === id);
           if (!b) return false;
           return pmin <= b.max_m_ft && pmax >= b.min_m_ft;
@@ -71,7 +82,7 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
       }
       return true;
     });
-  }, [models, cats, brSel, drv, prices, priceRange, bands]);
+  }, [models, dCats, dBrSel, dDrv, dPrices, dPriceRange, bands]);
 
   const sorted = useMemo(() => {
     const [k, dir] = sort.endsWith("-desc")
@@ -247,7 +258,10 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
               Nincs találat — próbálj szűkíteni a szűrőkön.
             </div>
           ) : (
-            <div className={`cards zoom-${zoom}`}>
+            <div
+              className={`cards zoom-${zoom}`}
+              style={{ opacity: isFiltering ? 0.65 : 1, transition: "opacity 0.15s" }}
+            >
               {sorted.map((m) => (
                 <ModelCard
                   key={m.id}

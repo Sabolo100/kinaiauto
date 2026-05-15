@@ -2,7 +2,7 @@
 // The pagehead and brand/model strip are rendered here so they
 // persist across navigations between /modellek and /modellek/[brand]/[model]
 // — the header stays visible while only the model detail area changes.
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 import Link from "next/link";
 import { getBrands, getModels } from "@/lib/data";
