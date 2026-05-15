@@ -271,33 +271,11 @@ h1.headline em {
 
 /* ——— PRICE SLIDER (dual-handle range) ——— */
 .price-slider {
-  margin-top: 18px;
-  padding-top: 14px;
-  border-top: 1px dashed var(--line);
+  margin-top: 8px;
+  padding-top: 0;
 }
 .ps-readout {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.ps-mode {
-  font-family: var(--font-mono), monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-.ps-vals {
-  font-family: var(--font-instrument), serif;
-  font-size: 18px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-}
-.ps-vals em {
-  font-style: normal;
-  color: var(--accent-ink);
+  display: none;
 }
 .ps-track-wrap {
   position: relative;
@@ -994,6 +972,10 @@ h1.headline em {
   line-height: 1.2;
   text-align: center;
   white-space: nowrap;
+}
+/* "Összes" cat chip — no icon, so center vertically too */
+.cat-chip--all {
+  justify-content: center;
 }
 
 @media (max-width: 920px) {

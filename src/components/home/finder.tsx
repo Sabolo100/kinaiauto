@@ -303,10 +303,9 @@ export function Finder(p: Props) {
                 <div className="filter-row-chips filter-row-chips--cat">
                   <button
                     type="button"
-                    className={`cat-chip ${p.cats.size === 0 ? "on" : ""}`}
+                    className={`cat-chip cat-chip--all ${p.cats.size === 0 ? "on" : ""}`}
                     onClick={() => p.setCats(new Set())}
                   >
-                    <span className="cat-chip-icon-placeholder" />
                     <span className="cat-chip-name">Összes</span>
                   </button>
                   {sortedCats.map((c) => {
