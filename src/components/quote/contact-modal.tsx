@@ -20,7 +20,7 @@ type Props = {
 type Status =
   | { kind: "idle" }
   | { kind: "submitting" }
-  | { kind: "success"; sentCount: number }
+  | { kind: "success"; sentCount: number; totalDispatches: number; errors: string[] }
   | { kind: "error"; message: string };
 
 export function ContactModal({ onClose, onSuccess, payload }: Props) {
@@ -76,6 +76,8 @@ export function ContactModal({ onClose, onSuccess, payload }: Props) {
       setStatus({
         kind: "success",
         sentCount: Number(json.sent_count ?? 0),
+        totalDispatches: Number(json.total_dispatches ?? 0),
+        errors: Array.isArray(json.errors) ? (json.errors as string[]) : [],
       });
     } catch (e) {
       setStatus({ kind: "error", message: (e as Error).message });
@@ -94,8 +96,12 @@ export function ContactModal({ onClose, onSuccess, payload }: Props) {
         >
           <header className="quote-modal-head">
             <div className="cm-title-wrap">
-              <div className="cm-eyebrow ok">Ajánlatkérés elküldve</div>
-              <h2 className="cm-title">Köszönjük!</h2>
+              <div className={`cm-eyebrow ${status.sentCount > 0 ? "ok" : "warn"}`}>
+                {status.sentCount > 0 ? "Ajánlatkérés elküldve" : "Küldési probléma"}
+              </div>
+              <h2 className="cm-title">
+                {status.sentCount > 0 ? "Köszönjük!" : "Elmentve, de nem ment ki e-mail"}
+              </h2>
             </div>
             <button
               type="button"
@@ -109,20 +115,37 @@ export function ContactModal({ onClose, onSuccess, payload }: Props) {
             </button>
           </header>
           <div className="quote-modal-body">
-            <div className="cm-success">
-              <div className="cm-success-icon">
-                <Check size={28} />
+            {status.sentCount > 0 ? (
+              <div className="cm-success">
+                <div className="cm-success-icon">
+                  <Check size={28} />
+                </div>
+                <p>
+                  <strong>{status.sentCount}</strong> ajánlatkérés ment ki a
+                  kiválasztott kereskedőknek. Egy másolat a megadott e-mail
+                  címedre is megérkezett ({email}).
+                </p>
+                <p>
+                  A kereskedők rövidesen felveszik veled a kapcsolatot a megadott
+                  elérhetőségeken.
+                </p>
               </div>
-              <p>
-                <strong>{status.sentCount}</strong> ajánlatkérés ment ki a
-                kiválasztott kereskedőknek. Egy másolat a megadott e-mail
-                címedre is megérkezett ({email}).
-              </p>
-              <p>
-                A kereskedők rövidesen felveszik veled a kapcsolatot a megadott
-                elérhetőségeken.
-              </p>
-            </div>
+            ) : (
+              <div className="cm-success">
+                <p style={{ color: "#b45309", fontWeight: 600, marginBottom: 8 }}>
+                  Az ajánlatkérés elmentve, de e-mail nem ment ki ({status.sentCount}/{status.totalDispatches}).
+                </p>
+                {status.errors.length > 0 && (
+                  <ul style={{ fontSize: 13, color: "#6b7280", margin: "8px 0 0", paddingLeft: 18 }}>
+                    {status.errors.map((e, i) => <li key={i}>{e}</li>)}
+                  </ul>
+                )}
+                <p style={{ fontSize: 13, color: "#6b7280", marginTop: 12 }}>
+                  Kérjük, ellenőrizd a CMS-ben a kereskedők e-mail címeit,
+                  vagy vedd fel a kapcsolatot közvetlenül.
+                </p>
+              </div>
+            )}
           </div>
           <footer className="quote-modal-foot">
             <button

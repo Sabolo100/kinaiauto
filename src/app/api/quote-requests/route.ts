@@ -234,6 +234,11 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Send emails via Resend ─────────────────────────────────────────────
+  console.log(`[quote] dispatches=${dispatches.length} apiKey=${apiKey ? `set(${apiKey.slice(0,6)}…)` : "MISSING"} from=${fromEmail}`);
+  for (const d of dispatches) {
+    console.log(`[quote]  → dealer=${d.dealerName} email=${d.dealerEmail || "EMPTY"} brand=${d.brandName}`);
+  }
+
   let sentCount = 0;
   const errors: string[] = [];
 
@@ -329,9 +334,11 @@ export async function POST(req: NextRequest) {
         html,
         text,
       });
+      console.log(`[quote] resend response for ${d.dealerEmail}:`, JSON.stringify(res));
       const messageId = (res as { data?: { id?: string } }).data?.id ?? null;
       const errorObj = (res as { error?: { message?: string } | null }).error ?? null;
       if (errorObj) {
+        console.error(`[quote] resend error for ${d.dealerEmail}:`, errorObj);
         await sa.from("quote_request_dispatches").insert({
           quote_request_id: quoteRequestId,
           brand_id: d.brandId,

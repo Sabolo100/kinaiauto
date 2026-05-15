@@ -548,7 +548,8 @@
   text-transform: uppercase;
   color: var(--ink-mute);
 }
-.cm-eyebrow.ok { color: #047857; }
+.cm-eyebrow.ok   { color: #047857; }
+.cm-eyebrow.warn { color: #b45309; }
 .cm-title {
   font-family: var(--font-instrument), serif;
   font-size: 22px;
