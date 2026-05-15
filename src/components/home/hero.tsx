@@ -15,8 +15,8 @@ export function Hero({
             Független kínai autó-iránytű · Magyarország
           </div>
           <h1 className="headline">
-            Találd meg az <em>elképzeléseidnek</em> megfelelő kínai modellt —
-            kategória és költségkeret alapján.
+            Találd meg új <em>kínai autódat</em> kategória és ár alapján —
+            majd kérj ajánlatokat egy kattintással.
           </h1>
           <p className="lede">
             Nem kell ismerned a márkákat vagy modellneveket. Válassz

@@ -3,6 +3,7 @@ import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { Topbar } from "@/components/topbar";
 import { Footer } from "@/components/footer";
+import { QuoteProvider } from "@/components/quote-context";
 import { getDataLastUpdated } from "@/lib/data";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { JsonLd } from "@/components/json-ld";
@@ -119,9 +120,11 @@ export default async function RootLayout({
       className={`${inter.variable} ${instrument.variable} ${mono.variable}`}
     >
       <body>
-        <Topbar lastUpdated={lastUpdated} />
-        {children}
-        <Footer lastUpdated={lastUpdated} />
+        <QuoteProvider>
+          <Topbar lastUpdated={lastUpdated} />
+          {children}
+          <Footer lastUpdated={lastUpdated} />
+        </QuoteProvider>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
         {GA_ID && (

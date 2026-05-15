@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/c4m5s6/kereskedok", label: "Kereskedők" },
   { href: "/c4m5s6/extract", label: "PDF / URL / Kép kinyerés" },
   { href: "/c4m5s6/export", label: "⎙ Export / Nyomtatás" },
+  { href: "/c4m5s6/beallitasok", label: "⚙ Beállítások" },
 ];
 
 export function CmsShell({ children }: { children: React.ReactNode }) {

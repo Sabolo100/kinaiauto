@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { QuoteCartButton } from "./quote-cart-button";
 
 const NAV = [
   { href: "/", label: "Főoldal" },
@@ -57,6 +58,7 @@ export function Topbar({ lastUpdated }: { lastUpdated: string }) {
             ))}
           </nav>
           <div className="topbar-cta">
+            <QuoteCartButton />
             <span className="pill">
               <span className="live" />
               Frissítve · {lastUpdated}

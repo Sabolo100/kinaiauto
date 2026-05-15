@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Check, GitCompareArrows, Plus } from "lucide-react";
+import { ArrowUpRight, Check, GitCompareArrows, Plus, ShoppingBag } from "lucide-react";
 import type { ModelPhoto, ModelRow } from "@/lib/types";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
+import { useQuoteCart } from "./quote-context";
 
 /** Returns #fff or #1a1a1a depending on which has better contrast against `hex`. */
 function contrastColor(hex: string): string {
@@ -37,6 +38,9 @@ export function ModelCard({
   const photo = photoUrl(model.primary_photo_path);
   const hoverPhoto = photos?.find((p) => !p.is_primary && p.kind !== "hero") ?? null;
   const hoverUrl = hoverPhoto ? photoUrl(hoverPhoto.storage_path) : null;
+
+  const quoteCart = useQuoteCart();
+  const isInQuote = quoteCart.has(model.id);
 
   return (
     <article className={`card zoom-${zoom}`}>
@@ -165,6 +169,31 @@ export function ModelCard({
             <GitCompareArrows size={14} />
             Összevet
           </Link>
+          <button
+            type="button"
+            className={`btn quote-btn ${isInQuote ? "on" : ""}`}
+            aria-pressed={isInQuote}
+            aria-label={
+              isInQuote
+                ? "Eltávolítás az ajánlatkérési listából"
+                : "Hozzáadás az ajánlatkérési listához"
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              quoteCart.toggle({
+                modelId: model.id,
+                brandId: model.brand_id,
+                modelName: model.name,
+                brandName: model.brand_name,
+                modelSlug: model.slug,
+                brandSlug: model.brand_slug,
+              });
+            }}
+          >
+            {isInQuote ? <Check size={14} /> : <ShoppingBag size={14} />}
+            {isInQuote ? "Kosárban" : "Ajánlat"}
+          </button>
           <Link
             href={`/modellek/${model.brand_slug}/${model.slug}`}
             className="btn primary"

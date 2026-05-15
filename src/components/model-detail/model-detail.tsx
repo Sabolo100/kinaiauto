@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import type { Brand, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
 import { ModelGallery } from "./model-gallery";
+import { QuoteButtonLarge } from "../quote-button-large";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 import "./model-detail.css";
@@ -98,6 +99,16 @@ export function ModelDetail({
                 <span className="max">max {fmtPrice(model.price_max_m_ft)}</span>
               </div>
             </div>
+            <QuoteButtonLarge
+              item={{
+                modelId: model.id,
+                brandId: model.brand_id,
+                modelName: model.name,
+                brandName: model.brand_name,
+                modelSlug: model.slug,
+                brandSlug: model.brand_slug,
+              }}
+            />
           </div>
           <div className={`hero-photo ${heroPhoto ? "" : "placeholder"}`}>
             {heroPhoto ? (

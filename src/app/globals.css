@@ -173,6 +173,45 @@ nav.menu a.active::after {
   align-items: center;
   gap: 14px;
 }
+
+/* Quote cart button (topbar) */
+.quote-cart-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.quote-cart-btn:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+  background: #fff;
+}
+.quote-cart-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent-ink, #b91c1c);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-family: var(--font-mono), monospace;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 0 0 2px var(--surface);
+}
 .pill {
   display: inline-flex;
   align-items: center;
@@ -708,6 +747,55 @@ footer.foot .foot-disclaimer {
 }
 .card .actions .btn.primary:hover {
   background: #000;
+}
+.card .actions .btn.quote-btn {
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.card .actions .btn.quote-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+.card .actions .btn.quote-btn.on {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #047857;
+}
+.card .actions .btn.quote-btn.on:hover {
+  background: #d1fae5;
+  border-color: #059669;
+}
+
+/* Large "Ajánlatot kérek" button (detail pages) */
+.quote-btn-large {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  margin-top: 14px;
+  background: var(--ink);
+  color: #fff;
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.quote-btn-large:hover {
+  background: #000;
+}
+.quote-btn-large.on {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #10b981;
+}
+.quote-btn-large.on:hover {
+  background: #d1fae5;
+  border-color: #059669;
 }
 .card.zoom-1 .body {
   padding: 12px 14px;
