@@ -19,6 +19,7 @@ export type EmailParams = {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  customerNotes?: string | null;
   dealerName: string;
   brandName: string;
   models: EmailModel[];
@@ -90,6 +91,11 @@ export function buildHtmlBody(p: EmailParams): string {
           E-mail: <a href="mailto:${escapeAttr(p.customerEmail)}" style="color:#0f766e">${escapeHtml(p.customerEmail)}</a><br>
           Telefon: <a href="tel:${escapeAttr(p.customerPhone)}" style="color:#0f766e">${escapeHtml(p.customerPhone)}</a>
         </div>
+        ${p.customerNotes ? `
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid #e5e3dd">
+          <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:6px">Megjegyzés az érdeklődőtől</div>
+          <div style="font-size:13.5px;line-height:1.6;color:#374151;white-space:pre-wrap">${escapeHtml(p.customerNotes)}</div>
+        </div>` : ""}
       </td>
     </tr>
   </table>
@@ -132,6 +138,7 @@ export function buildTextBody(p: EmailParams): string {
     `  Név:     ${p.customerName}`,
     `  E-mail:  ${p.customerEmail}`,
     `  Telefon: ${p.customerPhone}`,
+    ...(p.customerNotes ? [`  Megjegyzés: ${p.customerNotes}`] : []),
     ``,
     `Az érdeklődést kiváltó ${p.models.length === 1 ? "modell" : "modellek"}:`,
     ...p.models.map((m) => `  • ${m.brandName} ${m.modelName} — ${modelUrl(m)}`),

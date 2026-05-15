@@ -24,6 +24,7 @@ type IncomingBody = {
   customer_name: string;
   customer_email: string;
   customer_phone: string;
+  customer_notes?: string | null;
   gdpr_accepted: boolean;
   items: IncomingItem[];
   /** brand_id → dealer_id[] */
@@ -42,6 +43,7 @@ export async function POST(req: NextRequest) {
   const name = (body.customer_name ?? "").trim();
   const email = (body.customer_email ?? "").trim();
   const phone = (body.customer_phone ?? "").trim();
+  const notes = (body.customer_notes ?? "").trim() || null;
 
   if (name.length < 2) {
     return NextResponse.json({ error: "Hiányzó vagy túl rövid név." }, { status: 400 });
@@ -132,6 +134,7 @@ export async function POST(req: NextRequest) {
       customer_name: name,
       customer_email: email,
       customer_phone: phone,
+      notes,
       gdpr_accepted_at: new Date().toISOString(),
       status: "pending",
       user_agent: userAgent,
@@ -312,6 +315,7 @@ export async function POST(req: NextRequest) {
       customerName: name,
       customerEmail: email,
       customerPhone: phone,
+      customerNotes: notes,
       dealerName: d.dealerName,
       models: d.models,
     });
@@ -320,6 +324,7 @@ export async function POST(req: NextRequest) {
       customerName: name,
       customerEmail: email,
       customerPhone: phone,
+      customerNotes: notes,
       dealerName: d.dealerName,
       models: d.models,
     });

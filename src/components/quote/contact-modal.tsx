@@ -27,6 +27,7 @@ export function ContactModal({ onClose, onSuccess, payload }: Props) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [notes, setNotes] = useState("");
   const [gdpr, setGdpr] = useState(false);
   const [gdprOpen, setGdprOpen] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -60,6 +61,7 @@ export function ContactModal({ onClose, onSuccess, payload }: Props) {
           customer_name: name.trim(),
           customer_email: email.trim(),
           customer_phone: phone.trim(),
+          customer_notes: notes.trim() || null,
           gdpr_accepted: true,
           items: payload.items,
           dealer_ids_by_brand: payload.dealerIdsByBrand,
@@ -238,6 +240,24 @@ export function ContactModal({ onClose, onSuccess, payload }: Props) {
                 disabled={status.kind === "submitting"}
                 aria-invalid={phone.length > 0 && !phoneOk}
               />
+            </label>
+
+            <label className="cm-field">
+              <span className="cm-label">
+                Megjegyzés <span style={{ fontWeight: 400, color: "var(--ink-mute)" }}>(nem kötelező)</span>
+              </span>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="pl. Fekete vagy sötétkék szín, automatikus váltó, csomag preferencia, konkrét kérdés…"
+                rows={3}
+                maxLength={1000}
+                disabled={status.kind === "submitting"}
+                className="cm-textarea"
+              />
+              <span className="cm-hint">
+                A kereskedők ezt is megkapják — írj bármit, ami segít pontosabb ajánlatot kapni.
+              </span>
             </label>
           </div>
 
