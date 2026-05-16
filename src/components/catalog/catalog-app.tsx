@@ -55,12 +55,16 @@ type Props = {
   categories: Category[];
   drives: Drive[];
   bands: PriceBand[];
+  /** Pre-select a category label (e.g. "SUV") — used by "Hasonló modellek" deep-link */
+  initialCategory?: string;
+  /** Pre-select a drive label (e.g. "Elektromos") — used by "Hasonló modellek" deep-link */
+  initialDrive?: string;
 };
 
-export function CatalogApp({ models, brands, categories, drives, bands }: Props) {
+export function CatalogApp({ models, brands, categories, drives, bands, initialCategory, initialDrive }: Props) {
   const [prices, setPrices] = useState<Set<string>>(new Set());
-  const [cats, setCats] = useState<Set<string>>(new Set());
-  const [drvSel, setDrvSel] = useState<Set<string>>(new Set());
+  const [cats, setCats] = useState<Set<string>>(initialCategory ? new Set([initialCategory]) : new Set());
+  const [drvSel, setDrvSel] = useState<Set<string>>(initialDrive ? new Set([initialDrive]) : new Set());
   const [brSel, setBrSel] = useState<Set<string>>(new Set());
   const [dealOnly, setDealOnly] = useState(false);
   const [availableOnly, setAvailableOnly] = useState(true);

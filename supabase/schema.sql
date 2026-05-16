@@ -830,7 +830,8 @@ where m.archived_at is null;          -- soft-deleted models are hidden from all
 grant select on v_models to anon, authenticated;
 
 -- Brand summary with model counts
-create or replace view v_brand_summary as
+drop view if exists v_brand_summary cascade;
+create view v_brand_summary as
 select
   b.*,
   count(m.id)::int as models_count,
@@ -841,6 +842,7 @@ select
       from models m2
       join drives d on d.id = m2.drive_id
      where m2.brand_id = b.id
+       and m2.archived_at is null
      order by d.label_hu
   ) as drives,
   array(
@@ -848,18 +850,21 @@ select
       from models m2
       join categories c on c.id = m2.category_id
      where m2.brand_id = b.id
+       and m2.archived_at is null
      order by c.label_hu
   ) as categories
 from brands b
-left join models m on m.brand_id = b.id and m.is_available
+left join models m on m.brand_id = b.id and m.is_available and m.archived_at is null
 group by b.id;
 
 grant select on v_brand_summary to anon, authenticated;
 
 -- Returns the most-recently-updated model; used by topbar "Frissítve" pill.
-create or replace view v_data_freshness as
+drop view if exists v_data_freshness cascade;
+create view v_data_freshness as
 select max(coalesce(m.data_updated_at, m.updated_at::date)) as last_updated_at
-from models m;
+from models m
+where m.archived_at is null;
 
 grant select on v_data_freshness to anon, authenticated;
 

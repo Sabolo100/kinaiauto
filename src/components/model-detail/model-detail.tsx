@@ -3,6 +3,7 @@ import {
   ArrowRight,
   BatteryCharging,
   Briefcase,
+  ExternalLink,
   Fuel,
   Gauge,
   GitCompareArrows,
@@ -384,12 +385,14 @@ export function ModelDetail({
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">07 · Hivatalos források</div>
+              <div className="step">07 · Importőr &amp; háttér</div>
               <h2>
-                Importőr és <em>kereskedői</em> linkek.
+                Importőr és <em>márkaadatok</em>.
               </h2>
             </div>
           </div>
+
+          {/* Info cards: importőr + brand history */}
           <div className="sources">
             <div className="source-card">
               <span className="lbl">Importőr</span>
@@ -439,36 +442,22 @@ export function ModelDetail({
                 </div>
               </div>
             </div>
-            <Link
-              href={`/markak/${brand.slug}`}
-              className="source-card link"
-            >
-              <span className="lbl">Részletek</span>
-              <h4>Márkaoldal a kínaiautó.com-on</h4>
-              <div
-                style={{
-                  fontSize: 13.5,
-                  color: "var(--ink-soft)",
-                  lineHeight: 1.5,
-                }}
-              >
-                A teljes {brand.name} modellpaletta, importőri adatok és háttér
-                egy oldalon.
-              </div>
+          </div>
+
+          {/* Navigation CTA buttons */}
+          <div className="sources-cta">
+            <Link href={`/markak/${brand.slug}`} className="src-action-btn primary">
+              <ExternalLink size={15} />
+              {brand.name} márkaoldal
+              <ArrowRight size={15} />
             </Link>
-            <Link href="/kinalat" className="source-card link">
-              <span className="lbl">Kínálat</span>
-              <h4>Hasonló modellek a teljes kínálatból</h4>
-              <div
-                style={{
-                  fontSize: 13.5,
-                  color: "var(--ink-soft)",
-                  lineHeight: 1.5,
-                }}
-              >
-                {catLabel(model.category, model.segment)} kategória és {model.drive.toLowerCase()} hajtás
-                összes modellje, ár szerint szűrve.
-              </div>
+            <Link
+              href={`/kinalat?category=${encodeURIComponent(model.category)}&drive=${encodeURIComponent(model.drive)}`}
+              className="src-action-btn"
+            >
+              <Grid2x2 size={15} />
+              Hasonló modellek böngészése
+              <ArrowRight size={15} />
             </Link>
           </div>
         </div>

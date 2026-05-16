@@ -21,13 +21,14 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/kinalat` },
 };
 
-export default async function CatalogPage() {
-  const [models, brands, categories, drives, bands] = await Promise.all([
-    getModels(),
-    getBrands(),
-    getCategories(),
-    getDrives(),
-    getPriceBands(),
+export default async function CatalogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string; drive?: string }>;
+}) {
+  const [params, [models, brands, categories, drives, bands]] = await Promise.all([
+    searchParams,
+    Promise.all([getModels(), getBrands(), getCategories(), getDrives(), getPriceBands()]),
   ]);
 
   return (
@@ -58,6 +59,8 @@ export default async function CatalogPage() {
         categories={categories}
         drives={drives}
         bands={bands}
+        initialCategory={params.category}
+        initialDrive={params.drive}
       />
 
       <JsonLd
