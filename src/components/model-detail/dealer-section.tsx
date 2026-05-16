@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { Dealer } from "@/lib/types";
 import { DealerMap } from "@/components/brands/dealer-map";
 
@@ -8,13 +8,16 @@ function DealerListItem({
   d,
   active,
   onClick,
+  setRef,
 }: {
   d: Dealer;
   active: boolean;
   onClick: () => void;
+  setRef: (el: HTMLDivElement | null) => void;
 }) {
   return (
     <div
+      ref={setRef}
       className={`dsp-item${active ? " active" : ""}`}
       onClick={onClick}
       role="button"
@@ -110,13 +113,40 @@ export function DealerSection({
 }) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  // Refs for scroll-into-view within the list panel
+  const listRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
+  function scrollToDealer(id: string) {
+    const el = itemRefs.current.get(id);
+    const list = listRef.current;
+    if (!el || !list) return;
+    const elTop = el.offsetTop;
+    const elBottom = elTop + el.offsetHeight;
+    const scrollTop = list.scrollTop;
+    const clientH = list.clientHeight;
+    if (elTop < scrollTop) {
+      list.scrollTop = elTop - 8;
+    } else if (elBottom > scrollTop + clientH) {
+      list.scrollTop = elBottom - clientH + 8;
+    }
+  }
+
+  // Called when a marker on the map is clicked
+  const handleMarkerClick = useCallback((id: string) => {
+    setActiveId(id);
+    // Small timeout lets the state flush before we measure DOM positions
+    setTimeout(() => scrollToDealer(id), 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (dealers.length === 0) {
     return (
       <section className="block" id="kereskedok">
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">06 · Kereskedők</div>
+              <div className="step">07 · Kereskedők</div>
               <h2>
                 <em>{brandName}</em> kereskedők
               </h2>
@@ -137,7 +167,7 @@ export function DealerSection({
       <div className="container">
         <div className="block-head">
           <div>
-            <div className="step">06 · Kereskedők</div>
+            <div className="step">07 · Kereskedők</div>
             <h2>
               <em>{brandName}</em> kereskedők{" "}
               <span style={{ color: "var(--ink-mute)", fontSize: ".7em" }}>
@@ -149,12 +179,16 @@ export function DealerSection({
 
         <div className="dealer-split">
           {/* Left: scrollable dealer list */}
-          <div className="dsp-list">
+          <div className="dsp-list" ref={listRef}>
             {dealers.map((d) => (
               <DealerListItem
                 key={d.id}
                 d={d}
                 active={activeId === d.id}
+                setRef={(el) => {
+                  if (el) itemRefs.current.set(d.id, el);
+                  else itemRefs.current.delete(d.id);
+                }}
                 onClick={() => setActiveId(activeId === d.id ? null : d.id)}
               />
             ))}
@@ -163,7 +197,11 @@ export function DealerSection({
           {/* Right: always-visible map */}
           <div className="dsp-map">
             {withCoords.length > 0 ? (
-              <DealerMap dealers={dealers} />
+              <DealerMap
+                dealers={dealers}
+                activeId={activeId}
+                onMarkerClick={handleMarkerClick}
+              />
             ) : (
               <div className="dsp-nomap">
                 <span>Nincs GPS koordináta a kereskedőknél.</span>

@@ -377,15 +377,12 @@ export function ModelDetail({
         </div>
       </section>
 
-      {/* DEALERS */}
-      <DealerSection dealers={dealers} brandName={model.brand_name} />
-
-      {/* SOURCES */}
+      {/* SOURCES — 06 */}
       <section className="block" style={{ background: "#fbfaf6" }}>
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">07 · Importőr &amp; háttér</div>
+              <div className="step">06 · Importőr &amp; háttér</div>
               <h2>
                 Importőr és <em>márkaadatok</em>.
               </h2>
@@ -462,6 +459,9 @@ export function ModelDetail({
           </div>
         </div>
       </section>
+
+      {/* DEALERS — 07 */}
+      <DealerSection dealers={dealers} brandName={model.brand_name} />
 
       {/* SIMILAR */}
       <section className="block">
