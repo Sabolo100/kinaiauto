@@ -824,7 +824,8 @@ select
 from models m
 join brands     b on b.id = m.brand_id
 join categories c on c.id = m.category_id
-join drives     d on d.id = m.drive_id;
+join drives     d on d.id = m.drive_id
+where m.archived_at is null;          -- soft-deleted models are hidden from all public reads
 
 grant select on v_models to anon, authenticated;
 

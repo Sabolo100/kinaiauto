@@ -120,10 +120,13 @@ export async function getBrandBySlug(slug: string): Promise<Brand | null> {
 
 export async function getModels(): Promise<ModelRow[]> {
   if (HAS_SUPABASE && supabase) {
+    // Archived models are filtered at the database level by the `v_models`
+    // view (WHERE m.archived_at IS NULL). The view doesn't expose archived_at
+    // as a column, so we must NOT add `.is("archived_at", null)` here — doing
+    // so makes the query fail and falls back to SEED_MODELS (no photos).
     const { data, error } = await supabase
       .from("v_models")
-      .select("*")
-      .is("archived_at", null); // exclude archived models from all public pages
+      .select("*");
     if (!error && data) return data as ModelRow[];
   }
   return SEED_MODELS;
