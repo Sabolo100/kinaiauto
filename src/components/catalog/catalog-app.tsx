@@ -20,21 +20,56 @@ import type {
   ModelRow,
   PriceBand,
 } from "@/lib/types";
-import { fmtPrice, catLabel, CATEGORY_SEGMENT } from "@/lib/format";
+import { fmtPrice, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 import "./catalog.css";
 
+// ── Category metadata (mirrors homepage finder) ───────────────────────────────
+const CAT_SHORT: Record<string, string> = {
+  "varosi-kisauto":    "Kisautó",
+  "mini-suv":          "Mini SUV",
+  "kompakt-suv":       "Kompakt SUV",
+  "kozepmeretu-suv":   "Közép SUV",
+  "nagy-suv":          "Nagy SUV",
+  "kompakt-ferdehatu": "Ferdehátú",
+  "kombi":             "Kombi",
+  "sedan":             "Szedán",
+  "premium-limuzin":   "Limuzin",
+  "mpv":               "Egyterű",
+  "roadster":          "Roadster",
+  "pickup":            "Pickup",
+};
+const CAT_ICON: Record<string, string> = {
+  "varosi-kisauto":    "/cat-icons/1varosikisauto.png",
+  "mini-suv":          "/cat-icons/2MiniSuv.png",
+  "kompakt-suv":       "/cat-icons/3KompaktSUV.png",
+  "kozepmeretu-suv":   "/cat-icons/4KozepSuv.png",
+  "nagy-suv":          "/cat-icons/5NagySuv.png",
+  "kompakt-ferdehatu": "/cat-icons/6Ferdehatu.png",
+  "kombi":             "/cat-icons/7Sedan.png",
+  "sedan":             "/cat-icons/8Kombi.png",
+  "premium-limuzin":   "/cat-icons/9Limuzin.png",
+  "mpv":               "/cat-icons/10Egyteru.png",
+  "roadster":          "/cat-icons/11Roadster.png",
+  "pickup":            "/cat-icons/12PickUp.png",
+};
+const CAT_ORDER: Record<string, number> = {
+  "varosi-kisauto": 1, "mini-suv": 2, "kompakt-suv": 3,
+  "kozepmeretu-suv": 4, "nagy-suv": 5, "kompakt-ferdehatu": 6,
+  "kombi": 7, "sedan": 8, "premium-limuzin": 9,
+  "mpv": 10, "roadster": 11, "pickup": 12,
+};
+
 // ─── Chart layout constants ───────────────────────────────────────────────────
-const AXIS_X  = 90;   // px from left edge of chart container → axis line
-const CARD_H  = 60;   // card height px
-const CARD_W  = 200;  // card width px
-const H_GAP   = 10;   // horizontal gap between cards in same row
-const V_GAP   = 14;   // vertical gap between rows inside a group
-const GRP_GAP = 22;   // vertical gap between different value groups
-const CARDS_X = 128;  // px from left edge → first card column starts
-const TOP_PAD = 24;   // padding above first tick
-const BOT_PAD = 64;   // padding below last card
-// ─────────────────────────────────────────────────────────────────────────────
+const AXIS_X  = 90;
+const CARD_H  = 60;
+const CARD_W  = 200;
+const H_GAP   = 10;
+const V_GAP   = 14;
+const GRP_GAP = 22;
+const CARDS_X = 128;
+const TOP_PAD = 24;
+const BOT_PAD = 64;
 
 type Param = "priceMin" | "range" | "length" | "trunk" | "battery" | "power" | "seats";
 
@@ -82,6 +117,11 @@ export function CatalogApp({
     return n;
   }
 
+  const sortedCats = useMemo(
+    () => [...categories].sort((a, b) => (CAT_ORDER[a.slug] ?? 99) - (CAT_ORDER[b.slug] ?? 99)),
+    [categories],
+  );
+
   const visible = useMemo(() => {
     return models.filter((m) => {
       if (prices.size) {
@@ -113,9 +153,110 @@ export function CatalogApp({
       <div className="cat-topfilter">
         <div className="container-wide">
 
-          {/* Param picker */}
-          <div className="cat-topfilter-param">
-            <span className="cat-topfilter-label">Megjelenítés alapja</span>
+          {/* Row: Ársáv */}
+          <div className="cat-frow">
+            <div className="cat-frow-head">
+              <span className="cat-frow-label">Ársáv</span>
+              {prices.size > 0 && (
+                <button type="button" className="cat-frow-clear" onClick={() => setPrices(new Set())}>
+                  × törlés
+                </button>
+              )}
+            </div>
+            <div className="cat-frow-chips">
+              {bands.map((b) => (
+                <button key={b.id} type="button"
+                  className={`fltr-chip${prices.has(b.id) ? " on" : ""}`}
+                  onClick={() => setPrices(toggleSet(prices, b.id))}
+                >
+                  {b.label_hu}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Row: Hajtás */}
+          <div className="cat-frow">
+            <div className="cat-frow-head">
+              <span className="cat-frow-label">Hajtás</span>
+              {drvSel.size > 0 && (
+                <button type="button" className="cat-frow-clear" onClick={() => setDrvSel(new Set())}>
+                  × törlés
+                </button>
+              )}
+            </div>
+            <div className="cat-frow-chips">
+              {drives.map((d) => (
+                <button key={d.id} type="button"
+                  className={`fltr-chip${drvSel.has(d.label_hu) ? " on" : ""}`}
+                  onClick={() => setDrvSel(toggleSet(drvSel, d.label_hu))}
+                >
+                  {d.label_hu}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Row: Kategória — icon chips, same as homepage */}
+          <div className="cat-frow">
+            <div className="cat-frow-head">
+              <span className="cat-frow-label">Kategória</span>
+              {cats.size > 0 && (
+                <button type="button" className="cat-frow-clear" onClick={() => setCats(new Set())}>
+                  × törlés
+                </button>
+              )}
+            </div>
+            <div className="cat-frow-chips cat-frow-chips--cat">
+              {sortedCats.map((c) => {
+                const short = CAT_SHORT[c.slug] ?? c.label_hu;
+                const icon  = CAT_ICON[c.slug];
+                const isOn  = cats.has(c.label_hu);
+                return (
+                  <button key={c.id} type="button"
+                    className={`cat-chip${isOn ? " on" : ""}`}
+                    onClick={() => setCats(toggleSet(cats, c.label_hu))}
+                  >
+                    {icon ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={icon} alt="" aria-hidden className="cat-chip-icon" />
+                    ) : (
+                      <span className="cat-chip-icon-placeholder" />
+                    )}
+                    <span className="cat-chip-name">{short}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Row: Márka */}
+          <div className="cat-frow">
+            <div className="cat-frow-head">
+              <span className="cat-frow-label">Márka</span>
+              {brSel.size > 0 && (
+                <button type="button" className="cat-frow-clear" onClick={() => setBrSel(new Set())}>
+                  × törlés
+                </button>
+              )}
+            </div>
+            <div className="cat-frow-chips">
+              {brands.map((b) => (
+                <button key={b.id} type="button"
+                  className={`fltr-chip${brSel.has(b.name) ? " on" : ""}`}
+                  onClick={() => setBrSel(toggleSet(brSel, b.name))}
+                >
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Param picker — separated section below filters */}
+          <div className="cat-param-bar">
+            <div className="cat-param-bar-label">
+              Megjelenítés alapja · <b>{paramDef.label}</b>
+            </div>
             <div className="cat-param-grid">
               {PARAMS.map((p) => (
                 <button key={p.id} type="button"
@@ -129,52 +270,6 @@ export function CatalogApp({
             </div>
           </div>
 
-          {/* Filter chips */}
-          <div className="cat-topfilter-filters">
-            <TopFilterGroup label="Ársáv" active={prices.size > 0} onClear={() => setPrices(new Set())}>
-              {bands.map((b) => (
-                <button key={b.id} type="button"
-                  className={`cat-chip${prices.has(b.id) ? " on" : ""}`}
-                  onClick={() => setPrices(toggleSet(prices, b.id))}
-                >
-                  {b.label_hu}
-                </button>
-              ))}
-            </TopFilterGroup>
-
-            <TopFilterGroup label="Kategória" active={cats.size > 0} onClear={() => setCats(new Set())}>
-              {categories.map((c) => (
-                <button key={c.id} type="button"
-                  className={`cat-chip${cats.has(c.label_hu) ? " on" : ""}`}
-                  onClick={() => setCats(toggleSet(cats, c.label_hu))}
-                >
-                  {c.label_hu}{CATEGORY_SEGMENT[c.slug] ? ` (${CATEGORY_SEGMENT[c.slug]})` : ""}
-                </button>
-              ))}
-            </TopFilterGroup>
-
-            <TopFilterGroup label="Hajtás" active={drvSel.size > 0} onClear={() => setDrvSel(new Set())}>
-              {drives.map((d) => (
-                <button key={d.id} type="button"
-                  className={`cat-chip${drvSel.has(d.label_hu) ? " on" : ""}`}
-                  onClick={() => setDrvSel(toggleSet(drvSel, d.label_hu))}
-                >
-                  {d.label_hu}
-                </button>
-              ))}
-            </TopFilterGroup>
-
-            <TopFilterGroup label="Márka" active={brSel.size > 0} onClear={() => setBrSel(new Set())}>
-              {brands.map((b) => (
-                <button key={b.id} type="button"
-                  className={`cat-chip${brSel.has(b.name) ? " on" : ""}`}
-                  onClick={() => setBrSel(toggleSet(brSel, b.name))}
-                >
-                  {b.name}
-                </button>
-              ))}
-            </TopFilterGroup>
-          </div>
         </div>
       </div>
 
@@ -207,30 +302,6 @@ export function CatalogApp({
   );
 }
 
-// ─── Top filter group ─────────────────────────────────────────────────────────
-function TopFilterGroup({
-  label, active, onClear, children,
-}: {
-  label: string;
-  active: boolean;
-  onClear: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="cat-topfilter-group">
-      <span className="cat-topfilter-label">
-        {label}
-        {active ? (
-          <button type="button" className="cat-topfilter-clear" onClick={onClear}>×</button>
-        ) : null}
-      </span>
-      <div className="cat-topfilter-chips">
-        {children}
-      </div>
-    </div>
-  );
-}
-
 // ─── Tick step calculation ────────────────────────────────────────────────────
 function computeTickStep(paramId: Param, span: number): number {
   const steps: Record<Param, number[]> = {
@@ -253,7 +324,7 @@ function computeTickStep(paramId: Param, span: number): number {
 interface PlacedCar {
   m: ModelRow;
   v: number;
-  axisY: number; // Y on the axis (connector start)
+  axisY: number;
   cardX: number;
   cardY: number;
 }
@@ -279,8 +350,7 @@ function computeLayout(
 
   const sorted = [...cars].sort((a, b) => a.v - b.v);
 
-  // ① Pre-group in value-space to know total rows → set a stable chartH
-  //   This breaks the circular dependency (chartH ↔ yOnAxis ↔ pixel groups).
+  // ① Pre-group in value-space → compute total card rows → stable chartH
   const CLUSTER_VAL = Math.max(span * 0.015, 0.001);
   const preGroups: CarItem[][] = [];
   {
@@ -306,13 +376,13 @@ function computeLayout(
     500,
   );
 
-  // ② Y-mapping: axis runs TOP_PAD → chartH - BOT_PAD
+  // ② Y-mapping using stable chartH
   const effRange = chartH - TOP_PAD - BOT_PAD;
   function yOnAxis(v: number): number {
     return TOP_PAD + ((v - minV) / span) * effRange;
   }
 
-  // ③ Pixel-space grouping for actual card placement
+  // ③ Pixel-space grouping for placement
   const pxPerInterval = effRange / numIntervals;
   const CLUSTER_PX    = Math.min(CARD_H, pxPerInterval * 0.55);
 
@@ -334,7 +404,7 @@ function computeLayout(
     if (cur.length > 0) groups.push({ cars: cur, axisY: curAY });
   }
 
-  // ④ Place groups: horizontal-first, wrap to next row, push down to avoid overlap
+  // ④ Place groups
   const placed: PlacedCar[] = [];
   let prevBottom = TOP_PAD;
 
@@ -356,7 +426,7 @@ function computeLayout(
     prevBottom = groupTop + numRows * CARD_H + (numRows - 1) * V_GAP + GRP_GAP;
   }
 
-  // ⑤ Ticks (index-based to avoid float drift)
+  // ⑤ Ticks
   const firstTickN = Math.ceil((minV - 0.0001) / tickStep);
   const ticks: { v: number; y: number; label: string }[] = [];
   for (let i = 0; ; i++) {
@@ -371,13 +441,7 @@ function computeLayout(
 
 // ─── Vertical bar (chart) ─────────────────────────────────────────────────────
 function VBar({
-  visible,
-  withVal,
-  param,
-  pinned,
-  hovered,
-  onHover,
-  onPin,
+  visible, withVal, param, pinned, hovered, onHover, onPin,
 }: {
   visible: ModelRow[];
   withVal: ModelRow[];
@@ -437,10 +501,8 @@ function VBar({
         </div>
       </div>
 
-      {/* Chart area */}
       <div ref={wrapRef} className="cat-chart" style={{ height: layout.chartH }}>
-
-        {/* Axis line — spans full chart height */}
+        {/* Axis line — full chart height */}
         <div className="cat-ax-line" style={{ height: layout.chartH }} />
 
         {/* Tick marks */}
@@ -451,7 +513,7 @@ function VBar({
           </div>
         ))}
 
-        {/* SVG: straight diagonal connectors — rendered BEHIND cards */}
+        {/* SVG: straight diagonal connectors — behind cards */}
         <svg
           className="cat-connectors"
           style={{ height: layout.chartH }}
@@ -462,17 +524,15 @@ function VBar({
             return (
               <line
                 key={p.m.id}
-                x1={AXIS_X}
-                y1={p.axisY}
-                x2={p.cardX}
-                y2={p.cardY + CARD_H / 2}
+                x1={AXIS_X} y1={p.axisY}
+                x2={p.cardX} y2={p.cardY + CARD_H / 2}
                 className={`cat-cl${isHi ? " hi" : ""}`}
               />
             );
           })}
         </svg>
 
-        {/* Car cards — z-index 2, above SVG */}
+        {/* Car cards */}
         {layout.placed.map((p) => {
           const photo = photoUrl(p.m.primary_photo_path);
           return (
