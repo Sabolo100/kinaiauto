@@ -95,7 +95,7 @@ type Props = {
 };
 
 export function Finder(p: Props) {
-  const [view, setView] = useState<"col" | "row">("col");
+  const [view, setView] = useState<"col" | "row">("row");
 
   const [absMin, absMax] = useMemo(() => {
     const min = Math.min(...p.models.map((m) => m.price_min_m_ft ?? 0));

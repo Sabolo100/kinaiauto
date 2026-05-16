@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef, useDeferredValue } from "react";
+import { useMemo, useState, useRef, useDeferredValue, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowDownUp,
@@ -48,7 +48,12 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
   const [drv, setDrv] = useState<Set<string>>(new Set());
   const [brSel, setBrSel] = useState<Set<string>>(new Set());
   const [priceRange, setPriceRange] = useState<{ min: number; max: number } | null>(null);
-  const [zoom, setZoom] = useState<1 | 2 | 3>(2);
+  const [zoom, setZoom] = useState<1 | 2 | 3>(2); // 1=Áttekintő on mobile (set after mount)
+
+  // Set Áttekintő (zoom=1) as default on narrow screens
+  useEffect(() => {
+    if (window.innerWidth < 640) setZoom(1);
+  }, []);
   const [sort, setSort] = useState<string>("priceMin");
   const compare = useCompare();
 

@@ -19,8 +19,9 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import type { Brand, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
+import type { Brand, Dealer, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
 import { ModelGallery } from "./model-gallery";
+import { DealerSection } from "./dealer-section";
 import { QuoteButtonLarge } from "../quote-button-large";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
@@ -32,12 +33,14 @@ export function ModelDetail({
   trims,
   similar,
   photos,
+  dealers,
 }: {
   model: ModelRow;
   brand: Brand;
   trims: ModelTrim[];
   similar: ModelRow[];
   photos: ModelPhoto[];
+  dealers: Dealer[];
 }) {
   const tone = model.brand_tone ?? "#374151";
   const isEV = model.drive === "Elektromos";
@@ -373,12 +376,15 @@ export function ModelDetail({
         </div>
       </section>
 
+      {/* DEALERS */}
+      <DealerSection dealers={dealers} brandName={model.brand_name} />
+
       {/* SOURCES */}
       <section className="block" style={{ background: "#fbfaf6" }}>
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">06 · Hivatalos források</div>
+              <div className="step">07 · Hivatalos források</div>
               <h2>
                 Importőr és <em>kereskedői</em> linkek.
               </h2>
@@ -473,7 +479,7 @@ export function ModelDetail({
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">07 · Hasonló modellek</div>
+              <div className="step">08 · Hasonló modellek</div>
               <h2>
                 Még <em>érdekelhet</em>.
               </h2>

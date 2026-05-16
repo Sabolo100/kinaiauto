@@ -10,6 +10,7 @@ import {
   getModelByBrandAndSlug,
   getTrimsForModel,
   getPhotosForModel,
+  getDealersForBrand,
 } from "@/lib/data";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema, vehicleSchema } from "@/lib/seo";
@@ -52,9 +53,10 @@ export default async function ModelPage({ params }: Props) {
   const b = allBrands.find((x) => x.slug === brand);
   if (!m || !b) notFound();
 
-  const [trims, photos] = await Promise.all([
+  const [trims, photos, dealers] = await Promise.all([
     getTrimsForModel(m.id),
     getPhotosForModel(m.id),
+    getDealersForBrand(b.id),
   ]);
 
   // Find similar models (same category or drive, exclude self)
@@ -75,7 +77,7 @@ export default async function ModelPage({ params }: Props) {
 
   return (
     <>
-      <ModelDetail model={m} brand={b} trims={trims} similar={similar} photos={photos} />
+      <ModelDetail model={m} brand={b} trims={trims} similar={similar} photos={photos} dealers={dealers} />
 
       <JsonLd data={vehicleSchema(m)} />
       <JsonLd
