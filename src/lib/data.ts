@@ -122,7 +122,8 @@ export async function getModels(): Promise<ModelRow[]> {
   if (HAS_SUPABASE && supabase) {
     const { data, error } = await supabase
       .from("v_models")
-      .select("*");
+      .select("*")
+      .is("archived_at", null); // exclude archived models from all public pages
     if (!error && data) return data as ModelRow[];
   }
   return SEED_MODELS;
