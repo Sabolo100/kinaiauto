@@ -263,17 +263,17 @@
   z-index: 4;
 }
 
-/* Tall positioning container (height set inline) */
+/* Flex column list — height driven by content */
 .cat-mob-list {
-  position: relative;
-  /* width: 100% implicit */
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0 80px;
 }
 
-/* Individual card — absolute within .cat-mob-list */
+/* Individual card — flex item */
 .cat-mob-card {
-  position: absolute;
-  left: 12px;
-  right: 12px;
+  flex-shrink: 0;
+  margin: 0 12px;
   height: 56px;
   display: flex;
   align-items: stretch;
@@ -288,6 +288,28 @@
 .cat-mob-card:active {
   border-color: var(--ink-soft);
   box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.18);
+}
+
+/* Gap elements between consecutive cards */
+.cat-mob-gap {
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  margin: 0 12px;
+}
+.cat-mob-gap-lbl {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+/* Zero (or near-zero) difference between adjacent cards */
+.cat-mob-samegap {
+  height: 4px;
+  flex-shrink: 0;
 }
 
 /* Thumbnail */

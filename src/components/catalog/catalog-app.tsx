@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Banknote,
@@ -71,12 +71,6 @@ const CARDS_X = 128;
 const TOP_PAD = 24;
 const BOT_PAD = 64;
 
-// ─── Mobile layout constants ──────────────────────────────────────────────────
-const MOB_CARD_H = 56;   // card height on mobile
-const MOB_MIN_GAP = 6;   // min gap between cards (same value)
-const MOB_TOP_PAD = 8;
-const MOB_BOT_PAD = 80;
-
 type Param = "priceMin" | "range" | "length" | "trunk" | "battery" | "power" | "seats";
 
 const PARAMS: {
@@ -115,6 +109,19 @@ export function CatalogApp({
   const [param,   setParam]   = useState<Param>("priceMin");
   const [pinned,  setPinned]  = useState<ModelRow | null>(null);
   const [hovered, setHovered] = useState<ModelRow | null>(null);
+
+  // ── Preload all thumbnails on mount ─────────────────────────────────────────
+  // Model data is already on the client (prop). Triggering Image() downloads
+  // caches all ~60–100 thumbnails so scrolling through the list is instant.
+  useEffect(() => {
+    models.forEach((m) => {
+      const src = photoUrl(m.primary_photo_path);
+      if (src) {
+        const img = new window.Image();
+        img.src = src;
+      }
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleSet(s: Set<string>, v: string): Set<string> {
     const n = new Set(s);
@@ -168,16 +175,12 @@ export function CatalogApp({
               <button type="button"
                 className={`fltr-chip${prices.size === 0 ? " on" : ""}`}
                 onClick={() => setPrices(new Set())}
-              >
-                Összes
-              </button>
+              >Összes</button>
               {bands.map((b) => (
                 <button key={b.id} type="button"
                   className={`fltr-chip${prices.has(b.id) ? " on" : ""}`}
                   onClick={() => setPrices(toggleSet(prices, b.id))}
-                >
-                  {b.label_hu}
-                </button>
+                >{b.label_hu}</button>
               ))}
             </div>
           </div>
@@ -191,16 +194,12 @@ export function CatalogApp({
               <button type="button"
                 className={`fltr-chip${drvSel.size === 0 ? " on" : ""}`}
                 onClick={() => setDrvSel(new Set())}
-              >
-                Összes
-              </button>
+              >Összes</button>
               {drives.map((d) => (
                 <button key={d.id} type="button"
                   className={`fltr-chip${drvSel.has(d.label_hu) ? " on" : ""}`}
                   onClick={() => setDrvSel(toggleSet(drvSel, d.label_hu))}
-                >
-                  {d.label_hu}
-                </button>
+                >{d.label_hu}</button>
               ))}
             </div>
           </div>
@@ -211,7 +210,6 @@ export function CatalogApp({
               <span className="cat-frow-label">Kategória</span>
             </div>
             <div className="cat-frow-chips cat-frow-chips--cat">
-              {/* "Összes" uses cat-chip--all (no icon, text only) */}
               <button type="button"
                 className={`cat-chip cat-chip--all${cats.size === 0 ? " on" : ""}`}
                 onClick={() => setCats(new Set())}
@@ -249,21 +247,17 @@ export function CatalogApp({
               <button type="button"
                 className={`fltr-chip${brSel.size === 0 ? " on" : ""}`}
                 onClick={() => setBrSel(new Set())}
-              >
-                Összes
-              </button>
+              >Összes</button>
               {brands.map((b) => (
                 <button key={b.id} type="button"
                   className={`fltr-chip${brSel.has(b.name) ? " on" : ""}`}
                   onClick={() => setBrSel(toggleSet(brSel, b.name))}
-                >
-                  {b.name}
-                </button>
+                >{b.name}</button>
               ))}
             </div>
           </div>
 
-          {/* Param picker — visually separated below filters */}
+          {/* Param picker — separated below filters */}
           <div className="cat-param-bar">
             <div className="cat-param-bar-label">
               Megjelenítés alapja · <b>{paramDef.label}</b>
@@ -284,7 +278,7 @@ export function CatalogApp({
         </div>
       </div>
 
-      {/* ── Desktop: chart + detail panel ──────────────────────────────────── */}
+      {/* ── Desktop: chart + detail ─────────────────────────────────────────── */}
       <div className="container-wide">
         <div className="cat-main">
           <div className="cat-center">
@@ -310,10 +304,37 @@ export function CatalogApp({
         </div>
       </div>
 
-      {/* ── Mobile: vertical card list ─────────────────────────────────────── */}
+      {/* ── Mobile: vertical diff-list ──────────────────────────────────────── */}
       <MobileBar withVal={withVal} param={paramDef} visible={visible} />
     </div>
   );
+}
+
+// ─── Difference label formatter ───────────────────────────────────────────────
+function fmtDiff(diff: number, paramId: Param): string {
+  if (diff <= 0) return "";
+  switch (paramId) {
+    case "priceMin":
+      // ≥ 1M → "+1,4 M"   < 1M → "+400 E"
+      if (diff >= 1) return `+${diff.toFixed(1).replace(".", ",")} M`;
+      return `+${Math.round(diff * 1000)} E`;
+    case "range":    return `+${Math.round(diff)} km`;
+    case "length":   return `+${Math.round(diff)} mm`;
+    case "trunk":    return `+${Math.round(diff)} l`;
+    case "battery":
+      return `+${(Math.round(diff * 10) / 10).toString().replace(".", ",")} kWh`;
+    case "power":    return `+${Math.round(diff)} LE`;
+    case "seats":    return `+${Math.round(diff)} fő`;
+    default:         return `+${diff}`;
+  }
+}
+
+// ─── Gap background gradient (warm amber, scales with diff magnitude) ─────────
+function gapBg(normalized: number): string {
+  // lightness 96% → 77%, chroma 0.02 → 0.19, hue 50 (warm amber)
+  const l = (96 - normalized * 19).toFixed(1);
+  const c = (0.02 + normalized * 0.17).toFixed(3);
+  return `linear-gradient(to right, transparent, oklch(${l}% ${c} 50) 50%, transparent)`;
 }
 
 // ─── Tick step calculation ────────────────────────────────────────────────────
@@ -446,45 +467,7 @@ function computeLayout(
   return { placed, chartH, ticks };
 }
 
-// ─── Mobile layout computation ────────────────────────────────────────────────
-// Values map linearly to vertical positions → spacing reflects value differences.
-// Same value → adjacent cards (MOB_MIN_GAP apart); larger gap → more spacing.
-function computeMobileLayout(
-  cars: CarItem[],
-  minV: number,
-  maxV: number,
-  paramId: Param,
-): { placed: { m: ModelRow; v: number; y: number }[]; totalH: number } {
-  const span         = maxV - minV || 1;
-  const tickStep     = computeTickStep(paramId, span);
-  const numIntervals = Math.max(1, Math.ceil(span / tickStep));
-  // 80 px per tick interval → proportional visual spacing
-  const effH         = numIntervals * 80;
-
-  function yForVal(v: number): number {
-    return MOB_TOP_PAD + ((v - minV) / span) * effH;
-  }
-
-  const sorted = [...cars].sort((a, b) => a.v - b.v);
-  const placed: { m: ModelRow; v: number; y: number }[] = [];
-  let prevBottom = MOB_TOP_PAD;
-
-  for (const item of sorted) {
-    // Ideal position on the implicit axis; push down if it would overlap
-    const natural = yForVal(item.v);
-    const y       = Math.max(prevBottom, natural);
-    placed.push({ m: item.m, v: item.v, y });
-    prevBottom = y + MOB_CARD_H + MOB_MIN_GAP;
-  }
-
-  const totalH = Math.max(
-    effH + MOB_TOP_PAD + MOB_BOT_PAD,
-    prevBottom + MOB_BOT_PAD,
-  );
-  return { placed, totalH };
-}
-
-// ─── Desktop vertical bar (chart) ────────────────────────────────────────────
+// ─── Desktop vertical bar ─────────────────────────────────────────────────────
 function VBar({
   visible, withVal, param, pinned, hovered, onHover, onPin,
 }: {
@@ -560,8 +543,7 @@ function VBar({
           {layout.placed.map((p) => {
             const isHi = hovered?.id === p.m.id || pinned?.id === p.m.id;
             return (
-              <line
-                key={p.m.id}
+              <line key={p.m.id}
                 x1={AXIS_X} y1={p.axisY}
                 x2={p.cardX} y2={p.cardY + CARD_H / 2}
                 className={`cat-cl${isHi ? " hi" : ""}`}
@@ -573,8 +555,7 @@ function VBar({
         {layout.placed.map((p) => {
           const photo = photoUrl(p.m.primary_photo_path);
           return (
-            <div
-              key={p.m.id}
+            <div key={p.m.id}
               className={`cat-card${pinned?.id === p.m.id ? " pinned" : ""}`}
               style={{ left: p.cardX, top: p.cardY }}
               onMouseEnter={() => onHover(p.m)}
@@ -596,7 +577,7 @@ function VBar({
   );
 }
 
-// ─── Mobile card list ─────────────────────────────────────────────────────────
+// ─── Mobile card list with value-difference labels ────────────────────────────
 function MobileBar({
   withVal, param, visible,
 }: {
@@ -614,14 +595,20 @@ function MobileBar({
     );
   }
 
-  const vals = withVal.map((m) => m[param.col] as number);
-  const minV = Math.min(...vals);
-  const maxV = Math.max(...vals);
-
-  const layout = computeMobileLayout(
-    withVal.map((m) => ({ m, v: m[param.col] as number })),
-    minV, maxV, param.id,
+  // Sort ascending by param value
+  const sorted = [...withVal].sort(
+    (a, b) => (a[param.col] as number) - (b[param.col] as number),
   );
+
+  // Compute max diff for gradient normalization
+  let maxDiff = 0.001;
+  for (let i = 1; i < sorted.length; i++) {
+    const d = (sorted[i][param.col] as number) - (sorted[i - 1][param.col] as number);
+    if (d > maxDiff) maxDiff = d;
+  }
+
+  const minV = sorted[0][param.col] as number;
+  const maxV = sorted[sorted.length - 1][param.col] as number;
 
   return (
     <div className="cat-mob-results">
@@ -630,35 +617,58 @@ function MobileBar({
         {param.fmt(minV)} – {param.fmt(maxV)}
       </div>
 
-      {/* Scrollable card column with fade-out hint at bottom */}
       <div className="cat-mob-scroll-wrap">
         <div className="cat-mob-scroll">
-          <div className="cat-mob-list" style={{ height: layout.totalH }}>
-            {layout.placed.map((p) => {
-              const photo = photoUrl(p.m.primary_photo_path);
+          <div className="cat-mob-list">
+            {sorted.map((m, i) => {
+              const v     = m[param.col] as number;
+              const photo = photoUrl(m.primary_photo_path);
+              const next  = sorted[i + 1];
+              const diff  = next ? (next[param.col] as number) - v : 0;
+              const norm  = diff / maxDiff; // 0–1
+
               return (
-                <Link
-                  key={p.m.id}
-                  href={`/modellek/${p.m.brand_slug}/${p.m.slug}`}
-                  className="cat-mob-card"
-                  style={{ top: p.y }}
-                >
-                  <div className="cat-mob-thumb">
-                    {photo ? <img src={photo} alt="" loading="lazy" /> : null}
-                  </div>
-                  <div className="cat-mob-info">
-                    <div className="cat-mob-name">
-                      <span className="cat-mob-brand">{p.m.brand_name}</span>
-                      {" "}{p.m.name}
+                <Fragment key={m.id}>
+                  {/* Card */}
+                  <Link
+                    href={`/modellek/${m.brand_slug}/${m.slug}`}
+                    className="cat-mob-card"
+                  >
+                    <div className="cat-mob-thumb">
+                      {photo ? <img src={photo} alt="" loading="eager" /> : null}
                     </div>
-                    <div className="cat-mob-val">{param.fmt(p.v)}</div>
-                  </div>
-                </Link>
+                    <div className="cat-mob-info">
+                      <div className="cat-mob-name">
+                        <span className="cat-mob-brand">{m.brand_name}</span>
+                        {" "}{m.name}
+                      </div>
+                      <div className="cat-mob-val">{param.fmt(v)}</div>
+                    </div>
+                  </Link>
+
+                  {/* Gap between this card and the next */}
+                  {next && (
+                    diff < 0.001 ? (
+                      // Same value — tiny spacer, no label
+                      <div className="cat-mob-samegap" />
+                    ) : (
+                      // Different value — labelled gap with warm amber gradient
+                      <div
+                        className="cat-mob-gap"
+                        style={{ background: gapBg(norm) }}
+                      >
+                        <span className="cat-mob-gap-lbl">
+                          {fmtDiff(diff, param.id)}
+                        </span>
+                      </div>
+                    )
+                  )}
+                </Fragment>
               );
             })}
           </div>
         </div>
-        {/* Gradient hint: "more content below" */}
+        {/* Gradient fade → "there's more below" visual hint */}
         <div className="cat-mob-fade" aria-hidden="true" />
       </div>
     </div>
