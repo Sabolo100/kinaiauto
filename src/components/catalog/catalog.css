@@ -80,6 +80,12 @@
 }
 
 /* ── Category icon chips (same design as homepage finder) ─────────────────── */
+/* "Összes" chip — text only, vertically centred (no icon placeholder) */
+.cat-chip--all {
+  justify-content: center;
+  min-height: 52px; /* matches icon chips height */
+}
+
 .cat-chip {
   display: flex;
   flex-direction: column;
@@ -204,13 +210,128 @@
     display: none;
   }
 }
-@media (max-width: 600px) {
-  .cat-frow {
-    padding: 10px 16px;
-  }
-  .cat-param-bar {
-    padding: 12px 16px 14px;
-  }
+
+/* ─── Mobile: hide desktop chart, show card list ──────────────────────────── */
+.cat-mob-results { display: none; }
+
+@media (max-width: 768px) {
+  /* Desktop chart area hidden */
+  .cat-main { display: none; }
+  /* Mobile results shown */
+  .cat-mob-results { display: block; }
+  /* Smaller filter padding */
+  .cat-frow { padding: 10px 16px; }
+  .cat-param-bar { padding: 12px 16px 14px; }
+}
+
+/* ─── Mobile card list ────────────────────────────────────────────────────── */
+.cat-mob-results {
+  padding-bottom: 40px;
+}
+.cat-mob-head {
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  color: var(--ink-mute);
+  letter-spacing: 0.04em;
+  padding: 12px 16px 8px;
+}
+.cat-mob-head b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Scroll container + gradient wrapper */
+.cat-mob-scroll-wrap {
+  position: relative;
+}
+.cat-mob-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* ~6 cards visible (56px × 6 + gaps ≈ 350px) */
+  height: 55svh;
+  height: 55vh; /* fallback */
+}
+/* Gradient fade = visual hint that content continues below */
+.cat-mob-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: linear-gradient(to bottom, transparent, var(--bg, #f5f3ec));
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Tall positioning container (height set inline) */
+.cat-mob-list {
+  position: relative;
+  /* width: 100% implicit */
+}
+
+/* Individual card — absolute within .cat-mob-list */
+.cat-mob-card {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  height: 56px;
+  display: flex;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.cat-mob-card:active {
+  border-color: var(--ink-soft);
+  box-shadow: 0 2px 8px -4px rgba(0, 0, 0, 0.18);
+}
+
+/* Thumbnail */
+.cat-mob-thumb {
+  width: 56px;
+  flex-shrink: 0;
+  background: #f0ede4;
+  background-image: repeating-linear-gradient(135deg, #f1ede2 0 5px, #ebe7dc 5px 10px);
+  overflow: hidden;
+}
+.cat-mob-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text area */
+.cat-mob-info {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+.cat-mob-name {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+.cat-mob-brand {
+  font-weight: 600;
+}
+.cat-mob-val {
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+  color: var(--accent-ink);
+  white-space: nowrap;
 }
 
 /* ─── Center column ───────────────────────────────────────────────────────── */

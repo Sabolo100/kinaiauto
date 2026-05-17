@@ -60,7 +60,7 @@ const CAT_ORDER: Record<string, number> = {
   "mpv": 10, "roadster": 11, "pickup": 12,
 };
 
-// ─── Chart layout constants ───────────────────────────────────────────────────
+// ─── Desktop chart layout constants ──────────────────────────────────────────
 const AXIS_X  = 90;
 const CARD_H  = 60;
 const CARD_W  = 200;
@@ -70,6 +70,12 @@ const GRP_GAP = 22;
 const CARDS_X = 128;
 const TOP_PAD = 24;
 const BOT_PAD = 64;
+
+// ─── Mobile layout constants ──────────────────────────────────────────────────
+const MOB_CARD_H = 56;   // card height on mobile
+const MOB_MIN_GAP = 6;   // min gap between cards (same value)
+const MOB_TOP_PAD = 8;
+const MOB_BOT_PAD = 80;
 
 type Param = "priceMin" | "range" | "length" | "trunk" | "battery" | "power" | "seats";
 
@@ -157,13 +163,14 @@ export function CatalogApp({
           <div className="cat-frow">
             <div className="cat-frow-head">
               <span className="cat-frow-label">Ársáv</span>
-              {prices.size > 0 && (
-                <button type="button" className="cat-frow-clear" onClick={() => setPrices(new Set())}>
-                  × törlés
-                </button>
-              )}
             </div>
             <div className="cat-frow-chips">
+              <button type="button"
+                className={`fltr-chip${prices.size === 0 ? " on" : ""}`}
+                onClick={() => setPrices(new Set())}
+              >
+                Összes
+              </button>
               {bands.map((b) => (
                 <button key={b.id} type="button"
                   className={`fltr-chip${prices.has(b.id) ? " on" : ""}`}
@@ -179,13 +186,14 @@ export function CatalogApp({
           <div className="cat-frow">
             <div className="cat-frow-head">
               <span className="cat-frow-label">Hajtás</span>
-              {drvSel.size > 0 && (
-                <button type="button" className="cat-frow-clear" onClick={() => setDrvSel(new Set())}>
-                  × törlés
-                </button>
-              )}
             </div>
             <div className="cat-frow-chips">
+              <button type="button"
+                className={`fltr-chip${drvSel.size === 0 ? " on" : ""}`}
+                onClick={() => setDrvSel(new Set())}
+              >
+                Összes
+              </button>
               {drives.map((d) => (
                 <button key={d.id} type="button"
                   className={`fltr-chip${drvSel.has(d.label_hu) ? " on" : ""}`}
@@ -197,17 +205,19 @@ export function CatalogApp({
             </div>
           </div>
 
-          {/* Row: Kategória — icon chips, same as homepage */}
+          {/* Row: Kategória — icon chips */}
           <div className="cat-frow">
             <div className="cat-frow-head">
               <span className="cat-frow-label">Kategória</span>
-              {cats.size > 0 && (
-                <button type="button" className="cat-frow-clear" onClick={() => setCats(new Set())}>
-                  × törlés
-                </button>
-              )}
             </div>
             <div className="cat-frow-chips cat-frow-chips--cat">
+              {/* "Összes" uses cat-chip--all (no icon, text only) */}
+              <button type="button"
+                className={`cat-chip cat-chip--all${cats.size === 0 ? " on" : ""}`}
+                onClick={() => setCats(new Set())}
+              >
+                <span className="cat-chip-name">Összes</span>
+              </button>
               {sortedCats.map((c) => {
                 const short = CAT_SHORT[c.slug] ?? c.label_hu;
                 const icon  = CAT_ICON[c.slug];
@@ -234,13 +244,14 @@ export function CatalogApp({
           <div className="cat-frow">
             <div className="cat-frow-head">
               <span className="cat-frow-label">Márka</span>
-              {brSel.size > 0 && (
-                <button type="button" className="cat-frow-clear" onClick={() => setBrSel(new Set())}>
-                  × törlés
-                </button>
-              )}
             </div>
             <div className="cat-frow-chips">
+              <button type="button"
+                className={`fltr-chip${brSel.size === 0 ? " on" : ""}`}
+                onClick={() => setBrSel(new Set())}
+              >
+                Összes
+              </button>
               {brands.map((b) => (
                 <button key={b.id} type="button"
                   className={`fltr-chip${brSel.has(b.name) ? " on" : ""}`}
@@ -252,7 +263,7 @@ export function CatalogApp({
             </div>
           </div>
 
-          {/* Param picker — separated section below filters */}
+          {/* Param picker — visually separated below filters */}
           <div className="cat-param-bar">
             <div className="cat-param-bar-label">
               Megjelenítés alapja · <b>{paramDef.label}</b>
@@ -273,7 +284,7 @@ export function CatalogApp({
         </div>
       </div>
 
-      {/* ── Main content ───────────────────────────────────────────────────── */}
+      {/* ── Desktop: chart + detail panel ──────────────────────────────────── */}
       <div className="container-wide">
         <div className="cat-main">
           <div className="cat-center">
@@ -298,6 +309,9 @@ export function CatalogApp({
           </aside>
         </div>
       </div>
+
+      {/* ── Mobile: vertical card list ─────────────────────────────────────── */}
+      <MobileBar withVal={withVal} param={paramDef} visible={visible} />
     </div>
   );
 }
@@ -320,7 +334,7 @@ function computeTickStep(paramId: Param, span: number): number {
   return opts[opts.length - 1];
 }
 
-// ─── Layout computation ───────────────────────────────────────────────────────
+// ─── Desktop layout computation ───────────────────────────────────────────────
 interface PlacedCar {
   m: ModelRow;
   v: number;
@@ -347,10 +361,9 @@ function computeLayout(
   const tickStep     = computeTickStep(paramId, span);
   const numIntervals = Math.max(1, Math.ceil(span / tickStep));
   const maxCols      = Math.max(1, Math.floor((containerWidth - CARDS_X) / (CARD_W + H_GAP)));
+  const sorted       = [...cars].sort((a, b) => a.v - b.v);
 
-  const sorted = [...cars].sort((a, b) => a.v - b.v);
-
-  // ① Pre-group in value-space → compute total card rows → stable chartH
+  // ① Pre-group in value-space → stable chartH
   const CLUSTER_VAL = Math.max(span * 0.015, 0.001);
   const preGroups: CarItem[][] = [];
   {
@@ -376,16 +389,15 @@ function computeLayout(
     500,
   );
 
-  // ② Y-mapping using stable chartH
+  // ② Y-mapping
   const effRange = chartH - TOP_PAD - BOT_PAD;
   function yOnAxis(v: number): number {
     return TOP_PAD + ((v - minV) / span) * effRange;
   }
 
-  // ③ Pixel-space grouping for placement
+  // ③ Pixel-space grouping
   const pxPerInterval = effRange / numIntervals;
   const CLUSTER_PX    = Math.min(CARD_H, pxPerInterval * 0.55);
-
   const groups: { cars: CarItem[]; axisY: number }[] = [];
   {
     let cur: CarItem[] = [];
@@ -407,22 +419,17 @@ function computeLayout(
   // ④ Place groups
   const placed: PlacedCar[] = [];
   let prevBottom = TOP_PAD;
-
   for (const g of groups) {
     const numRows  = Math.ceil(g.cars.length / maxCols);
     const natTop   = Math.max(TOP_PAD, g.axisY - CARD_H / 2);
     const groupTop = Math.max(prevBottom, natTop);
-
     g.cars.forEach((item, i) => {
       placed.push({
-        m:     item.m,
-        v:     item.v,
-        axisY: g.axisY,
+        m: item.m, v: item.v, axisY: g.axisY,
         cardX: CARDS_X + (i % maxCols) * (CARD_W + H_GAP),
         cardY: groupTop + Math.floor(i / maxCols) * (CARD_H + V_GAP),
       });
     });
-
     prevBottom = groupTop + numRows * CARD_H + (numRows - 1) * V_GAP + GRP_GAP;
   }
 
@@ -439,7 +446,45 @@ function computeLayout(
   return { placed, chartH, ticks };
 }
 
-// ─── Vertical bar (chart) ─────────────────────────────────────────────────────
+// ─── Mobile layout computation ────────────────────────────────────────────────
+// Values map linearly to vertical positions → spacing reflects value differences.
+// Same value → adjacent cards (MOB_MIN_GAP apart); larger gap → more spacing.
+function computeMobileLayout(
+  cars: CarItem[],
+  minV: number,
+  maxV: number,
+  paramId: Param,
+): { placed: { m: ModelRow; v: number; y: number }[]; totalH: number } {
+  const span         = maxV - minV || 1;
+  const tickStep     = computeTickStep(paramId, span);
+  const numIntervals = Math.max(1, Math.ceil(span / tickStep));
+  // 80 px per tick interval → proportional visual spacing
+  const effH         = numIntervals * 80;
+
+  function yForVal(v: number): number {
+    return MOB_TOP_PAD + ((v - minV) / span) * effH;
+  }
+
+  const sorted = [...cars].sort((a, b) => a.v - b.v);
+  const placed: { m: ModelRow; v: number; y: number }[] = [];
+  let prevBottom = MOB_TOP_PAD;
+
+  for (const item of sorted) {
+    // Ideal position on the implicit axis; push down if it would overlap
+    const natural = yForVal(item.v);
+    const y       = Math.max(prevBottom, natural);
+    placed.push({ m: item.m, v: item.v, y });
+    prevBottom = y + MOB_CARD_H + MOB_MIN_GAP;
+  }
+
+  const totalH = Math.max(
+    effH + MOB_TOP_PAD + MOB_BOT_PAD,
+    prevBottom + MOB_BOT_PAD,
+  );
+  return { placed, totalH };
+}
+
+// ─── Desktop vertical bar (chart) ────────────────────────────────────────────
 function VBar({
   visible, withVal, param, pinned, hovered, onHover, onPin,
 }: {
@@ -502,10 +547,8 @@ function VBar({
       </div>
 
       <div ref={wrapRef} className="cat-chart" style={{ height: layout.chartH }}>
-        {/* Axis line — full chart height */}
         <div className="cat-ax-line" style={{ height: layout.chartH }} />
 
-        {/* Tick marks */}
         {layout.ticks.map((t) => (
           <div key={t.v} className="cat-ax-tick" style={{ top: t.y }}>
             <span className="cat-ax-tick-lbl">{t.label}</span>
@@ -513,12 +556,7 @@ function VBar({
           </div>
         ))}
 
-        {/* SVG: straight diagonal connectors — behind cards */}
-        <svg
-          className="cat-connectors"
-          style={{ height: layout.chartH }}
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg className="cat-connectors" style={{ height: layout.chartH }} xmlns="http://www.w3.org/2000/svg">
           {layout.placed.map((p) => {
             const isHi = hovered?.id === p.m.id || pinned?.id === p.m.id;
             return (
@@ -532,7 +570,6 @@ function VBar({
           })}
         </svg>
 
-        {/* Car cards */}
         {layout.placed.map((p) => {
           const photo = photoUrl(p.m.primary_photo_path);
           return (
@@ -559,7 +596,76 @@ function VBar({
   );
 }
 
-// ─── Detail card ──────────────────────────────────────────────────────────────
+// ─── Mobile card list ─────────────────────────────────────────────────────────
+function MobileBar({
+  withVal, param, visible,
+}: {
+  withVal: ModelRow[];
+  param: (typeof PARAMS)[number];
+  visible: ModelRow[];
+}) {
+  if (!withVal.length) {
+    return (
+      <div className="cat-mob-results">
+        <div className="cat-empty" style={{ margin: "20px 16px" }}>
+          Nincs megjeleníthető modell a jelenlegi szűrőkkel.
+        </div>
+      </div>
+    );
+  }
+
+  const vals = withVal.map((m) => m[param.col] as number);
+  const minV = Math.min(...vals);
+  const maxV = Math.max(...vals);
+
+  const layout = computeMobileLayout(
+    withVal.map((m) => ({ m, v: m[param.col] as number })),
+    minV, maxV, param.id,
+  );
+
+  return (
+    <div className="cat-mob-results">
+      <div className="cat-mob-head">
+        <b>{visible.length}</b> modell &middot; {param.label}:{" "}
+        {param.fmt(minV)} – {param.fmt(maxV)}
+      </div>
+
+      {/* Scrollable card column with fade-out hint at bottom */}
+      <div className="cat-mob-scroll-wrap">
+        <div className="cat-mob-scroll">
+          <div className="cat-mob-list" style={{ height: layout.totalH }}>
+            {layout.placed.map((p) => {
+              const photo = photoUrl(p.m.primary_photo_path);
+              return (
+                <Link
+                  key={p.m.id}
+                  href={`/modellek/${p.m.brand_slug}/${p.m.slug}`}
+                  className="cat-mob-card"
+                  style={{ top: p.y }}
+                >
+                  <div className="cat-mob-thumb">
+                    {photo ? <img src={photo} alt="" loading="lazy" /> : null}
+                  </div>
+                  <div className="cat-mob-info">
+                    <div className="cat-mob-name">
+                      <span className="cat-mob-brand">{p.m.brand_name}</span>
+                      {" "}{p.m.name}
+                    </div>
+                    <div className="cat-mob-val">{param.fmt(p.v)}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+        {/* Gradient hint: "more content below" */}
+        <div className="cat-mob-fade" aria-hidden="true" />
+      </div>
+    </div>
+  );
+}
+
+// ─── Desktop detail card ──────────────────────────────────────────────────────
 function DetailCard({ model }: { model: ModelRow }) {
   const photo = photoUrl(model.primary_photo_path);
   return (
