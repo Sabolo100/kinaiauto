@@ -116,6 +116,10 @@ export type ModelEngineOption = {
   trunk_l: number | null;
   seats: number | null;
   consumption_text: string | null;
+  charging_ac_kw: number | null;
+  charging_dc_kw: number | null;
+  charging_text: string | null;
+  acceleration_s: number | null;
   sort_order: number;
 };
 

@@ -3,6 +3,48 @@
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
+// Decimal-friendly controlled number input.
+// Keeps a local string while typing so "5." doesn't snap back to "5".
+function NumInput({
+  value,
+  onValue,
+  placeholder,
+}: {
+  value: number | null;
+  onValue: (n: number | null) => void;
+  placeholder?: string;
+}) {
+  const [raw, setRaw] = useState(() => (value != null ? String(value) : ""));
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      placeholder={placeholder}
+      value={raw}
+      onChange={(e) => {
+        const s = e.target.value;
+        setRaw(s);
+        const norm = s.trim().replace(",", ".");
+        if (!norm) { onValue(null); return; }
+        if (norm.endsWith(".")) return; // user still typing decimal part
+        const n = parseFloat(norm);
+        if (Number.isFinite(n)) onValue(n);
+      }}
+      onBlur={(e) => {
+        const norm = e.target.value.trim().replace(",", ".");
+        const n = parseFloat(norm);
+        if (Number.isFinite(n)) {
+          onValue(n);
+          setRaw(String(n));
+        } else {
+          onValue(null);
+          setRaw("");
+        }
+      }}
+    />
+  );
+}
+
 export type Lookup = { id: number; slug?: string; label_hu: string };
 
 // European segment letter auto-suggested from category slug
@@ -82,6 +124,10 @@ export type EngineOptionInput = {
   trunk_l: number | null;
   seats: number | null;
   consumption_text: string | null;
+  charging_ac_kw: number | null;
+  charging_dc_kw: number | null;
+  charging_text: string | null;
+  acceleration_s: number | null;
 };
 
 export function ModelForm({
@@ -131,6 +177,10 @@ export function ModelForm({
         trunk_l: null,
         seats: null,
         consumption_text: null,
+        charging_ac_kw: null,
+        charging_dc_kw: null,
+        charging_text: null,
+        acceleration_s: null,
       },
     ]);
   }
@@ -227,10 +277,10 @@ export function ModelForm({
       <h2>Árazás</h2>
       <div className="row3">
         <label><span>Alapár (M Ft)</span>
-          <input value={v.price_min_m_ft ?? ""} onChange={(e) => set("price_min_m_ft", num(e.target.value))} />
+          <NumInput value={v.price_min_m_ft} onValue={(n) => set("price_min_m_ft", n)} />
         </label>
         <label><span>Csúcsár (M Ft)</span>
-          <input value={v.price_max_m_ft ?? ""} onChange={(e) => set("price_max_m_ft", num(e.target.value))} />
+          <NumInput value={v.price_max_m_ft} onValue={(n) => set("price_max_m_ft", n)} />
         </label>
         <label style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
           <input type="checkbox" checked={v.is_deal} onChange={(e) => set("is_deal", e.target.checked)} />
@@ -244,37 +294,37 @@ export function ModelForm({
       <h2>Méretek</h2>
       <div className="row3">
         <label><span>Hossz (mm)</span>
-          <input value={v.length_mm ?? ""} onChange={(e) => set("length_mm", num(e.target.value))} />
+          <NumInput value={v.length_mm} onValue={(n) => set("length_mm", n)} />
         </label>
         <label><span>Szélesség (mm)</span>
-          <input value={v.width_mm ?? ""} onChange={(e) => set("width_mm", num(e.target.value))} />
+          <NumInput value={v.width_mm} onValue={(n) => set("width_mm", n)} />
         </label>
         <label><span>Magasság (mm)</span>
-          <input value={v.height_mm ?? ""} onChange={(e) => set("height_mm", num(e.target.value))} />
+          <NumInput value={v.height_mm} onValue={(n) => set("height_mm", n)} />
         </label>
       </div>
       <div className="row3">
         <label><span>Tengelytáv (mm)</span>
-          <input value={v.wheelbase_mm ?? ""} onChange={(e) => set("wheelbase_mm", num(e.target.value))} />
+          <NumInput value={v.wheelbase_mm} onValue={(n) => set("wheelbase_mm", n)} />
         </label>
         <label><span>Csomagtartó (l)</span>
-          <input value={v.trunk_l ?? ""} onChange={(e) => set("trunk_l", num(e.target.value))} />
+          <NumInput value={v.trunk_l} onValue={(n) => set("trunk_l", n)} />
         </label>
         <label><span>Ülőhelyek</span>
-          <input value={v.seats ?? ""} onChange={(e) => set("seats", num(e.target.value))} />
+          <NumInput value={v.seats} onValue={(n) => set("seats", n)} />
         </label>
       </div>
 
       <h2>Hajtáslánc</h2>
       <div className="row3">
         <label><span>Teljesítmény (LE)</span>
-          <input value={v.power_hp ?? ""} onChange={(e) => set("power_hp", num(e.target.value))} />
+          <NumInput value={v.power_hp} onValue={(n) => set("power_hp", n)} />
         </label>
         <label><span>Akku (kWh)</span>
-          <input value={v.battery_kwh ?? ""} onChange={(e) => set("battery_kwh", num(e.target.value))} />
+          <NumInput value={v.battery_kwh} onValue={(n) => set("battery_kwh", n)} />
         </label>
         <label><span>Hatótáv (km)</span>
-          <input value={v.range_km ?? ""} onChange={(e) => set("range_km", num(e.target.value))} />
+          <NumInput value={v.range_km} onValue={(n) => set("range_km", n)} />
         </label>
       </div>
       <div className="row2">
@@ -282,7 +332,7 @@ export function ModelForm({
           <input value={v.consumption_text ?? ""} onChange={(e) => set("consumption_text", e.target.value || null)} />
         </label>
         <label><span>Gyorsulás 0–100 (s)</span>
-          <input value={v.acceleration_s ?? ""} onChange={(e) => set("acceleration_s", num(e.target.value))} />
+          <NumInput value={v.acceleration_s} onValue={(n) => set("acceleration_s", n)} />
         </label>
       </div>
 
@@ -313,42 +363,43 @@ export function ModelForm({
           </div>
           <div className="row3">
             <label><span>Hatótáv (km)</span>
-              <input
-                value={o.range_km ?? ""}
-                onChange={(e) => updateEngineOption(i, { range_km: num(e.target.value) })}
-              />
+              <NumInput value={o.range_km ?? null} onValue={(n) => updateEngineOption(i, { range_km: n })} />
             </label>
             <label><span>Teljesítmény (LE)</span>
-              <input
-                value={o.power_hp ?? ""}
-                onChange={(e) => updateEngineOption(i, { power_hp: num(e.target.value) })}
-              />
+              <NumInput value={o.power_hp ?? null} onValue={(n) => updateEngineOption(i, { power_hp: n })} />
             </label>
             <label><span>Akku (kWh)</span>
-              <input
-                value={o.battery_kwh ?? ""}
-                onChange={(e) => updateEngineOption(i, { battery_kwh: num(e.target.value) })}
-              />
+              <NumInput value={o.battery_kwh ?? null} onValue={(n) => updateEngineOption(i, { battery_kwh: n })} />
             </label>
           </div>
           <div className="row3">
             <label><span>Csomagtartó (l)</span>
-              <input
-                value={o.trunk_l ?? ""}
-                onChange={(e) => updateEngineOption(i, { trunk_l: num(e.target.value) })}
-              />
+              <NumInput value={o.trunk_l ?? null} onValue={(n) => updateEngineOption(i, { trunk_l: n })} />
             </label>
             <label><span>Ülések</span>
-              <input
-                value={o.seats ?? ""}
-                onChange={(e) => updateEngineOption(i, { seats: num(e.target.value) })}
-              />
+              <NumInput value={o.seats ?? null} onValue={(n) => updateEngineOption(i, { seats: n })} />
             </label>
             <label><span>Fogyasztás (szöveg)</span>
               <input
                 value={o.consumption_text ?? ""}
                 onChange={(e) => updateEngineOption(i, { consumption_text: e.target.value || null })}
               />
+            </label>
+          </div>
+          <div className="row3">
+            <label><span>AC töltés (kW)</span>
+              <NumInput value={o.charging_ac_kw ?? null} onValue={(n) => updateEngineOption(i, { charging_ac_kw: n })} />
+            </label>
+            <label><span>DC töltés (kW)</span>
+              <NumInput value={o.charging_dc_kw ?? null} onValue={(n) => updateEngineOption(i, { charging_dc_kw: n })} />
+            </label>
+            <label><span>0–100 km/h (s)</span>
+              <NumInput value={o.acceleration_s ?? null} onValue={(n) => updateEngineOption(i, { acceleration_s: n })} />
+            </label>
+          </div>
+          <div className="row2">
+            <label><span>Töltési infó (szöveg)</span>
+              <input value={o.charging_text ?? ""} onChange={(e) => updateEngineOption(i, { charging_text: e.target.value || null })} />
             </label>
           </div>
         </div>
@@ -365,10 +416,10 @@ export function ModelForm({
       <h2>Töltés</h2>
       <div className="row3">
         <label><span>AC (kW)</span>
-          <input value={v.charging_ac_kw ?? ""} onChange={(e) => set("charging_ac_kw", num(e.target.value))} />
+          <NumInput value={v.charging_ac_kw} onValue={(n) => set("charging_ac_kw", n)} />
         </label>
         <label><span>DC (kW)</span>
-          <input value={v.charging_dc_kw ?? ""} onChange={(e) => set("charging_dc_kw", num(e.target.value))} />
+          <NumInput value={v.charging_dc_kw} onValue={(n) => set("charging_dc_kw", n)} />
         </label>
         <label><span>Töltési szöveg</span>
           <input value={v.charging_text ?? ""} onChange={(e) => set("charging_text", e.target.value || null)} />
@@ -378,18 +429,18 @@ export function ModelForm({
       <h2>Garancia</h2>
       <div className="row2">
         <label><span>Garancia (év)</span>
-          <input value={v.warranty_years ?? ""} onChange={(e) => set("warranty_years", num(e.target.value))} />
+          <NumInput value={v.warranty_years} onValue={(n) => set("warranty_years", n)} />
         </label>
         <label><span>Garancia (km)</span>
-          <input value={v.warranty_km ?? ""} onChange={(e) => set("warranty_km", num(e.target.value))} />
+          <NumInput value={v.warranty_km} onValue={(n) => set("warranty_km", n)} />
         </label>
       </div>
       <div className="row2">
         <label><span>Akku-garancia (év)</span>
-          <input value={v.battery_warranty_years ?? ""} onChange={(e) => set("battery_warranty_years", num(e.target.value))} />
+          <NumInput value={v.battery_warranty_years} onValue={(n) => set("battery_warranty_years", n)} />
         </label>
         <label><span>Akku-garancia (km)</span>
-          <input value={v.battery_warranty_km ?? ""} onChange={(e) => set("battery_warranty_km", num(e.target.value))} />
+          <NumInput value={v.battery_warranty_km} onValue={(n) => set("battery_warranty_km", n)} />
         </label>
       </div>
 

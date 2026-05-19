@@ -1,20 +1,17 @@
 -- =====================================================================
--- Migration: hide soft-deleted models from public reads via v_models
+-- Migration: add source_url to v_models view
 -- Run once in the Supabase SQL Editor.
 --
--- Background: models.archived_at is the CMS soft-delete column. The
--- public site reads through the v_models view, which historically had
--- no WHERE clause — so archived models leaked onto every public page.
--- Postgres views don't inherit RLS from base tables, so the existing
--- `public_read_models` RLS policy on `models` doesn't protect this view.
+-- Background: source_url was stored in models.source_url but was
+-- missing from the v_models view SELECT list. As a result the field
+-- always returned NULL on the public site even when a value was saved
+-- in the CMS (e.g. Omoda 5, Dongfeng models).
 --
--- Fix: bake the archive filter into the view itself. After this runs,
--- ALL callers (publikus oldalak, generateStaticParams, Export oldal,
--- hasonló modellek, kosár, összehasonlítás) automatically skip archived
--- rows. The CMS continues to see archived rows because it reads the
--- `models` table directly via the service-role admin client.
+-- Fix: rebuild the view with source_url included.
+-- The full canonical view definition lives in v-models-hide-archived.sql.
 -- =====================================================================
 
+-- DROP first because CREATE OR REPLACE cannot reorder existing columns
 drop view if exists v_models;
 
 create view v_models as
@@ -92,6 +89,6 @@ from models m
 join brands     b on b.id = m.brand_id
 join categories c on c.id = m.category_id
 join drives     d on d.id = m.drive_id
-where m.archived_at is null;          -- soft-deleted models are hidden from all public reads
+where m.archived_at is null;
 
 grant select on v_models to anon, authenticated;

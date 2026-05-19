@@ -23,7 +23,7 @@ export default async function EditModelPage({
       .order("sort_order", { ascending: true }),
     sa
       .from("model_engine_options")
-      .select("id, name, range_km, power_hp, battery_kwh, trunk_l, seats, consumption_text")
+      .select("id, name, range_km, power_hp, battery_kwh, trunk_l, seats, consumption_text, charging_ac_kw, charging_dc_kw, charging_text, acceleration_s")
       .eq("model_id", id)
       .order("sort_order", { ascending: true }),
     getLookups(),
@@ -40,6 +40,10 @@ export default async function EditModelPage({
     trunk_l: o.trunk_l as number | null,
     seats: o.seats as number | null,
     consumption_text: o.consumption_text as string | null,
+    charging_ac_kw: o.charging_ac_kw as number | null,
+    charging_dc_kw: o.charging_dc_kw as number | null,
+    charging_text: o.charging_text as string | null,
+    acceleration_s: o.acceleration_s as number | null,
   }));
 
   return (

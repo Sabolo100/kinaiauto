@@ -16,6 +16,10 @@ export type EngineOptionInput = {
   trunk_l?: number | null;
   seats?: number | null;
   consumption_text?: string | null;
+  charging_ac_kw?: number | null;
+  charging_dc_kw?: number | null;
+  charging_text?: string | null;
+  acceleration_s?: number | null;
 };
 
 export async function syncEngineOptions(
@@ -40,6 +44,10 @@ export async function syncEngineOptions(
     trunk_l: o.trunk_l ?? null,
     seats: o.seats ?? null,
     consumption_text: (o.consumption_text ?? "").trim() || null,
+    charging_ac_kw: o.charging_ac_kw ?? null,
+    charging_dc_kw: o.charging_dc_kw ?? null,
+    charging_text: (o.charging_text ?? "").trim() || null,
+    acceleration_s: o.acceleration_s ?? null,
     sort_order: i,
   }));
 

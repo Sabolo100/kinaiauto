@@ -1,4 +1,4 @@
-import { Battery, Briefcase, Fuel, Gauge, Route, Users } from "lucide-react";
+import { Battery, BatteryCharging, Briefcase, Fuel, Gauge, PlugZap, Route, Timer, Users, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ModelEngineOption } from "@/lib/types";
 
@@ -6,9 +6,13 @@ type ColKey =
   | "range_km"
   | "battery_kwh"
   | "power_hp"
+  | "acceleration_s"
   | "trunk_l"
   | "seats"
-  | "consumption_text";
+  | "consumption_text"
+  | "charging_ac_kw"
+  | "charging_dc_kw"
+  | "charging_text";
 
 type ColDef = {
   key: ColKey;
@@ -21,9 +25,13 @@ const ALL_COLS: ColDef[] = [
   { key: "range_km", label: "Hatótáv", unit: "km", icon: <Route size={13} /> },
   { key: "battery_kwh", label: "Akku", unit: "kWh", icon: <Battery size={13} /> },
   { key: "power_hp", label: "Teljesítmény", unit: "LE", icon: <Gauge size={13} /> },
+  { key: "acceleration_s", label: "0–100", unit: "s", icon: <Timer size={13} /> },
   { key: "trunk_l", label: "Csomagtartó", unit: "l", icon: <Briefcase size={13} /> },
   { key: "seats", label: "Ülések", unit: "fő", icon: <Users size={13} /> },
   { key: "consumption_text", label: "Fogyasztás", unit: "", icon: <Fuel size={13} /> },
+  { key: "charging_ac_kw", label: "AC töltés", unit: "kW", icon: <PlugZap size={13} /> },
+  { key: "charging_dc_kw", label: "DC töltés", unit: "kW", icon: <BatteryCharging size={13} /> },
+  { key: "charging_text", label: "Töltés infó", unit: "", icon: <Zap size={13} /> },
 ];
 
 function hasValue(v: unknown): boolean {

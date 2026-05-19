@@ -73,6 +73,10 @@ export function ModelDetail({
               trunk_l: model.trunk_l ?? null,
               seats: model.seats ?? null,
               consumption_text: model.consumption_text ?? null,
+              charging_ac_kw: model.charging_ac_kw ?? null,
+              charging_dc_kw: model.charging_dc_kw ?? null,
+              charging_text: model.charging_text ?? null,
+              acceleration_s: model.acceleration_s ?? null,
               sort_order: 0,
             },
           ]
