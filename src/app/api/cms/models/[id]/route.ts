@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { syncEngineOptions, type EngineOptionInput } from "../engine-options";
 
 export const runtime = "nodejs";
 
@@ -29,14 +30,35 @@ export async function PATCH(
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "invalid body" }, { status: 400 });
   const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("models")
-    .update(pick(body))
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+
+  const picked = pick(body);
+  // Skip the model-row update if the request only carries auxiliary keys
+  // (e.g. engine_options only) and no model column changes.
+  let data: Record<string, unknown> | null = null;
+  if (Object.keys(picked).length > 0) {
+    const res = await sa
+      .from("models")
+      .update(picked)
+      .eq("id", id)
+      .select("*")
+      .single();
+    if (res.error) return NextResponse.json({ error: res.error.message }, { status: 500 });
+    data = res.data as Record<string, unknown>;
+  }
+
+  // Engine options sync (optional)
+  if (Array.isArray(body.engine_options)) {
+    const syncErr = await syncEngineOptions(
+      sa,
+      id,
+      body.engine_options as EngineOptionInput[],
+    );
+    if (syncErr) {
+      return NextResponse.json({ error: syncErr }, { status: 500 });
+    }
+  }
+
+  return NextResponse.json(data ?? { id });
 }
 
 export async function DELETE(

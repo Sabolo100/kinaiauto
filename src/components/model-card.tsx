@@ -187,6 +187,26 @@ export function ModelCard({
             </div>
           </div>
         </div>
+        {/* Variants — only shown when 2+ engine options exist */}
+        {(model.engine_options ?? []).length >= 2 && (
+          <div className="mc-variants">
+            <div className="mc-variants-head">Változatok</div>
+            <ul className="mc-variants-list">
+              {model.engine_options.map((o) => {
+                const parts: string[] = [];
+                if (o.range_km != null) parts.push(`${o.range_km} km`);
+                if (o.battery_kwh != null) parts.push(`${o.battery_kwh} kWh`);
+                if (o.power_hp != null && parts.length < 2) parts.push(`${o.power_hp} LE`);
+                return (
+                  <li key={o.id}>
+                    <span className="mc-v-name">{o.name || "Base"}</span>
+                    <span className="mc-v-vals">{parts.join(" · ")}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
         <div className="actions" style={{ position: "relative", zIndex: 1 }}>
           <Link
             href={`/osszehasonlitas?models=${encodeURIComponent(

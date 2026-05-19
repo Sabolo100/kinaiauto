@@ -17,6 +17,7 @@ import type {
   Brand,
   Category,
   Drive,
+  ModelEngineOption,
   ModelRow,
   PriceBand,
 } from "@/lib/types";
@@ -73,21 +74,82 @@ const BOT_PAD = 64;
 
 type Param = "priceMin" | "range" | "length" | "trunk" | "battery" | "power" | "seats";
 
+// `variantCol` maps each chart parameter to the corresponding column on
+// ModelEngineOption. If null, the parameter is *not* variant-specific
+// (e.g. price, length), so the model is rendered once with its base value.
 const PARAMS: {
   id: Param;
   label: string;
   col: keyof ModelRow;
+  variantCol: keyof ModelEngineOption | null;
   icon: React.ReactNode;
   fmt: (v: number) => string;
 }[] = [
-  { id: "priceMin", label: "Ár",           col: "price_min_m_ft", icon: <Banknote size={13} />,        fmt: (v) => v.toFixed(1).replace(".", ",") + " M Ft" },
-  { id: "range",    label: "Hatótáv",      col: "range_km",       icon: <Route size={13} />,           fmt: (v) => `${Math.round(v)} km` },
-  { id: "length",   label: "Hossz",        col: "length_mm",      icon: <Ruler size={13} />,           fmt: (v) => `${Math.round(v)} mm` },
-  { id: "trunk",    label: "Csomagtartó",  col: "trunk_l",        icon: <Package size={13} />,         fmt: (v) => `${Math.round(v)} l` },
-  { id: "battery",  label: "Akku",         col: "battery_kwh",    icon: <BatteryCharging size={13} />, fmt: (v) => (Math.round(v * 10) / 10).toString().replace(".", ",") + " kWh" },
-  { id: "power",    label: "Teljesítmény", col: "power_hp",       icon: <Zap size={13} />,             fmt: (v) => `${Math.round(v)} LE` },
-  { id: "seats",    label: "Ülőhelyek",    col: "seats",          icon: <Users size={13} />,           fmt: (v) => `${Math.round(v)} fő` },
+  { id: "priceMin", label: "Ár",           col: "price_min_m_ft", variantCol: null,           icon: <Banknote size={13} />,        fmt: (v) => v.toFixed(1).replace(".", ",") + " M Ft" },
+  { id: "range",    label: "Hatótáv",      col: "range_km",       variantCol: "range_km",     icon: <Route size={13} />,           fmt: (v) => `${Math.round(v)} km` },
+  { id: "length",   label: "Hossz",        col: "length_mm",      variantCol: null,           icon: <Ruler size={13} />,           fmt: (v) => `${Math.round(v)} mm` },
+  { id: "trunk",    label: "Csomagtartó",  col: "trunk_l",        variantCol: "trunk_l",      icon: <Package size={13} />,         fmt: (v) => `${Math.round(v)} l` },
+  { id: "battery",  label: "Akku",         col: "battery_kwh",    variantCol: "battery_kwh",  icon: <BatteryCharging size={13} />, fmt: (v) => (Math.round(v * 10) / 10).toString().replace(".", ",") + " kWh" },
+  { id: "power",    label: "Teljesítmény", col: "power_hp",       variantCol: "power_hp",     icon: <Zap size={13} />,             fmt: (v) => `${Math.round(v)} LE` },
+  { id: "seats",    label: "Ülőhelyek",    col: "seats",          variantCol: "seats",        icon: <Users size={13} />,           fmt: (v) => `${Math.round(v)} fő` },
 ];
+
+// A single render entry on the chart. When a model has multiple distinct
+// values for the active parameter (via its engine variants), it produces
+// multiple RenderCards — one per distinct value, each with the variant name.
+type RenderCard = {
+  key: string;                // unique React key
+  model: ModelRow;
+  value: number;
+  variantName: string | null; // null → no suffix shown
+};
+
+function buildRenderCards(
+  models: ModelRow[],
+  param: (typeof PARAMS)[number],
+): RenderCard[] {
+  const out: RenderCard[] = [];
+  for (const m of models) {
+    const opts = m.engine_options ?? [];
+    const variantCol = param.variantCol;
+
+    // No variant-mapping for this param (price, length) — render once.
+    if (!variantCol || opts.length === 0) {
+      const v = m[param.col] as number | null;
+      if (v != null) out.push({ key: m.id, model: m, value: v, variantName: null });
+      continue;
+    }
+
+    // Group variants by distinct value (keep first variant name per value).
+    const byValue = new Map<number, string>();
+    for (const o of opts) {
+      const v = o[variantCol] as number | null;
+      if (v == null) continue;
+      if (!byValue.has(v)) byValue.set(v, o.name);
+    }
+
+    if (byValue.size === 0) {
+      // Variants exist but none have a value here → fall back to model field.
+      const v = m[param.col] as number | null;
+      if (v != null) out.push({ key: m.id, model: m, value: v, variantName: null });
+    } else if (byValue.size === 1) {
+      // All variants share one value → single render, no suffix.
+      const [v] = [...byValue.entries()][0];
+      out.push({ key: m.id, model: m, value: v, variantName: null });
+    } else {
+      // Multiple distinct values → one render per value, with variant suffix.
+      for (const [v, name] of byValue.entries()) {
+        out.push({
+          key: `${m.id}__${name}__${v}`,
+          model: m,
+          value: v,
+          variantName: name,
+        });
+      }
+    }
+  }
+  return out;
+}
 
 type Props = {
   models: ModelRow[];
@@ -153,8 +215,10 @@ export function CatalogApp({
   }, [models, prices, cats, drvSel, brSel, bands]);
 
   const paramDef = PARAMS.find((p) => p.id === param)!;
-  const withVal  = useMemo(
-    () => visible.filter((m) => (m[paramDef.col] as number | null) != null),
+  // RenderCards = expanded entries on the chart. A model with multiple distinct
+  // values for the active parameter (via engine variants) becomes multiple cards.
+  const renderCards = useMemo(
+    () => buildRenderCards(visible, paramDef),
     [visible, paramDef],
   );
 
@@ -284,7 +348,7 @@ export function CatalogApp({
           <div className="cat-center">
             <VBar
               visible={visible}
-              withVal={withVal}
+              renderCards={renderCards}
               param={paramDef}
               pinned={pinned}
               hovered={hovered}
@@ -305,7 +369,7 @@ export function CatalogApp({
       </div>
 
       {/* ── Mobile: vertical diff-list ──────────────────────────────────────── */}
-      <MobileBar withVal={withVal} param={paramDef} visible={visible} />
+      <MobileBar renderCards={renderCards} param={paramDef} visible={visible} />
     </div>
   );
 }
@@ -359,12 +423,19 @@ function computeTickStep(paramId: Param, span: number): number {
 interface PlacedCar {
   m: ModelRow;
   v: number;
+  variantName: string | null;
+  key: string;
   axisY: number;
   cardX: number;
   cardY: number;
 }
 
-type CarItem = { m: ModelRow; v: number };
+type CarItem = {
+  m: ModelRow;
+  v: number;
+  variantName: string | null;
+  key: string;
+};
 
 function computeLayout(
   cars: CarItem[],
@@ -446,7 +517,11 @@ function computeLayout(
     const groupTop = Math.max(prevBottom, natTop);
     g.cars.forEach((item, i) => {
       placed.push({
-        m: item.m, v: item.v, axisY: g.axisY,
+        m: item.m,
+        v: item.v,
+        variantName: item.variantName,
+        key: item.key,
+        axisY: g.axisY,
         cardX: CARDS_X + (i % maxCols) * (CARD_W + H_GAP),
         cardY: groupTop + Math.floor(i / maxCols) * (CARD_H + V_GAP),
       });
@@ -469,10 +544,10 @@ function computeLayout(
 
 // ─── Desktop vertical bar ─────────────────────────────────────────────────────
 function VBar({
-  visible, withVal, param, pinned, hovered, onHover, onPin,
+  visible, renderCards, param, pinned, hovered, onHover, onPin,
 }: {
   visible: ModelRow[];
-  withVal: ModelRow[];
+  renderCards: RenderCard[];
   param: (typeof PARAMS)[number];
   pinned: ModelRow | null;
   hovered: ModelRow | null;
@@ -491,7 +566,7 @@ function VBar({
     return () => ro.disconnect();
   }, []);
 
-  if (!withVal.length) {
+  if (!renderCards.length) {
     return (
       <div className="cat-vbar-wrap">
         <div className="cat-vbar-head">
@@ -505,17 +580,22 @@ function VBar({
     );
   }
 
-  const vals = withVal.map((m) => m[param.col] as number);
+  const vals = renderCards.map((rc) => rc.value);
   const minV = Math.min(...vals);
   const maxV = Math.max(...vals);
 
   const layout = useMemo(
     () => computeLayout(
-      withVal.map((m) => ({ m, v: m[param.col] as number })),
+      renderCards.map((rc) => ({
+        m: rc.model,
+        v: rc.value,
+        variantName: rc.variantName,
+        key: rc.key,
+      })),
       minV, maxV, param.id, cw, param.fmt,
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [withVal, param.id, param.col, param.fmt, minV, maxV, cw],
+    [renderCards, param.id, param.fmt, minV, maxV, cw],
   );
 
   return (
@@ -543,7 +623,7 @@ function VBar({
           {layout.placed.map((p) => {
             const isHi = hovered?.id === p.m.id || pinned?.id === p.m.id;
             return (
-              <line key={p.m.id}
+              <line key={p.key}
                 x1={AXIS_X} y1={p.axisY}
                 x2={p.cardX} y2={p.cardY + CARD_H / 2}
                 className={`cat-cl${isHi ? " hi" : ""}`}
@@ -555,7 +635,7 @@ function VBar({
         {layout.placed.map((p) => {
           const photo = photoUrl(p.m.primary_photo_path);
           return (
-            <div key={p.m.id}
+            <div key={p.key}
               className={`cat-card${pinned?.id === p.m.id ? " pinned" : ""}`}
               style={{ left: p.cardX, top: p.cardY }}
               onMouseEnter={() => onHover(p.m)}
@@ -566,7 +646,12 @@ function VBar({
                 {photo ? <img src={photo} alt="" loading="lazy" /> : null}
               </div>
               <div className="cat-card-info">
-                <span className="cat-card-name">{p.m.brand_name} {p.m.name}</span>
+                <span className="cat-card-name">
+                  {p.m.brand_name} {p.m.name}
+                  {p.variantName ? (
+                    <span className="cat-card-variant"> · {p.variantName}</span>
+                  ) : null}
+                </span>
                 <span className="cat-card-val">{param.fmt(p.v)}</span>
               </div>
             </div>
@@ -579,13 +664,13 @@ function VBar({
 
 // ─── Mobile card list with value-difference labels ────────────────────────────
 function MobileBar({
-  withVal, param, visible,
+  renderCards, param, visible,
 }: {
-  withVal: ModelRow[];
+  renderCards: RenderCard[];
   param: (typeof PARAMS)[number];
   visible: ModelRow[];
 }) {
-  if (!withVal.length) {
+  if (!renderCards.length) {
     return (
       <div className="cat-mob-results">
         <div className="cat-empty" style={{ margin: "20px 16px" }}>
@@ -595,20 +680,19 @@ function MobileBar({
     );
   }
 
-  // Sort ascending by param value
-  const sorted = [...withVal].sort(
-    (a, b) => (a[param.col] as number) - (b[param.col] as number),
-  );
+  // Sort RenderCards ascending by value (variants of the same model split
+  // across the list at their own value).
+  const sorted = [...renderCards].sort((a, b) => a.value - b.value);
 
   // Compute max diff for gradient normalization
   let maxDiff = 0.001;
   for (let i = 1; i < sorted.length; i++) {
-    const d = (sorted[i][param.col] as number) - (sorted[i - 1][param.col] as number);
+    const d = sorted[i].value - sorted[i - 1].value;
     if (d > maxDiff) maxDiff = d;
   }
 
-  const minV = sorted[0][param.col] as number;
-  const maxV = sorted[sorted.length - 1][param.col] as number;
+  const minV = sorted[0].value;
+  const maxV = sorted[sorted.length - 1].value;
 
   return (
     <div className="cat-mob-results">
@@ -620,15 +704,16 @@ function MobileBar({
       <div className="cat-mob-scroll-wrap">
         <div className="cat-mob-scroll">
           <div className="cat-mob-list">
-            {sorted.map((m, i) => {
-              const v     = m[param.col] as number;
+            {sorted.map((rc, i) => {
+              const m     = rc.model;
+              const v     = rc.value;
               const photo = photoUrl(m.primary_photo_path);
               const next  = sorted[i + 1];
-              const diff  = next ? (next[param.col] as number) - v : 0;
+              const diff  = next ? next.value - v : 0;
               const norm  = diff / maxDiff; // 0–1
 
               return (
-                <Fragment key={m.id}>
+                <Fragment key={rc.key}>
                   {/* Card */}
                   <Link
                     href={`/modellek/${m.brand_slug}/${m.slug}`}
@@ -641,6 +726,9 @@ function MobileBar({
                       <div className="cat-mob-name">
                         <span className="cat-mob-brand">{m.brand_name}</span>
                         {" "}{m.name}
+                        {rc.variantName ? (
+                          <span className="cat-mob-variant"> · {rc.variantName}</span>
+                        ) : null}
                       </div>
                       <div className="cat-mob-val">{param.fmt(v)}</div>
                     </div>
@@ -678,6 +766,8 @@ function MobileBar({
 // ─── Desktop detail card ──────────────────────────────────────────────────────
 function DetailCard({ model }: { model: ModelRow }) {
   const photo = photoUrl(model.primary_photo_path);
+  const opts = model.engine_options ?? [];
+  const hasOpts = opts.length > 0;
   return (
     <div className="cat-detail">
       <div className="ph">
@@ -704,31 +794,34 @@ function DetailCard({ model }: { model: ModelRow }) {
             <div className="l">Csúcs</div>
             <div className="v">{fmtPrice(model.price_max_m_ft)}</div>
           </div>
-          {model.range_km ? (
+          {!hasOpts && model.range_km ? (
             <div className="spec">
               <div className="l">Hatótáv</div>
               <div className="v">{model.range_km}<small> km</small></div>
             </div>
           ) : null}
-          {model.power_hp ? (
+          {!hasOpts && model.power_hp ? (
             <div className="spec">
               <div className="l">Teljesítmény</div>
               <div className="v">{model.power_hp}<small> LE</small></div>
             </div>
           ) : null}
-          {model.battery_kwh ? (
+          {!hasOpts && model.battery_kwh ? (
             <div className="spec">
               <div className="l">Akku</div>
               <div className="v">{model.battery_kwh.toString().replace(".", ",")}<small> kWh</small></div>
             </div>
           ) : null}
-          {model.trunk_l ? (
+          {!hasOpts && model.trunk_l ? (
             <div className="spec">
               <div className="l">Csomagtartó</div>
               <div className="v">{model.trunk_l}<small> l</small></div>
             </div>
           ) : null}
         </div>
+        {hasOpts ? (
+          <CatalogVariantList options={opts} />
+        ) : null}
         <div className="actions">
           <Link className="btn" href={`/markak/${model.brand_slug}`}>
             <Tag size={13} />
@@ -746,6 +839,31 @@ function DetailCard({ model }: { model: ModelRow }) {
           </Link>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Catalog variant list (shown in the right detail panel) ─────────────────
+function CatalogVariantList({ options }: { options: ModelEngineOption[] }) {
+  return (
+    <div className="cat-detail-variants">
+      <div className="cat-detail-variants-head">Modellváltozatok</div>
+      <ul className="cat-detail-variants-list">
+        {options.map((o) => {
+          const parts: string[] = [];
+          if (o.range_km    != null) parts.push(`${o.range_km} km`);
+          if (o.battery_kwh != null) parts.push(`${o.battery_kwh.toString().replace(".", ",")} kWh`);
+          if (o.power_hp    != null) parts.push(`${o.power_hp} LE`);
+          if (o.trunk_l     != null) parts.push(`${o.trunk_l} l`);
+          if (o.seats       != null) parts.push(`${o.seats} fő`);
+          return (
+            <li key={o.id}>
+              <span className="cat-dv-name">{o.name || "Base"}</span>
+              <span className="cat-dv-vals">{parts.join(" · ")}</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

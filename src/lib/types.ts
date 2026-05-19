@@ -94,6 +94,28 @@ export type ModelRow = {
   drive_code: string;
   primary_photo_path: string | null;
   segment: string | null;
+  // engine option aggregates (from v_models view)
+  range_km_max: number | null;
+  power_hp_max: number | null;
+  battery_kwh_max: number | null;
+  trunk_l_max: number | null;
+  seats_max: number | null;
+  has_engine_options: boolean;
+  // attached client-side via attachEngineOptions() — empty array if none
+  engine_options: ModelEngineOption[];
+};
+
+export type ModelEngineOption = {
+  id: string;
+  model_id: string;
+  name: string;
+  range_km: number | null;
+  power_hp: number | null;
+  battery_kwh: number | null;
+  trunk_l: number | null;
+  seats: number | null;
+  consumption_text: string | null;
+  sort_order: number;
 };
 
 export type ModelTrim = {

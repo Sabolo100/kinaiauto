@@ -773,6 +773,45 @@ footer.foot .foot-disclaimer {
   color: var(--ink);
   margin-top: 2px;
 }
+.card .mc-variants {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line);
+}
+.card .mc-variants-head {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  font-family: var(--font-mono), monospace;
+  margin-bottom: 6px;
+}
+.card .mc-variants-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.card .mc-variants-list li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.card .mc-v-name {
+  color: var(--ink);
+  font-weight: 500;
+}
+.card .mc-v-vals {
+  color: var(--ink-soft);
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  text-align: right;
+}
 .card .actions {
   display: flex;
   gap: 8px;

@@ -73,9 +73,21 @@ export type ModelInput = {
   segment: string | null;
 };
 
+export type EngineOptionInput = {
+  id?: string;
+  name: string;
+  range_km: number | null;
+  power_hp: number | null;
+  battery_kwh: number | null;
+  trunk_l: number | null;
+  seats: number | null;
+  consumption_text: string | null;
+};
+
 export function ModelForm({
   mode,
   initial,
+  initialEngineOptions,
   brands,
   categories,
   drives,
@@ -83,6 +95,7 @@ export function ModelForm({
 }: {
   mode: "create" | "edit";
   initial: ModelInput;
+  initialEngineOptions?: EngineOptionInput[];
   brands: BrandLite[];
   categories: Lookup[];
   drives: Lookup[];
@@ -90,6 +103,9 @@ export function ModelForm({
 }) {
   const router = useRouter();
   const [v, setV] = useState<ModelInput>(initial);
+  const [engineOptions, setEngineOptions] = useState<EngineOptionInput[]>(
+    initialEngineOptions ?? [],
+  );
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
@@ -104,6 +120,29 @@ export function ModelForm({
     return Number.isFinite(n) ? n : null;
   }
 
+  function addEngineOption() {
+    setEngineOptions((arr) => [
+      ...arr,
+      {
+        name: arr.length === 0 ? "Base" : "",
+        range_km: null,
+        power_hp: null,
+        battery_kwh: null,
+        trunk_l: null,
+        seats: null,
+        consumption_text: null,
+      },
+    ]);
+  }
+  function updateEngineOption(i: number, patch: Partial<EngineOptionInput>) {
+    setEngineOptions((arr) =>
+      arr.map((o, idx) => (idx === i ? { ...o, ...patch } : o)),
+    );
+  }
+  function removeEngineOption(i: number) {
+    setEngineOptions((arr) => arr.filter((_, idx) => idx !== i));
+  }
+
   async function save() {
     setBusy(true); setErr(null); setOk(null);
     const url = mode === "create" ? "/api/cms/models" : `/api/cms/models/${v.id}`;
@@ -111,7 +150,7 @@ export function ModelForm({
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(v),
+      body: JSON.stringify({ ...v, engine_options: engineOptions }),
     });
     const j = await res.json().catch(() => ({}));
     setBusy(false);
@@ -246,6 +285,82 @@ export function ModelForm({
           <input value={v.acceleration_s ?? ""} onChange={(e) => set("acceleration_s", num(e.target.value))} />
         </label>
       </div>
+
+      <h2>Modellváltozatok <small style={{ fontWeight: 400, color: "#888" }}>(opcionális)</small></h2>
+      <p style={{ fontSize: 13, color: "#666", margin: "0 0 12px" }}>
+        Ha a modellnek több hajtáslánc-változata van (pl. Alap / Long Range),
+        add meg itt külön. Üres lista esetén a fenti alap adatok jelennek meg.
+      </p>
+      {engineOptions.map((o, i) => (
+        <div key={i} className="cms-card" style={{ padding: 14, marginBottom: 10 }}>
+          <div className="row3" style={{ alignItems: "flex-end" }}>
+            <label style={{ gridColumn: "span 2" }}>
+              <span>Változat neve *</span>
+              <input
+                value={o.name}
+                placeholder={i === 0 ? "Base" : "Long Range"}
+                onChange={(e) => updateEngineOption(i, { name: e.target.value })}
+              />
+            </label>
+            <button
+              type="button"
+              className="cms-btn danger"
+              onClick={() => removeEngineOption(i)}
+              style={{ height: 36 }}
+            >
+              × Törlés
+            </button>
+          </div>
+          <div className="row3">
+            <label><span>Hatótáv (km)</span>
+              <input
+                value={o.range_km ?? ""}
+                onChange={(e) => updateEngineOption(i, { range_km: num(e.target.value) })}
+              />
+            </label>
+            <label><span>Teljesítmény (LE)</span>
+              <input
+                value={o.power_hp ?? ""}
+                onChange={(e) => updateEngineOption(i, { power_hp: num(e.target.value) })}
+              />
+            </label>
+            <label><span>Akku (kWh)</span>
+              <input
+                value={o.battery_kwh ?? ""}
+                onChange={(e) => updateEngineOption(i, { battery_kwh: num(e.target.value) })}
+              />
+            </label>
+          </div>
+          <div className="row3">
+            <label><span>Csomagtartó (l)</span>
+              <input
+                value={o.trunk_l ?? ""}
+                onChange={(e) => updateEngineOption(i, { trunk_l: num(e.target.value) })}
+              />
+            </label>
+            <label><span>Ülések</span>
+              <input
+                value={o.seats ?? ""}
+                onChange={(e) => updateEngineOption(i, { seats: num(e.target.value) })}
+              />
+            </label>
+            <label><span>Fogyasztás (szöveg)</span>
+              <input
+                value={o.consumption_text ?? ""}
+                onChange={(e) => updateEngineOption(i, { consumption_text: e.target.value || null })}
+              />
+            </label>
+          </div>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="cms-btn ghost"
+        onClick={addEngineOption}
+        style={{ marginBottom: 16 }}
+      >
+        + Új változat hozzáadása
+      </button>
 
       <h2>Töltés</h2>
       <div className="row3">

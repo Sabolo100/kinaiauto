@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { syncEngineOptions, type EngineOptionInput } from "./engine-options";
 
 export const runtime = "nodejs";
 
@@ -47,5 +48,18 @@ export async function POST(req: NextRequest) {
     .select("*")
     .single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Engine options sync (optional, only if the form sent any)
+  if (Array.isArray(body.engine_options)) {
+    const syncErr = await syncEngineOptions(
+      sa,
+      data.id as string,
+      body.engine_options as EngineOptionInput[],
+    );
+    if (syncErr) {
+      return NextResponse.json({ error: syncErr }, { status: 500 });
+    }
+  }
+
   return NextResponse.json(data);
 }

@@ -232,6 +232,7 @@
   font-size: 24px;
   line-height: 1;
   color: #fff;
+  position: relative;
 }
 .qb .v small {
   font-family: var(--font-inter), sans-serif;
@@ -241,6 +242,23 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 400;
+}
+/* "max" badge shown when the model has multiple engine variants with
+   different values for this metric (Quick Band shows the largest value). */
+.qb-max {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  font-family: var(--font-mono), monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #c9b893;
+  background: rgba(201, 184, 147, 0.12);
+  border: 1px solid rgba(201, 184, 147, 0.32);
+  padding: 1px 4px;
+  border-radius: 3px;
+  line-height: 1;
 }
 
 /* GALLERY */
@@ -440,6 +458,118 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* When the SPECS section has both a shared-dimensions grid AND a variants
+   table below, the shared grid is compact (single row), and the table sits
+   underneath. */
+.specs-grid--shared {
+  margin-bottom: 18px;
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 1080px) {
+  .specs-grid--shared { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .specs-grid--shared { grid-template-columns: 1fr 1fr; }
+}
+
+/* Variants table — designed layout listing engine variants and their specs. */
+.variants-table {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.vt-head, .vt-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 1.1fr) repeat(var(--vt-cols, 6), minmax(0, 1fr));
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
+}
+.vt-row:last-child { border-bottom: 0; }
+.vt-head {
+  background: var(--accent-soft, #f3efe4);
+}
+.vt-head .vt-cell {
+  font-family: var(--font-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vt-head .vt-col-icon {
+  display: inline-flex;
+  color: var(--accent-ink);
+  opacity: 0.85;
+}
+.vt-row .vt-cell {
+  padding: 16px 14px;
+  display: flex;
+  align-items: baseline;
+  font-family: var(--font-instrument), serif;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--ink);
+}
+.vt-cell + .vt-cell {
+  border-left: 1px solid var(--line);
+}
+.vt-cell.vt-name {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-transform: none;
+  background: #fbfaf6;
+}
+.vt-head .vt-name {
+  background: var(--accent-soft, #f3efe4);
+}
+.vt-cell .vt-v {
+  font-family: var(--font-instrument), serif;
+}
+.vt-cell small {
+  font-family: var(--font-inter), sans-serif;
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-left: 4px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+.vt-empty {
+  color: var(--ink-mute);
+  font-family: var(--font-mono), monospace;
+  font-size: 13px;
+}
+@media (max-width: 900px) {
+  .vt-head, .vt-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 540px) {
+  .vt-head, .vt-row {
+    grid-template-columns: 1fr;
+  }
+  .vt-cell + .vt-cell {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .vt-head { display: none; }
+  .vt-row .vt-cell.vt-name {
+    background: var(--accent-soft, #f3efe4);
+    padding: 10px 14px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
 .spec-cell {
   background: var(--surface);
   padding: 22px 24px;

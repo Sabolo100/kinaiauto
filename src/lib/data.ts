@@ -25,6 +25,7 @@ import type {
   Dealer,
   DealerContact,
   Drive,
+  ModelEngineOption,
   ModelPhoto,
   ModelRow,
   ModelTrim,
@@ -124,10 +125,14 @@ export async function getModels(): Promise<ModelRow[]> {
     // view (WHERE m.archived_at IS NULL). The view doesn't expose archived_at
     // as a column, so we must NOT add `.is("archived_at", null)` here — doing
     // so makes the query fail and falls back to SEED_MODELS (no photos).
-    const { data, error } = await supabase
-      .from("v_models")
-      .select("*");
-    if (!error && data) return data as ModelRow[];
+    const [modelsRes, options] = await Promise.all([
+      supabase.from("v_models").select("*"),
+      getAllEngineOptions(),
+    ]);
+    if (!modelsRes.error && modelsRes.data) {
+      const rows = modelsRes.data as ModelRow[];
+      return attachEngineOptions(rows, options);
+    }
   }
   return SEED_MODELS;
 }
@@ -155,6 +160,54 @@ export async function getModelByBrandAndName(
       (m) => m.brand_name === brandName && m.name === modelName,
     ) ?? null
   );
+}
+
+// -----------------------------------------------------------------------------
+// Engine options (model variants)
+// -----------------------------------------------------------------------------
+
+export async function getEngineOptionsForModel(
+  modelId: string,
+): Promise<ModelEngineOption[]> {
+  if (HAS_SUPABASE && supabase) {
+    const { data, error } = await supabase
+      .from("model_engine_options")
+      .select("*")
+      .eq("model_id", modelId)
+      .order("sort_order");
+    if (!error && data) return data as ModelEngineOption[];
+  }
+  return [];
+}
+
+export async function getAllEngineOptions(): Promise<ModelEngineOption[]> {
+  if (HAS_SUPABASE && supabase) {
+    const { data, error } = await supabase
+      .from("model_engine_options")
+      .select("*")
+      .order("model_id")
+      .order("sort_order");
+    if (!error && data) return data as ModelEngineOption[];
+  }
+  return [];
+}
+
+// Group engine options by model_id and attach them to each ModelRow.
+// Models without options get an empty array.
+export function attachEngineOptions(
+  models: ModelRow[],
+  options: ModelEngineOption[],
+): ModelRow[] {
+  const byModel = new Map<string, ModelEngineOption[]>();
+  for (const o of options) {
+    const arr = byModel.get(o.model_id) ?? [];
+    arr.push(o);
+    byModel.set(o.model_id, arr);
+  }
+  return models.map((m) => ({
+    ...m,
+    engine_options: byModel.get(m.id) ?? [],
+  }));
 }
 
 export async function getTrimsForModel(modelId: string): Promise<ModelTrim[]> {

@@ -67,7 +67,24 @@ select
      from model_photos mp
     where mp.model_id = m.id and mp.is_primary
     order by mp.sort_order asc
-    limit 1) as primary_photo_path
+    limit 1) as primary_photo_path,
+  -- engine option aggregates (max across variants, fallback to model value)
+  coalesce(
+    (select max(eo.range_km)    from model_engine_options eo where eo.model_id = m.id),
+    m.range_km)    as range_km_max,
+  coalesce(
+    (select max(eo.power_hp)    from model_engine_options eo where eo.model_id = m.id),
+    m.power_hp)    as power_hp_max,
+  coalesce(
+    (select max(eo.battery_kwh) from model_engine_options eo where eo.model_id = m.id),
+    m.battery_kwh) as battery_kwh_max,
+  coalesce(
+    (select max(eo.trunk_l)     from model_engine_options eo where eo.model_id = m.id),
+    m.trunk_l)     as trunk_l_max,
+  coalesce(
+    (select max(eo.seats)       from model_engine_options eo where eo.model_id = m.id),
+    m.seats)       as seats_max,
+  exists(select 1 from model_engine_options eo where eo.model_id = m.id) as has_engine_options
 from models m
 join brands     b on b.id = m.brand_id
 join categories c on c.id = m.category_id

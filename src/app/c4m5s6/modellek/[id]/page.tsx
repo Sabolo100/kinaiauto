@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { CmsShell } from "@/components/cms/cms-shell";
-import { ModelForm } from "@/components/cms/model-form";
+import { ModelForm, type EngineOptionInput } from "@/components/cms/model-form";
 import { getLookups } from "@/lib/cms-lookups";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
@@ -14,11 +14,16 @@ export default async function EditModelPage({
   const { id } = await params;
   const sa = supabaseAdmin();
 
-  const [m, photos, lk] = await Promise.all([
+  const [m, photos, options, lk] = await Promise.all([
     sa.from("models").select("*").eq("id", id).single(),
     sa
       .from("model_photos")
       .select("id, storage_path, kind, is_primary")
+      .eq("model_id", id)
+      .order("sort_order", { ascending: true }),
+    sa
+      .from("model_engine_options")
+      .select("id, name, range_km, power_hp, battery_kwh, trunk_l, seats, consumption_text")
       .eq("model_id", id)
       .order("sort_order", { ascending: true }),
     getLookups(),
@@ -26,6 +31,17 @@ export default async function EditModelPage({
   if (m.error || !m.data) return notFound();
 
   const r = m.data;
+  const engineOptions: EngineOptionInput[] = (options.data ?? []).map((o) => ({
+    id: o.id as string,
+    name: (o.name as string) ?? "Base",
+    range_km: o.range_km as number | null,
+    power_hp: o.power_hp as number | null,
+    battery_kwh: o.battery_kwh as number | null,
+    trunk_l: o.trunk_l as number | null,
+    seats: o.seats as number | null,
+    consumption_text: o.consumption_text as string | null,
+  }));
+
   return (
     <CmsShell>
       <h1>{r.name}</h1>
@@ -36,6 +52,7 @@ export default async function EditModelPage({
         categories={lk.categories}
         drives={lk.drives}
         photos={(photos.data ?? []) as { id: string; storage_path: string; kind: string; is_primary: boolean }[]}
+        initialEngineOptions={engineOptions}
         initial={{
           id: r.id,
           brand_id: r.brand_id,

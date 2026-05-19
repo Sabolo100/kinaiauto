@@ -211,6 +211,14 @@ function buildModels(): ModelRow[] {
       primary_photo_path:
         s.is_featured ? "models/tiggo-8/hero.avif" : null,
       segment: null,
+      // engine option aggregates — seed data has no variants, so max == base value
+      range_km_max: s.range_km,
+      power_hp_max: s.power_hp,
+      battery_kwh_max: s.battery_kwh,
+      trunk_l_max: s.trunk_l,
+      seats_max: s.seats,
+      has_engine_options: false,
+      engine_options: [],
     };
   });
 }

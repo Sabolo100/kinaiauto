@@ -20,9 +20,10 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import type { Brand, Dealer, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
+import type { Brand, Dealer, ModelEngineOption, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
 import { ModelGallery } from "./model-gallery";
 import { DealerSection } from "./dealer-section";
+import { VariantsTable } from "./variants-table";
 import { QuoteButtonLarge } from "../quote-button-large";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
@@ -49,6 +50,31 @@ export function ModelDetail({
   const isHEV = model.drive === "Önttöltő hibrid";
   const hasBattery = model.battery_kwh != null;
   const heroPhoto = photoUrl(model.primary_photo_path);
+
+  // ---- Engine variants ----------------------------------------------------
+  // If the model has variants, the variant-affected fields (range, power,
+  // battery, trunk, seats) appear in a single designed table further down,
+  // and the Quick Band cells show the MAX value with a small "max" badge.
+  // If there are no variants, the classic single-spec layout stays.
+  const opts: ModelEngineOption[] = model.engine_options ?? [];
+  const hasOpts = opts.length > 0;
+
+  const distinctCount = (key: keyof ModelEngineOption): number => {
+    const s = new Set<unknown>();
+    for (const o of opts) {
+      const v = o[key];
+      if (v != null && v !== "") s.add(v);
+    }
+    return s.size;
+  };
+
+  // Quick Band shown values + "max" badges
+  const qbTrunkShown = hasOpts ? (model.trunk_l_max ?? model.trunk_l) : model.trunk_l;
+  const qbTrunkBadge = hasOpts && distinctCount("trunk_l") > 1;
+  const qbPowerShown = hasOpts ? (model.power_hp_max ?? model.power_hp) : model.power_hp;
+  const qbPowerBadge = hasOpts && distinctCount("power_hp") > 1;
+  const qbRangeShown = hasOpts ? (model.range_km_max ?? model.range_km) : model.range_km;
+  const qbRangeBadge = hasOpts && distinctCount("range_km") > 1;
 
   const driveIcon = isEV ? (
     <Zap size={12} />
@@ -170,22 +196,25 @@ export function ModelDetail({
             <div className="qb">
               <div className="k">Csomagtartó</div>
               <div className="v">
-                {model.trunk_l ?? "—"}
-                <small>{model.trunk_l != null ? "l" : ""}</small>
+                {qbTrunkShown ?? "—"}
+                <small>{qbTrunkShown != null ? "l" : ""}</small>
+                {qbTrunkBadge ? <span className="qb-max">max</span> : null}
               </div>
             </div>
             <div className="qb">
               <div className="k">Teljesítmény</div>
               <div className="v">
-                {model.power_hp ?? "—"}
-                <small>{model.power_hp ? "LE" : ""}</small>
+                {qbPowerShown ?? "—"}
+                <small>{qbPowerShown ? "LE" : ""}</small>
+                {qbPowerBadge ? <span className="qb-max">max</span> : null}
               </div>
             </div>
             <div className="qb">
               <div className="k">{hasBattery ? "Hatótáv" : "Ülések"}</div>
               <div className="v">
-                {hasBattery ? (model.range_km ?? "—") : (model.seats ?? "—")}
+                {hasBattery ? (qbRangeShown ?? "—") : (model.seats ?? "—")}
                 <small>{hasBattery ? "km" : "fő"}</small>
+                {hasBattery && qbRangeBadge ? <span className="qb-max">max</span> : null}
               </div>
             </div>
           </div>
@@ -219,57 +248,113 @@ export function ModelDetail({
             <div>
               <div className="step">02 · Méretek és műszaki adatok</div>
               <h2>
-                A számok <em>egy helyen</em>.
+                {hasOpts ? (
+                  <>
+                    Változatok <em>egymás mellett</em>.
+                  </>
+                ) : (
+                  <>
+                    A számok <em>egy helyen</em>.
+                  </>
+                )}
               </h2>
             </div>
+            {hasOpts ? (
+              <div className="sub">
+                A modell több hajtáslánc-változatban érhető el. A kínálat
+                változat-szintű adatait egyetlen táblázatban hasonlíthatod össze.
+              </div>
+            ) : null}
           </div>
-          <div className="specs-grid">
-            <SpecCell
-              icon={<Ruler size={16} />}
-              k="Hossz"
-              v={model.length_mm ? fmtNumber(model.length_mm) : "—"}
-              unit="mm"
-            />
-            <SpecCell
-              icon={<Briefcase size={16} />}
-              k="Csomagtartó"
-              v={model.trunk_l ?? "—"}
-              unit="l"
-              note="Lehajtott üléssor mellett a kapacitás jelentősen bővíthető."
-            />
-            <SpecCell
-              icon={<Users size={16} />}
-              k="Ülőhelyek"
-              v={model.seats ?? "—"}
-              unit="fő"
-            />
-            <SpecCell
-              icon={<Gauge size={16} />}
-              k="Teljesítmény"
-              v={model.power_hp ?? "—"}
-              unit="LE"
-            />
-            <SpecCell
-              icon={<BatteryCharging size={16} />}
-              k="Akkumulátor"
-              v={hasBattery ? (model.battery_kwh ?? "—") : "n/a"}
-              unit="kWh"
-              muted={!hasBattery}
-              note={!hasBattery ? "Belsőégésű hajtás — nincs hajtásakkumulátor." : undefined}
-            />
-            <SpecCell
-              icon={<Route size={16} />}
-              k={isEV ? "Hatótáv (WLTP)" : "EV hatótáv (PHEV/becslés)"}
-              v={model.range_km ?? "n/a"}
-              unit={model.range_km ? "km" : ""}
-              muted={!model.range_km}
-              note={
-                model.range_km
-                  ? "Valós érték használati módtól, hőmérséklettől, sebességtől függően eltérhet."
-                  : undefined
-              }
-            />
-          </div>
+
+          {hasOpts ? (
+            <>
+              {/* Shared dimensions — independent of variant */}
+              <div className="specs-grid specs-grid--shared">
+                <SpecCell
+                  icon={<Ruler size={16} />}
+                  k="Hossz"
+                  v={model.length_mm ? fmtNumber(model.length_mm) : "—"}
+                  unit="mm"
+                />
+                {model.width_mm != null ? (
+                  <SpecCell
+                    icon={<Ruler size={16} />}
+                    k="Szélesség"
+                    v={fmtNumber(model.width_mm)}
+                    unit="mm"
+                  />
+                ) : null}
+                {model.height_mm != null ? (
+                  <SpecCell
+                    icon={<Ruler size={16} />}
+                    k="Magasság"
+                    v={fmtNumber(model.height_mm)}
+                    unit="mm"
+                  />
+                ) : null}
+                {model.wheelbase_mm != null ? (
+                  <SpecCell
+                    icon={<Ruler size={16} />}
+                    k="Tengelytáv"
+                    v={fmtNumber(model.wheelbase_mm)}
+                    unit="mm"
+                  />
+                ) : null}
+              </div>
+
+              {/* Variant table */}
+              <VariantsTable options={opts} />
+            </>
+          ) : (
+            <div className="specs-grid">
+              <SpecCell
+                icon={<Ruler size={16} />}
+                k="Hossz"
+                v={model.length_mm ? fmtNumber(model.length_mm) : "—"}
+                unit="mm"
+              />
+              <SpecCell
+                icon={<Briefcase size={16} />}
+                k="Csomagtartó"
+                v={model.trunk_l ?? "—"}
+                unit="l"
+                note="Lehajtott üléssor mellett a kapacitás jelentősen bővíthető."
+              />
+              <SpecCell
+                icon={<Users size={16} />}
+                k="Ülőhelyek"
+                v={model.seats ?? "—"}
+                unit="fő"
+              />
+              <SpecCell
+                icon={<Gauge size={16} />}
+                k="Teljesítmény"
+                v={model.power_hp ?? "—"}
+                unit="LE"
+              />
+              <SpecCell
+                icon={<BatteryCharging size={16} />}
+                k="Akkumulátor"
+                v={hasBattery ? (model.battery_kwh ?? "—") : "n/a"}
+                unit="kWh"
+                muted={!hasBattery}
+                note={!hasBattery ? "Belsőégésű hajtás — nincs hajtásakkumulátor." : undefined}
+              />
+              <SpecCell
+                icon={<Route size={16} />}
+                k={isEV ? "Hatótáv (WLTP)" : "EV hatótáv (PHEV/becslés)"}
+                v={model.range_km ?? "n/a"}
+                unit={model.range_km ? "km" : ""}
+                muted={!model.range_km}
+                note={
+                  model.range_km
+                    ? "Valós érték használati módtól, hőmérséklettől, sebességtől függően eltérhet."
+                    : undefined
+                }
+              />
+            </div>
+          )}
         </div>
       </section>
 

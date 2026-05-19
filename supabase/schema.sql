@@ -152,6 +152,25 @@ create table if not exists model_trims (
   unique (model_id, slug)
 );
 
+-- ---- Model engine variants ----------------------------------------
+-- Optional per-model variants (e.g., "Base" / "Long Range") with their
+-- own range_km, power_hp, battery_kwh, trunk_l, seats, consumption_text.
+-- If a model has no rows here, the model-level fields are used as-is.
+create table if not exists model_engine_options (
+  id               uuid primary key default uuid_generate_v4(),
+  model_id         uuid not null references models(id) on delete cascade,
+  name             text not null default 'Base',
+  range_km         integer,
+  power_hp         integer,
+  battery_kwh      numeric(5,2),
+  trunk_l          integer,
+  seats            smallint,
+  consumption_text text,
+  sort_order       smallint not null default 0,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now()
+);
+
 -- ---- Model photos ---------------------------------------------------
 -- Stored in Supabase Storage; this row holds the storage_path + metadata.
 create table if not exists model_photos (
@@ -252,6 +271,7 @@ create index if not exists idx_models_is_available on models(is_available);
 create index if not exists idx_models_is_deal      on models(is_deal);
 create index if not exists idx_model_photos_model  on model_photos(model_id);
 create index if not exists idx_model_trims_model   on model_trims(model_id);
+create index if not exists idx_model_engine_options_model on model_engine_options(model_id, sort_order);
 create index if not exists idx_articles_category   on articles(category_id);
 create index if not exists idx_articles_published  on articles(is_published, published_at desc);
 
@@ -270,6 +290,7 @@ alter table price_bands    enable row level security;
 alter table brands         enable row level security;
 alter table models         enable row level security;
 alter table model_trims    enable row level security;
+alter table model_engine_options enable row level security;
 alter table model_photos   enable row level security;
 alter table brand_logos    enable row level security;
 alter table kb_categories  enable row level security;
@@ -287,6 +308,7 @@ begin
   if not exists (select 1 from pg_policies where policyname = 'public_read_brands')       then create policy public_read_brands       on brands         for select using (is_active); end if;
   if not exists (select 1 from pg_policies where policyname = 'public_read_models')       then create policy public_read_models       on models         for select using (true); end if;
   if not exists (select 1 from pg_policies where policyname = 'public_read_model_trims')  then create policy public_read_model_trims  on model_trims    for select using (true); end if;
+  if not exists (select 1 from pg_policies where policyname = 'public_read_model_engine_options') then create policy public_read_model_engine_options on model_engine_options for select using (true); end if;
   if not exists (select 1 from pg_policies where policyname = 'public_read_model_photos') then create policy public_read_model_photos on model_photos   for select using (true); end if;
   if not exists (select 1 from pg_policies where policyname = 'public_read_brand_logos')  then create policy public_read_brand_logos  on brand_logos    for select using (true); end if;
   if not exists (select 1 from pg_policies where policyname = 'public_read_kb_categories')then create policy public_read_kb_categories on kb_categories for select using (true); end if;
@@ -820,7 +842,24 @@ select
      from model_photos mp
     where mp.model_id = m.id and mp.is_primary
     order by mp.sort_order asc
-    limit 1) as primary_photo_path
+    limit 1) as primary_photo_path,
+  -- engine option aggregates (max across variants, fallback to model value)
+  coalesce(
+    (select max(eo.range_km)    from model_engine_options eo where eo.model_id = m.id),
+    m.range_km)    as range_km_max,
+  coalesce(
+    (select max(eo.power_hp)    from model_engine_options eo where eo.model_id = m.id),
+    m.power_hp)    as power_hp_max,
+  coalesce(
+    (select max(eo.battery_kwh) from model_engine_options eo where eo.model_id = m.id),
+    m.battery_kwh) as battery_kwh_max,
+  coalesce(
+    (select max(eo.trunk_l)     from model_engine_options eo where eo.model_id = m.id),
+    m.trunk_l)     as trunk_l_max,
+  coalesce(
+    (select max(eo.seats)       from model_engine_options eo where eo.model_id = m.id),
+    m.seats)       as seats_max,
+  exists(select 1 from model_engine_options eo where eo.model_id = m.id) as has_engine_options
 from models m
 join brands     b on b.id = m.brand_id
 join categories c on c.id = m.category_id
