@@ -2,21 +2,17 @@ import Link from "next/link";
 import {
   ArrowRight,
   BatteryCharging,
-  Briefcase,
   ExternalLink,
   Fuel,
-  Gauge,
   GitCompareArrows,
   Grid2x2,
   Layers,
   Leaf,
   LifeBuoy,
   PlugZap,
-  Route,
   Ruler,
   ShieldCheck,
   Sparkles,
-  Users,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -52,29 +48,36 @@ export function ModelDetail({
   const heroPhoto = photoUrl(model.primary_photo_path);
 
   // ---- Engine variants ----------------------------------------------------
-  // If the model has variants, the variant-affected fields (range, power,
-  // battery, trunk, seats) appear in a single designed table further down,
-  // and the Quick Band cells show the MAX value with a small "max" badge.
-  // If there are no variants, the classic single-spec layout stays.
+  // The variant table is always shown (same layout for 1 or N variants).
+  // If the model has no engine_options rows, we synthesise a single "Alap"
+  // entry from the model-level spec fields so the table is never empty.
   const opts: ModelEngineOption[] = model.engine_options ?? [];
   const hasOpts = opts.length > 0;
 
-  const distinctCount = (key: keyof ModelEngineOption): number => {
-    const s = new Set<unknown>();
-    for (const o of opts) {
-      const v = o[key];
-      if (v != null && v !== "") s.add(v);
-    }
-    return s.size;
-  };
-
-  // Quick Band shown values + "max" badges
-  const qbTrunkShown = hasOpts ? (model.trunk_l_max ?? model.trunk_l) : model.trunk_l;
-  const qbTrunkBadge = hasOpts && distinctCount("trunk_l") > 1;
-  const qbPowerShown = hasOpts ? (model.power_hp_max ?? model.power_hp) : model.power_hp;
-  const qbPowerBadge = hasOpts && distinctCount("power_hp") > 1;
-  const qbRangeShown = hasOpts ? (model.range_km_max ?? model.range_km) : model.range_km;
-  const qbRangeBadge = hasOpts && distinctCount("range_km") > 1;
+  const effectiveOpts: ModelEngineOption[] =
+    hasOpts
+      ? opts
+      : model.range_km != null ||
+        model.power_hp != null ||
+        model.battery_kwh != null ||
+        model.trunk_l != null ||
+        model.seats != null ||
+        model.consumption_text != null
+        ? [
+            {
+              id: "synthetic-base",
+              model_id: model.id,
+              name: "Alap",
+              range_km: model.range_km ?? null,
+              power_hp: model.power_hp ?? null,
+              battery_kwh: model.battery_kwh ?? null,
+              trunk_l: model.trunk_l ?? null,
+              seats: model.seats ?? null,
+              consumption_text: model.consumption_text ?? null,
+              sort_order: 0,
+            },
+          ]
+        : [];
 
   const driveIcon = isEV ? (
     <Zap size={12} />
@@ -158,69 +161,6 @@ export function ModelDetail({
         </div>
       </section>
 
-      {/* QUICK BAND */}
-      <section className="quickband">
-        <div className="container">
-          <div className="quickband-inner">
-            <div className="qb">
-              <div className="k">Kategória</div>
-              <div
-                className="v"
-                style={{
-                  fontSize: 15,
-                  fontFamily: "var(--font-inter), sans-serif",
-                }}
-              >
-                {catLabel(model.category, model.segment)}
-              </div>
-            </div>
-            <div className="qb">
-              <div className="k">Hajtás</div>
-              <div
-                className="v"
-                style={{
-                  fontSize: 15,
-                  fontFamily: "var(--font-inter), sans-serif",
-                }}
-              >
-                {model.drive}
-              </div>
-            </div>
-            <div className="qb">
-              <div className="k">Hossz</div>
-              <div className="v">
-                {model.length_mm ? fmtNumber(model.length_mm) : "—"}
-                <small>{model.length_mm ? "mm" : ""}</small>
-              </div>
-            </div>
-            <div className="qb">
-              <div className="k">Csomagtartó</div>
-              <div className="v">
-                {qbTrunkShown ?? "—"}
-                <small>{qbTrunkShown != null ? "l" : ""}</small>
-                {qbTrunkBadge ? <span className="qb-max">max</span> : null}
-              </div>
-            </div>
-            <div className="qb">
-              <div className="k">Teljesítmény</div>
-              <div className="v">
-                {qbPowerShown ?? "—"}
-                <small>{qbPowerShown ? "LE" : ""}</small>
-                {qbPowerBadge ? <span className="qb-max">max</span> : null}
-              </div>
-            </div>
-            <div className="qb">
-              <div className="k">{hasBattery ? "Hatótáv" : "Ülések"}</div>
-              <div className="v">
-                {hasBattery ? (qbRangeShown ?? "—") : (model.seats ?? "—")}
-                <small>{hasBattery ? "km" : "fő"}</small>
-                {hasBattery && qbRangeBadge ? <span className="qb-max">max</span> : null}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* GALLERY */}
       <section className="block">
         <div className="container">
@@ -241,119 +181,58 @@ export function ModelDetail({
         </div>
       </section>
 
-      {/* SPECS */}
+      {/* SPECS — unified layout for both single-spec and multi-variant models */}
       <section className="block" style={{ background: "#fbfaf6" }}>
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">02 · Méretek és műszaki adatok</div>
+              <div className="step">02 · Műszaki adatok</div>
               <h2>
                 {hasOpts ? (
-                  <>
-                    Változatok <em>egymás mellett</em>.
-                  </>
+                  <>Változatok <em>egymás mellett</em>.</>
                 ) : (
-                  <>
-                    A számok <em>egy helyen</em>.
-                  </>
+                  <>A számok <em>egy helyen</em>.</>
                 )}
               </h2>
             </div>
-            {hasOpts ? (
+            {hasOpts && (
               <div className="sub">
-                A modell több hajtáslánc-változatban érhető el. A kínálat
-                változat-szintű adatait egyetlen táblázatban hasonlíthatod össze.
+                A modell több hajtáslánc-változatban érhető el — az adatok
+                változatonként, egyetlen táblázatban.
               </div>
-            ) : null}
+            )}
           </div>
 
-          {hasOpts ? (
-            <>
-              {/* Shared dimensions — independent of variant */}
-              <div className="specs-grid specs-grid--shared">
-                <SpecCell
-                  icon={<Ruler size={16} />}
-                  k="Hossz"
-                  v={model.length_mm ? fmtNumber(model.length_mm) : "—"}
-                  unit="mm"
-                />
-                {model.width_mm != null ? (
-                  <SpecCell
-                    icon={<Ruler size={16} />}
-                    k="Szélesség"
-                    v={fmtNumber(model.width_mm)}
-                    unit="mm"
-                  />
-                ) : null}
-                {model.height_mm != null ? (
-                  <SpecCell
-                    icon={<Ruler size={16} />}
-                    k="Magasság"
-                    v={fmtNumber(model.height_mm)}
-                    unit="mm"
-                  />
-                ) : null}
-                {model.wheelbase_mm != null ? (
-                  <SpecCell
-                    icon={<Ruler size={16} />}
-                    k="Tengelytáv"
-                    v={fmtNumber(model.wheelbase_mm)}
-                    unit="mm"
-                  />
-                ) : null}
-              </div>
+          {/* Shared specs: dimensions + charging (constant across all variants) */}
+          <div className="specs-grid specs-grid--shared">
+            {model.length_mm != null && (
+              <SpecCell icon={<Ruler size={16} />} k="Hossz" v={fmtNumber(model.length_mm)} unit="mm" />
+            )}
+            {model.width_mm != null && (
+              <SpecCell icon={<Ruler size={16} />} k="Szélesség" v={fmtNumber(model.width_mm)} unit="mm" />
+            )}
+            {model.height_mm != null && (
+              <SpecCell icon={<Ruler size={16} />} k="Magasság" v={fmtNumber(model.height_mm)} unit="mm" />
+            )}
+            {model.wheelbase_mm != null && (
+              <SpecCell icon={<Ruler size={16} />} k="Tengelytáv" v={fmtNumber(model.wheelbase_mm)} unit="mm" />
+            )}
+            {model.acceleration_s != null && (
+              <SpecCell icon={<Zap size={16} />} k="0–100 km/h" v={model.acceleration_s} unit="s" />
+            )}
+            {(isEV || isPHEV) && model.charging_ac_kw != null && (
+              <SpecCell icon={<PlugZap size={16} />} k="AC töltés max" v={model.charging_ac_kw} unit="kW" />
+            )}
+            {isEV && model.charging_dc_kw != null && (
+              <SpecCell icon={<BatteryCharging size={16} />} k="DC töltés max" v={model.charging_dc_kw} unit="kW" />
+            )}
+          </div>
 
-              {/* Variant table */}
-              <VariantsTable options={opts} />
-            </>
-          ) : (
-            <div className="specs-grid">
-              <SpecCell
-                icon={<Ruler size={16} />}
-                k="Hossz"
-                v={model.length_mm ? fmtNumber(model.length_mm) : "—"}
-                unit="mm"
-              />
-              <SpecCell
-                icon={<Briefcase size={16} />}
-                k="Csomagtartó"
-                v={model.trunk_l ?? "—"}
-                unit="l"
-                note="Lehajtott üléssor mellett a kapacitás jelentősen bővíthető."
-              />
-              <SpecCell
-                icon={<Users size={16} />}
-                k="Ülőhelyek"
-                v={model.seats ?? "—"}
-                unit="fő"
-              />
-              <SpecCell
-                icon={<Gauge size={16} />}
-                k="Teljesítmény"
-                v={model.power_hp ?? "—"}
-                unit="LE"
-              />
-              <SpecCell
-                icon={<BatteryCharging size={16} />}
-                k="Akkumulátor"
-                v={hasBattery ? (model.battery_kwh ?? "—") : "n/a"}
-                unit="kWh"
-                muted={!hasBattery}
-                note={!hasBattery ? "Belsőégésű hajtás — nincs hajtásakkumulátor." : undefined}
-              />
-              <SpecCell
-                icon={<Route size={16} />}
-                k={isEV ? "Hatótáv (WLTP)" : "EV hatótáv (PHEV/becslés)"}
-                v={model.range_km ?? "n/a"}
-                unit={model.range_km ? "km" : ""}
-                muted={!model.range_km}
-                note={
-                  model.range_km
-                    ? "Valós érték használati módtól, hőmérséklettől, sebességtől függően eltérhet."
-                    : undefined
-                }
-              />
-            </div>
+          {/* Variant table — shows per-variant specs (range, power, battery, trunk, seats, consumption).
+              effectiveOpts is always populated: either real engine_options rows, or a synthetic
+              single "Alap" row built from the model-level spec fields. */}
+          {effectiveOpts.length > 0 && (
+            <VariantsTable options={effectiveOpts} />
           )}
         </div>
       </section>
@@ -398,35 +277,12 @@ export function ModelDetail({
         </div>
       </section>
 
-      {/* ENERGY */}
-      <section className="block" style={{ background: "#fbfaf6" }}>
-        <div className="container">
-          <div className="block-head">
-            <div>
-              <div className="step">04 · Energia &amp; töltés</div>
-              <h2>
-                {isEV
-                  ? "Töltési és "
-                  : isPHEV
-                    ? "Töltés és "
-                    : isHEV
-                      ? "Üzemanyag- és "
-                      : "Üzemanyag és "}
-                <em>{isEV ? "fogyasztási" : isPHEV ? "kombinált" : isHEV ? "hibrid" : "fogyasztás"}</em>{" "}
-                {isEV || isPHEV ? "adatok" : "jellemzők"}.
-              </h2>
-            </div>
-          </div>
-          <EnergyBlock model={model} />
-        </div>
-      </section>
-
       {/* WARRANTY */}
       <section className="block">
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">05 · Garancia</div>
+              <div className="step">04 · Garancia</div>
               <h2>
                 Mire <em>vállalnak</em> garanciát?
               </h2>
@@ -467,7 +323,7 @@ export function ModelDetail({
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">06 · Importőr &amp; háttér</div>
+              <div className="step">05 · Importőr &amp; háttér</div>
               <h2>
                 Importőr és <em>márkaadatok</em>.
               </h2>
@@ -553,7 +409,7 @@ export function ModelDetail({
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">08 · Hasonló modellek</div>
+              <div className="step">07 · Hasonló modellek</div>
               <h2>
                 Még <em>érdekelhet</em>.
               </h2>
@@ -676,198 +532,6 @@ function Warranty({
       <div>
         <div className="v">{v}</div>
         <div className="k">{k}</div>
-      </div>
-    </div>
-  );
-}
-
-function EnergyBlock({ model }: { model: ModelRow }) {
-  const isEV = model.drive === "Elektromos";
-  const isPHEV = model.drive === "Plug-in hibrid";
-  const isHEV = model.drive === "Önttöltő hibrid";
-
-  if (isEV) {
-    const acTime = model.battery_kwh
-      ? Math.round((model.battery_kwh / 11) * 10) / 10
-      : "—";
-    const dcTime = model.battery_kwh
-      ? Math.round(((model.battery_kwh * 0.6) / 90) * 60)
-      : "—";
-    const cons =
-      model.battery_kwh && model.range_km
-        ? ((model.battery_kwh / model.range_km) * 100).toFixed(1)
-        : "—";
-    return (
-      <div className="energy-grid">
-        <div className="energy-card">
-          <h4>
-            AC töltés{" "}
-            <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>
-              otthoni / fali
-            </span>
-          </h4>
-          <div className="row">
-            <span className="k">Maximum AC teljesítmény</span>
-            <span className="v big">11 kW</span>
-          </div>
-          <div className="row">
-            <span className="k">Kapcsolat</span>
-            <span className="v">Type 2</span>
-          </div>
-          <div className="row">
-            <span className="k">10 → 100 % becsült idő</span>
-            <span className="v">~ {acTime} óra</span>
-          </div>
-        </div>
-        <div className="energy-card">
-          <h4>
-            DC gyorstöltés{" "}
-            <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>nyilvános</span>
-          </h4>
-          <div className="row">
-            <span className="k">Csúcs DC teljesítmény</span>
-            <span className="v big">90 kW</span>
-          </div>
-          <div className="row">
-            <span className="k">Kapcsolat</span>
-            <span className="v">CCS</span>
-          </div>
-          <div className="row">
-            <span className="k">10 → 80 % becsült idő</span>
-            <span className="v">~ {dcTime} perc</span>
-          </div>
-        </div>
-        <div className="energy-card" style={{ gridColumn: "1 / -1" }}>
-          <h4>
-            Fogyasztás{" "}
-            <span style={{ fontSize: 11, color: "var(--ink-mute)" }}>
-              WLTP-becslés
-            </span>
-          </h4>
-          <div className="row">
-            <span className="k">Vegyes ciklus</span>
-            <span className="v big">{cons} kWh / 100 km</span>
-          </div>
-          <div className="row">
-            <span className="k">Akkumulátor</span>
-            <span className="v">{model.battery_kwh ?? "—"} kWh</span>
-          </div>
-          <div className="row">
-            <span className="k">Hatótáv (WLTP)</span>
-            <span className="v">{model.range_km ?? "—"} km</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isPHEV) {
-    return (
-      <div className="energy-grid">
-        <div className="energy-card">
-          <h4>AC töltés</h4>
-          <div className="row">
-            <span className="k">AC teljesítmény</span>
-            <span className="v big">3,7–6,6 kW</span>
-          </div>
-          <div className="row">
-            <span className="k">EV hatótáv (becslés)</span>
-            <span className="v">{model.range_km ?? "—"} km</span>
-          </div>
-          <div className="row">
-            <span className="k">Kapcsolat</span>
-            <span className="v">Type 2</span>
-          </div>
-        </div>
-        <div className="energy-card">
-          <h4>Kombinált fogyasztás</h4>
-          <div className="row">
-            <span className="k">Hibrid mód</span>
-            <span className="v big">~ 5,5 l / 100 km</span>
-          </div>
-          <div className="row">
-            <span className="k">EV módban</span>
-            <span className="v">~ 16 kWh / 100 km</span>
-          </div>
-          <div className="row">
-            <span className="k">Akkumulátor</span>
-            <span className="v">{model.battery_kwh ?? "—"} kWh</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isHEV) {
-    return (
-      <div className="energy-grid">
-        <div className="energy-card">
-          <h4>Fogyasztás (WLTP)</h4>
-          <div className="row">
-            <span className="k">Vegyes ciklus</span>
-            <span className="v big">~ 5,5 l / 100 km</span>
-          </div>
-          <div className="row">
-            <span className="k">Városban</span>
-            <span className="v">~ 5,0 l / 100 km</span>
-          </div>
-          <div className="row">
-            <span className="k">Üzemanyagtartály</span>
-            <span className="v">~ 50 l</span>
-          </div>
-        </div>
-        <div className="energy-card">
-          <h4>Hajtáslánc</h4>
-          <div className="row">
-            <span className="k">Üzemanyag</span>
-            <span className="v">Benzin (95)</span>
-          </div>
-          <div className="row">
-            <span className="k">Külső töltés</span>
-            <span className="v">nincs</span>
-          </div>
-          <div className="row">
-            <span className="k">Rendszerteljesítmény</span>
-            <span className="v">{model.power_hp ?? "—"} LE</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="energy-grid">
-      <div className="energy-card">
-        <h4>Fogyasztás (WLTP)</h4>
-        <div className="row">
-          <span className="k">Vegyes ciklus</span>
-          <span className="v big">~ 7,0 l / 100 km</span>
-        </div>
-        <div className="row">
-          <span className="k">Üzemanyag</span>
-          <span className="v">
-            {model.drive === "Dízel" ? "Dízel" : "Benzin (95)"}
-          </span>
-        </div>
-        <div className="row">
-          <span className="k">Üzemanyagtartály</span>
-          <span className="v">~ 55 l</span>
-        </div>
-      </div>
-      <div className="energy-card">
-        <h4>Hajtáslánc</h4>
-        <div className="row">
-          <span className="k">Motor</span>
-          <span className="v">{model.power_hp ?? "—"} LE</span>
-        </div>
-        <div className="row">
-          <span className="k">Külső töltés</span>
-          <span className="v">nincs</span>
-        </div>
-        <div className="row">
-          <span className="k">Hatótáv (becslés)</span>
-          <span className="v">~ 700–800 km</span>
-        </div>
       </div>
     </div>
   );

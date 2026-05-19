@@ -146,7 +146,7 @@ export function DealerSection({
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">07 · Kereskedők</div>
+              <div className="step">06 · Kereskedők</div>
               <h2>
                 <em>{brandName}</em> kereskedők
               </h2>
@@ -167,7 +167,7 @@ export function DealerSection({
       <div className="container">
         <div className="block-head">
           <div>
-            <div className="step">07 · Kereskedők</div>
+            <div className="step">06 · Kereskedők</div>
             <h2>
               <em>{brandName}</em> kereskedők{" "}
               <span style={{ color: "var(--ink-mute)", fontSize: ".7em" }}>

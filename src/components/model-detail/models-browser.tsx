@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Brand, ModelRow } from "@/lib/types";
 import { brandLogoUrl } from "@/lib/data";
 import "./models-browser.css";
@@ -38,6 +38,19 @@ export function ModelsBrowserStrip({
     if (brandFromUrl) setActiveBrand(brandFromUrl);
   }, [brandFromUrl]);
 
+  // Measure brand strip height so the model strip can stick right below it
+  const brandWrapRef = useRef<HTMLDivElement>(null);
+  const [brandStripH, setBrandStripH] = useState(0);
+  useEffect(() => {
+    const el = brandWrapRef.current;
+    if (!el) return;
+    const update = () => setBrandStripH(el.offsetHeight);
+    update();
+    const obs = new ResizeObserver(update);
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
     for (const m of models) c[m.brand_slug] = (c[m.brand_slug] ?? 0) + 1;
@@ -54,7 +67,7 @@ export function ModelsBrowserStrip({
   return (
     <>
       {/* Brand strip — wraps to multiple rows */}
-      <div className="brand-strip-wrap">
+      <div className="brand-strip-wrap" ref={brandWrapRef}>
         <div className="container">
           <div className="strip-section-label">Márka</div>
           <div className="brand-strip">
@@ -92,9 +105,12 @@ export function ModelsBrowserStrip({
         </div>
       </div>
 
-      {/* Model strip — shown when a brand is active */}
+      {/* Model strip — sticky just below the brand strip */}
       {activeBrand ? (
-        <div className="strip-wrap models">
+        <div
+          className="strip-wrap models"
+          style={{ position: "sticky", top: 64 + brandStripH, zIndex: 39 }}
+        >
           <div className="container">
             <div className="strip-label">
               Modell{" "}

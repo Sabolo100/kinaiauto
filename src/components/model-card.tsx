@@ -57,6 +57,35 @@ export function ModelCard({
     quoteCart.toggle(item);
   }
 
+  // Min–max helpers for variant-specific spec fields
+  const opts = model.engine_options ?? [];
+  const mmRange = (key: "trunk_l" | "power_hp" | "range_km" | "seats") => {
+    const vals = opts.map((o) => o[key]).filter((v): v is number => v != null);
+    if (vals.length === 0) return null;
+    return { min: Math.min(...vals), max: Math.max(...vals) };
+  };
+  const trMM = mmRange("trunk_l");
+  const trunkDisplay = trMM
+    ? trMM.min === trMM.max
+      ? `${fmtNumber(trMM.min)} l`
+      : `${fmtNumber(trMM.min)}–${fmtNumber(trMM.max)} l`
+    : model.trunk_l != null ? `${fmtNumber(model.trunk_l)} l` : "—";
+  const pwMM = mmRange("power_hp");
+  const powerDisplay = pwMM
+    ? pwMM.min === pwMM.max
+      ? `${pwMM.min} LE`
+      : `${pwMM.min}–${pwMM.max} LE`
+    : model.power_hp ? `${model.power_hp} LE` : "—";
+  const rgMM = mmRange("range_km");
+  const stMM = mmRange("seats");
+  const rangeSeatsDisplay = model.battery_kwh
+    ? rgMM
+      ? rgMM.min === rgMM.max ? `${rgMM.min} km` : `${rgMM.min}–${rgMM.max} km`
+      : model.range_km ? `${model.range_km} km` : "—"
+    : stMM
+      ? stMM.min === stMM.max ? `${stMM.min}` : `${stMM.min}–${stMM.max}`
+      : model.seats != null ? `${model.seats}` : "—";
+
   return (
     <article className={`card zoom-${zoom}`}>
       {/* Stretch-link: makes the whole card a clickable area; interactive children sit above it via z-index */}
@@ -164,27 +193,17 @@ export function ModelCard({
           </div>
           <div className="spec">
             <div className="k">Csomagtartó</div>
-            <div className="v">
-              {model.trunk_l != null ? `${fmtNumber(model.trunk_l)} l` : "—"}
-            </div>
+            <div className="v">{trunkDisplay}</div>
           </div>
           <div className="spec">
             <div className="k">Teljesítmény</div>
-            <div className="v">
-              {model.power_hp ? `${model.power_hp} LE` : "—"}
-            </div>
+            <div className="v">{powerDisplay}</div>
           </div>
           <div className="spec">
             <div className="k">
               {model.battery_kwh ? "Hatótáv" : "Ülések"}
             </div>
-            <div className="v">
-              {model.battery_kwh
-                ? model.range_km
-                  ? `${model.range_km} km`
-                  : "—"
-                : (model.seats ?? "—")}
-            </div>
+            <div className="v">{rangeSeatsDisplay}</div>
           </div>
         </div>
         {/* Variants — only shown when 2+ engine options exist */}
