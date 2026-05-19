@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  ArrowUpRight,
   BatteryCharging,
   ExternalLink,
   Fuel,
@@ -16,7 +17,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import type { Brand, Dealer, ModelEngineOption, ModelPhoto, ModelRow, ModelTrim } from "@/lib/types";
+import type { Brand, Dealer, ModelEngineOption, ModelPhoto, ModelRow } from "@/lib/types";
 import { ModelGallery } from "./model-gallery";
 import { DealerSection } from "./dealer-section";
 import { VariantsTable } from "./variants-table";
@@ -28,14 +29,12 @@ import "./model-detail.css";
 export function ModelDetail({
   model,
   brand,
-  trims,
   similar,
   photos,
   dealers,
 }: {
   model: ModelRow;
   brand: Brand;
-  trims: ModelTrim[];
   similar: ModelRow[];
   photos: ModelPhoto[];
   dealers: Dealer[];
@@ -237,43 +236,55 @@ export function ModelDetail({
         </div>
       </section>
 
-      {/* TRIMS */}
+      {/* FURTHER DETAILS */}
       <section className="block">
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">03 · Felszereltségi szintek</div>
+              <div className="step">03 · További részletek</div>
               <h2>
-                Mit kapsz <em>melyik szinten</em>?
+                Több infó <em>a gyártónál</em>.
               </h2>
             </div>
             <div className="sub">
-              A pontos felszereltségi listák importőrönként és időszakonként
-              eltérhetnek — a hivatalos kereskedő a végleges forrás.
+              Ha valamelyik adat hiányos vagy frissítésre szorul, a gyártó
+              hivatalos oldalán találod a legpontosabb információkat —
+              felszereltségi szintek, opciók, aktuális árak.
             </div>
           </div>
-          <div className="trim-grid">
-            {trims.map((t) => (
-              <article
-                key={t.id}
-                className={`trim ${t.is_featured ? "featured" : ""}`}
-              >
-                <span className="lbl">{t.level_label ?? t.name}</span>
-                <h4>{t.name}</h4>
-                <div className="price">
-                  <span className="v">{fmtPrice(t.price_m_ft)}</span>
-                  <small>
-                    {t.is_featured ? "becsült" : t.slug === "comfort" ? "listaártól" : "maximumig"}
-                  </small>
+
+          {model.source_url ? (
+            <a
+              href={
+                model.source_url.startsWith("http")
+                  ? model.source_url
+                  : `https://${model.source_url}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="source-link-card"
+            >
+              <div className="slc-icon">
+                <ArrowUpRight size={22} />
+              </div>
+              <div className="slc-body">
+                <div className="slc-label">Gyártó hivatalos modelloldala</div>
+                <div className="slc-url">
+                  {model.source_url.replace(/^https?:\/\//, "")}
                 </div>
-                <ul>
-                  {t.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
-              </article>
-            ))}
-          </div>
+                <div className="slc-hint">
+                  Kattints a megnyitáshoz — új lapon nyílik meg
+                </div>
+              </div>
+              <div className="slc-cta">
+                Megnyitás <ArrowRight size={14} />
+              </div>
+            </a>
+          ) : (
+            <div className="source-link-empty">
+              Ehhez a modellhez még nincs forráslink rögzítve.
+            </div>
+          )}
         </div>
       </section>
 

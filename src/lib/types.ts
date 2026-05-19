@@ -74,6 +74,7 @@ export type ModelRow = {
   warranty_km: number | null;
   battery_warranty_years: number | null;
   battery_warranty_km: number | null;
+  source_url: string | null;
   data_updated_at: string | null;
   updated_at: string | null;
   brand_id: string;

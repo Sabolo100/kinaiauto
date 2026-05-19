@@ -217,6 +217,7 @@ function buildModels(): ModelRow[] {
       battery_kwh_max: s.battery_kwh,
       trunk_l_max: s.trunk_l,
       seats_max: s.seats,
+      source_url: null,
       has_engine_options: false,
       engine_options: [],
     };

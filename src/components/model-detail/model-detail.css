@@ -622,6 +622,123 @@
   margin-top: auto;
 }
 
+/* FURTHER DETAILS — source link card */
+.source-link-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 28px;
+  background: var(--surface);
+  border: 1.5px solid var(--line-strong);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: all 0.16s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.source-link-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 70%, var(--accent-soft) 100%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.source-link-card:hover {
+  border-color: var(--ink-soft);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.source-link-card:hover::before {
+  opacity: 1;
+}
+.slc-icon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.source-link-card:hover .slc-icon {
+  background: var(--accent-ink);
+}
+.slc-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.slc-label {
+  font-size: 13px;
+  font-family: var(--font-mono), monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.slc-url {
+  font-family: var(--font-instrument), serif;
+  font-size: 20px;
+  line-height: 1.15;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.slc-hint {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.slc-cta {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.source-link-card:hover .slc-cta {
+  background: var(--accent-ink);
+}
+.source-link-empty {
+  padding: 28px 24px;
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--ink-mute);
+  font-family: var(--font-mono), monospace;
+}
+@media (max-width: 720px) {
+  .source-link-card {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .slc-cta {
+    width: 100%;
+    justify-content: center;
+  }
+  .slc-url {
+    font-size: 16px;
+  }
+}
+
 /* TRIMS */
 .trim-grid {
   display: grid;

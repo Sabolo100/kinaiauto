@@ -8,7 +8,6 @@ import {
   getCachedBrands,
   getCachedModels,
   getModelByBrandAndSlug,
-  getTrimsForModel,
   getPhotosForModel,
   getDealersForBrand,
 } from "@/lib/data";
@@ -53,8 +52,7 @@ export default async function ModelPage({ params }: Props) {
   const b = allBrands.find((x) => x.slug === brand);
   if (!m || !b) notFound();
 
-  const [trims, photos, dealers] = await Promise.all([
-    getTrimsForModel(m.id),
+  const [photos, dealers] = await Promise.all([
     getPhotosForModel(m.id),
     getDealersForBrand(b.id),
   ]);
@@ -77,7 +75,7 @@ export default async function ModelPage({ params }: Props) {
 
   return (
     <>
-      <ModelDetail model={m} brand={b} trims={trims} similar={similar} photos={photos} dealers={dealers} />
+      <ModelDetail model={m} brand={b} similar={similar} photos={photos} dealers={dealers} />
 
       <JsonLd data={vehicleSchema(m)} />
       <JsonLd
