@@ -8,9 +8,12 @@ async function getDealers(): Promise<DealerRow[]> {
   const sa = supabaseAdmin();
   const { data, error } = await sa
     .from("dealers")
-    .select("id, name, city, zip_code, phone, email, is_active, brand:brands(name)");
+    .select("id, name, city, zip_code, phone, email, is_active, brand:brands(name), contacts:dealer_contacts(id)");
   if (error) throw error;
-  return (data ?? []) as unknown as DealerRow[];
+  return ((data ?? []) as unknown as (DealerRow & { contacts: { id: string }[] })[]).map((d) => ({
+    ...d,
+    contact_count: d.contacts?.length ?? 0,
+  }));
 }
 
 export default async function DealersListPage() {

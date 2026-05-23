@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
@@ -13,11 +13,70 @@ export type DealerRow = {
   email: string | null;
   is_active: boolean;
   brand: { name: string } | null;
+  contact_count: number;
 };
 
 type SortKey = "brand" | "name" | "city" | "status";
 type Dir = "asc" | "desc";
 
+// ─── Inline email cell ────────────────────────────────────────────────────────
+function InlineEmailCell({ dealerId, initial }: { dealerId: string; initial: string | null }) {
+  const [val, setVal] = useState(initial ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved]   = useState(false);
+  const [err, setErr]       = useState(false);
+  const savedVal = useRef(initial ?? ""); // tracks the last persisted value
+
+  async function save() {
+    const trimmed = val.trim();
+    if (trimmed === savedVal.current) return; // nothing changed
+    setSaving(true);
+    setSaved(false);
+    setErr(false);
+    try {
+      const res = await fetch(`/api/cms/dealers/${dealerId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed || null }),
+      });
+      if (!res.ok) throw new Error();
+      savedVal.current = trimmed;
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2200);
+    } catch {
+      setErr(true);
+      setTimeout(() => setErr(false), 3000);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const hasEmail = val.trim().length > 0;
+
+  return (
+    <div className="dl-email-cell">
+      {/* Has-email indicator dot */}
+      <span
+        className={`dl-email-dot${hasEmail ? " has" : " missing"}`}
+        title={hasEmail ? "Van e-mail" : "Hiányzó e-mail"}
+      />
+      <input
+        type="email"
+        className={`dl-email-input${err ? " err" : ""}`}
+        value={val}
+        placeholder="nincs e-mail"
+        onChange={(e) => { setVal(e.target.value); setSaved(false); setErr(false); }}
+        onBlur={save}
+        onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }}
+      />
+      {saving && <span className="dl-email-status">…</span>}
+      {saved  && <span className="dl-email-status ok">✓</span>}
+      {err    && <span className="dl-email-status err">✗</span>}
+    </div>
+  );
+}
+
+// ─── Main table ───────────────────────────────────────────────────────────────
 export function DealersTable({ rows }: { rows: DealerRow[] }) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("brand");
@@ -99,6 +158,8 @@ export function DealersTable({ rows }: { rows: DealerRow[] }) {
             <Th col="name" label="Kereskedés neve" />
             <Th col="city" label="Város" />
             <th>Telefon</th>
+            <th>E-mail</th>
+            <th>Kontaktok</th>
             <Th col="status" label="Státusz" />
             <th />
           </tr>
@@ -106,7 +167,7 @@ export function DealersTable({ rows }: { rows: DealerRow[] }) {
         <tbody>
           {filtered.length === 0 && (
             <tr>
-              <td colSpan={6} style={{ color: "#94a3b8" }}>
+              <td colSpan={8} style={{ color: "#94a3b8" }}>
                 {search ? "Nincs találat." : "Még nincs kereskedő rögzítve."}
               </td>
             </tr>
@@ -128,6 +189,16 @@ export function DealersTable({ rows }: { rows: DealerRow[] }) {
               </td>
               <td style={{ color: "#64748b", fontSize: 13 }}>
                 {d.phone ?? "—"}
+              </td>
+              <td style={{ padding: "6px 8px" }}>
+                <InlineEmailCell dealerId={d.id} initial={d.email} />
+              </td>
+              <td>
+                {d.contact_count > 0 ? (
+                  <span className="pill ok">{d.contact_count} kontakt</span>
+                ) : (
+                  <span className="pill muted">nincs</span>
+                )}
               </td>
               <td>
                 {d.is_active ? (

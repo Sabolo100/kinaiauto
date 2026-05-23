@@ -158,6 +158,49 @@
 .cms-table .pill.muted { background: #1f2937; color: #94a3b8; }
 .cms-table .pill.err { background: #450a0a; color: #fca5a5; }
 
+/* ─── Dealer list: inline email edit cell ─────────────────────────────────── */
+.dl-email-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* Has-email dot indicator */
+.dl-email-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.dl-email-dot.has     { background: #34d399; }
+.dl-email-dot.missing { background: #475569; }
+/* Inline email input — looks like plain text until focused */
+.dl-email-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12.5px;
+  color: #cbd5e1;
+  outline: none;
+  transition: border-color 0.12s, background 0.12s;
+}
+.dl-email-input::placeholder { color: #374151; }
+.dl-email-input:hover  { border-color: #334155; background: #0f172a; }
+.dl-email-input:focus  { border-color: #2563eb; background: #0f172a; color: #e2e8f0; }
+.dl-email-input.err    { border-color: #dc2626 !important; }
+/* Save status indicator (…  ✓  ✗) */
+.dl-email-status {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #475569;
+  min-width: 12px;
+  text-align: center;
+}
+.dl-email-status.ok  { color: #34d399; }
+.dl-email-status.err { color: #f87171; }
+
 /* Forms */
 .cms-form { display: grid; gap: 14px; max-width: 760px; }
 .cms-form .row2 { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
