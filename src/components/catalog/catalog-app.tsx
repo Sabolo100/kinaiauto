@@ -401,6 +401,15 @@ function gapBg(normalized: number): string {
   return `linear-gradient(to right, transparent, oklch(${l}% ${c} 50) 50%, transparent)`;
 }
 
+// ─── Group background color (warm amber, progressively darker for higher values)
+// idx=0 → lowest value → lightest tint; idx=total-1 → highest → darkest
+function groupColor(idx: number, total: number): string {
+  const t = total <= 1 ? 0.35 : idx / (total - 1);
+  const l = (95 - t * 26).toFixed(1); // 95% (lightest) → 69% (darkest)
+  const c = (0.02 + t * 0.11).toFixed(3); // 0.02 → 0.13
+  return `oklch(${l}% ${c} 50)`; // warm amber, consistent with gap gradients
+}
+
 // ─── Tick step calculation ────────────────────────────────────────────────────
 function computeTickStep(paramId: Param, span: number): number {
   const steps: Record<Param, number[]> = {
@@ -598,6 +607,30 @@ function VBar({
     [renderCards, param.id, param.fmt, minV, maxV, cw],
   );
 
+  // Group placed cards by axisY → one colored strip + one connector per group.
+  const GROUP_PAD_PX = 8;
+  const groups = (() => {
+    const map = new Map<number, PlacedCar[]>();
+    for (const p of layout.placed) {
+      const arr = map.get(p.axisY) ?? [];
+      arr.push(p);
+      map.set(p.axisY, arr);
+    }
+    const sorted = [...map.entries()].sort(([a], [b]) => a - b);
+    const total = sorted.length;
+    return sorted.map(([axisY, cars], idx) => {
+      const tops = cars.map((p) => p.cardY);
+      const bots = cars.map((p) => p.cardY + CARD_H);
+      return {
+        axisY,
+        idx,
+        total,
+        stripTop: Math.min(...tops) - GROUP_PAD_PX,
+        stripBot: Math.max(...bots) + GROUP_PAD_PX,
+      };
+    });
+  })();
+
   return (
     <div className="cat-vbar-wrap">
       <div className="cat-vbar-head">
@@ -619,19 +652,32 @@ function VBar({
           </div>
         ))}
 
+        {/* Colored group background strips — render behind everything */}
+        {groups.map((g) => (
+          <div
+            key={`bg-${g.axisY}`}
+            className="cat-group-bg"
+            style={{
+              top: g.stripTop,
+              height: g.stripBot - g.stripTop,
+              background: groupColor(g.idx, g.total),
+            }}
+          />
+        ))}
+
+        {/* One connector per value group: axis → strip left edge */}
         <svg className="cat-connectors" style={{ height: layout.chartH }} xmlns="http://www.w3.org/2000/svg">
-          {layout.placed.map((p) => {
-            const isHi = hovered?.id === p.m.id || pinned?.id === p.m.id;
-            return (
-              <line key={p.key}
-                x1={AXIS_X} y1={p.axisY}
-                x2={p.cardX} y2={p.cardY + CARD_H / 2}
-                className={`cat-cl${isHi ? " hi" : ""}`}
-              />
-            );
-          })}
+          {groups.map((g) => (
+            <line
+              key={`conn-${g.axisY}`}
+              x1={AXIS_X} y1={g.axisY}
+              x2={CARDS_X - GROUP_PAD_PX} y2={g.axisY}
+              className="cat-group-conn"
+            />
+          ))}
         </svg>
 
+        {/* Cards: photo + brand + model name only (no value text) */}
         {layout.placed.map((p) => {
           const photo = photoUrl(p.m.primary_photo_path);
           return (
@@ -647,12 +693,12 @@ function VBar({
               </div>
               <div className="cat-card-info">
                 <span className="cat-card-name">
-                  {p.m.brand_name} {p.m.name}
+                  <span className="cat-card-brand">{p.m.brand_name}</span>{" "}
+                  {p.m.name}
                   {p.variantName ? (
                     <span className="cat-card-variant"> · {p.variantName}</span>
                   ) : null}
                 </span>
-                <span className="cat-card-val">{param.fmt(p.v)}</span>
               </div>
             </div>
           );

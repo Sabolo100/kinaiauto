@@ -8,10 +8,19 @@ import { fmtPrice, parseCompareTokens } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 import "./compare.css";
 
-const TRIMS = ["Comfort", "Style", "Lounge"] as const;
-type Trim = (typeof TRIMS)[number];
+// Variant-specific fields — when a variant is selected, these come from the
+// engine_options row; otherwise they fall back to the model-level value.
+const VARIANT_FIELDS = new Set([
+  "range_km", "power_hp", "battery_kwh", "trunk_l", "seats",
+  "consumption_text", "charging_ac_kw", "charging_dc_kw", "charging_text", "acceleration_s",
+]);
 
-type Col = { brand: string; model: string; trim: Trim };
+type Col = {
+  brand: string;
+  model: string;
+  /** UUID of the selected engine_options row, or null when the model has no variants */
+  variantId: string | null;
+};
 
 type Row =
   | { section: string; id?: never }
@@ -27,7 +36,7 @@ const ROWS: Row[] = [
   { section: "Alapadatok" },
   { id: "brand_name", label: "Márka" },
   { id: "name", label: "Modell" },
-  { id: "trim", label: "Felszereltség" },
+  { id: "trim", label: "Változat" },
   { id: "category", label: "Kategória" },
   { id: "drive", label: "Hajtás" },
   { section: "Árak" },
@@ -127,13 +136,19 @@ export function CompareApp({ models }: { models: ModelRow[] }) {
   const sp = useSearchParams();
   const [cols, setCols] = useState<Col[]>(() => {
     const tokens = parseCompareTokens(sp.get("models"));
-    const initial = tokens.map((t) => ({
-      brand: t.brand,
-      model: t.name,
-      trim: "Style" as Trim,
-    }));
+    const initial = tokens.map((t) => {
+      // Auto-select the first engine variant if the model has any
+      const found = models.find(
+        (m) => m.brand_name === t.brand && m.name === t.name,
+      );
+      return {
+        brand: t.brand,
+        model: t.name,
+        variantId: found?.engine_options?.[0]?.id ?? null,
+      };
+    });
     while (initial.length < 4)
-      initial.push({ brand: "", model: "", trim: "Style" });
+      initial.push({ brand: "", model: "", variantId: null });
     return initial.slice(0, 4);
   });
 
@@ -149,16 +164,47 @@ export function CompareApp({ models }: { models: ModelRow[] }) {
     );
   }
 
+  function getVariant(c: Col, m: ModelRow) {
+    if (!c.variantId) return null;
+    return m.engine_options?.find((o) => o.id === c.variantId) ?? null;
+  }
+
   function value(rowId: string, c: Col): unknown {
-    if (rowId === "trim") return c.trim;
+    // "trim" row: show selected variant name or "Alap" if no variants
+    if (rowId === "trim") {
+      const m = getModel(c);
+      if (!m) return null;
+      const opts = m.engine_options ?? [];
+      if (opts.length === 0) return "Alap";
+      const v = getVariant(c, m);
+      return v?.name ?? null;
+    }
     const m = getModel(c);
     if (!m) return null;
-    if (rowId === "valuePerKm") {
-      if (m.price_min_m_ft && m.range_km) {
-        return (m.price_min_m_ft * 1_000_000) / m.range_km;
+
+    // For variant-specific fields, prefer the selected variant's value
+    if (VARIANT_FIELDS.has(rowId) && c.variantId) {
+      const v = getVariant(c, m);
+      if (v) {
+        const varVal = (v as unknown as Record<string, unknown>)[rowId];
+        if (varVal != null) return varVal;
       }
+    }
+
+    if (rowId === "valuePerKm") {
+      // Use effective range (variant-specific if selected, else model-level)
+      const effectiveRange = (() => {
+        if (c.variantId) {
+          const v = getVariant(c, m);
+          if (v?.range_km != null) return v.range_km;
+        }
+        return m.range_km;
+      })();
+      if (m.price_min_m_ft && effectiveRange)
+        return (m.price_min_m_ft * 1_000_000) / effectiveRange;
       return null;
     }
+
     return (m as unknown as Record<string, unknown>)[rowId] ?? null;
   }
 
@@ -173,13 +219,21 @@ export function CompareApp({ models }: { models: ModelRow[] }) {
 
   function setCol(idx: number, patch: Partial<Col>) {
     setCols((prev) =>
-      prev.map((c, i) =>
-        i === idx
-          ? patch.brand !== undefined && patch.brand !== c.brand
-            ? { brand: patch.brand, model: "", trim: "Style" }
-            : { ...c, ...patch }
-          : c,
-      ),
+      prev.map((c, i) => {
+        if (i !== idx) return c;
+        // Brand changed → reset model + variant
+        if (patch.brand !== undefined && patch.brand !== c.brand)
+          return { brand: patch.brand, model: "", variantId: null };
+        const next = { ...c, ...patch };
+        // Model changed → auto-select first available variant (or null)
+        if (patch.model !== undefined && patch.model !== c.model) {
+          const found = models.find(
+            (m) => m.brand_name === next.brand && m.name === next.model,
+          );
+          next.variantId = found?.engine_options?.[0]?.id ?? null;
+        }
+        return next;
+      }),
     );
   }
 
@@ -195,7 +249,7 @@ export function CompareApp({ models }: { models: ModelRow[] }) {
             type="button"
             className="cmp-btn"
             onClick={() =>
-              setCols(cols.map(() => ({ brand: "", model: "", trim: "Style" })))
+              setCols(cols.map(() => ({ brand: "", model: "", variantId: null })))
             }
           >
             <X size={14} /> Üres oszlopok
@@ -221,7 +275,7 @@ export function CompareApp({ models }: { models: ModelRow[] }) {
                     className="close"
                     title="Oszlop ürítése"
                     onClick={() =>
-                      setCol(idx, { brand: "", model: "", trim: "Style" })
+                      setCol(idx, { brand: "", model: "", variantId: null })
                     }
                   >
                     <X size={14} />
@@ -267,20 +321,38 @@ export function CompareApp({ models }: { models: ModelRow[] }) {
                     </select>
                   </div>
                   <div className="selector">
-                    <label>Felszereltség</label>
-                    <select
-                      value={c.trim}
-                      disabled={!c.model}
-                      onChange={(e) =>
-                        setCol(idx, { trim: e.target.value as Trim })
+                    <label>Változat</label>
+                    {(() => {
+                      const opts = m?.engine_options ?? [];
+                      if (!m || !c.model) {
+                        return (
+                          <select disabled>
+                            <option>előbb modell</option>
+                          </select>
+                        );
                       }
-                    >
-                      {TRIMS.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
+                      if (opts.length === 0) {
+                        return (
+                          <select disabled>
+                            <option>Nincs modellváltozat</option>
+                          </select>
+                        );
+                      }
+                      return (
+                        <select
+                          value={c.variantId ?? ""}
+                          onChange={(e) =>
+                            setCol(idx, { variantId: e.target.value || null })
+                          }
+                        >
+                          {opts.map((o) => (
+                            <option key={o.id} value={o.id}>
+                              {o.name}
+                            </option>
+                          ))}
+                        </select>
+                      );
+                    })()}
                   </div>
                 </div>
               );

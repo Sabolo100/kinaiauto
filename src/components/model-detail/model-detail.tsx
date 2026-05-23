@@ -2,18 +2,24 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
+  Battery,
   BatteryCharging,
+  Briefcase,
   ExternalLink,
   Fuel,
+  Gauge,
   GitCompareArrows,
   Grid2x2,
   Layers,
   Leaf,
   LifeBuoy,
   PlugZap,
+  Route,
   Ruler,
   ShieldCheck,
   Sparkles,
+  Timer,
+  Users,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -81,6 +87,11 @@ export function ModelDetail({
             },
           ]
         : [];
+
+  // Single variant → show all data in top grid, skip the variants table.
+  // Multi-variant  → top grid = dimensions only, variants table below.
+  const singleVariant = effectiveOpts.length === 1 ? effectiveOpts[0] : null;
+  const showVariantsTable = effectiveOpts.length > 1;
 
   const driveIcon = isEV ? (
     <Zap size={12} />
@@ -191,14 +202,14 @@ export function ModelDetail({
             <div>
               <div className="step">02 · Műszaki adatok</div>
               <h2>
-                {hasOpts ? (
+                {showVariantsTable ? (
                   <>Változatok <em>egymás mellett</em>.</>
                 ) : (
                   <>A számok <em>egy helyen</em>.</>
                 )}
               </h2>
             </div>
-            {hasOpts && (
+            {showVariantsTable && (
               <div className="sub">
                 A modell több hajtáslánc-változatban érhető el — az adatok
                 változatonként, egyetlen táblázatban.
@@ -206,8 +217,11 @@ export function ModelDetail({
             )}
           </div>
 
-          {/* Shared specs: dimensions + charging (constant across all variants) */}
-          <div className="specs-grid specs-grid--shared">
+          {/* Specs grid:
+              - Single variant (or no variants): full grid with all data, no table.
+              - Multi-variant: compact shared-dimensions grid + variants table below. */}
+          <div className={`specs-grid${showVariantsTable ? " specs-grid--shared" : ""}`}>
+            {/* Dimensions — always shown */}
             {model.length_mm != null && (
               <SpecCell icon={<Ruler size={16} />} k="Hossz" v={fmtNumber(model.length_mm)} unit="mm" />
             )}
@@ -220,23 +234,60 @@ export function ModelDetail({
             {model.wheelbase_mm != null && (
               <SpecCell icon={<Ruler size={16} />} k="Tengelytáv" v={fmtNumber(model.wheelbase_mm)} unit="mm" />
             )}
-            {model.acceleration_s != null && (
-              <SpecCell icon={<Zap size={16} />} k="0–100 km/h" v={model.acceleration_s} unit="s" />
-            )}
-            {(isEV || isPHEV) && model.charging_ac_kw != null && (
-              <SpecCell icon={<PlugZap size={16} />} k="AC töltés max" v={model.charging_ac_kw} unit="kW" />
-            )}
-            {isEV && model.charging_dc_kw != null && (
-              <SpecCell icon={<BatteryCharging size={16} />} k="DC töltés max" v={model.charging_dc_kw} unit="kW" />
+
+            {singleVariant ? (
+              /* Single variant: all variant-specific fields go here — no table below */
+              <>
+                {(singleVariant.acceleration_s ?? model.acceleration_s) != null && (
+                  <SpecCell icon={<Timer size={16} />} k="0–100 km/h" v={(singleVariant.acceleration_s ?? model.acceleration_s)!} unit="s" />
+                )}
+                {(singleVariant.range_km ?? model.range_km) != null && (
+                  <SpecCell icon={<Route size={16} />} k="Hatótáv" v={(singleVariant.range_km ?? model.range_km)!} unit="km" />
+                )}
+                {(singleVariant.power_hp ?? model.power_hp) != null && (
+                  <SpecCell icon={<Gauge size={16} />} k="Teljesítmény" v={(singleVariant.power_hp ?? model.power_hp)!} unit="LE" />
+                )}
+                {(singleVariant.battery_kwh ?? model.battery_kwh) != null && (
+                  <SpecCell icon={<Battery size={16} />} k="Akku" v={(singleVariant.battery_kwh ?? model.battery_kwh)!} unit="kWh" />
+                )}
+                {(singleVariant.trunk_l ?? model.trunk_l) != null && (
+                  <SpecCell icon={<Briefcase size={16} />} k="Csomagtartó" v={(singleVariant.trunk_l ?? model.trunk_l)!} unit="l" />
+                )}
+                {(singleVariant.seats ?? model.seats) != null && (
+                  <SpecCell icon={<Users size={16} />} k="Ülések" v={(singleVariant.seats ?? model.seats)!} unit="fő" />
+                )}
+                {(isEV || isPHEV) && (singleVariant.charging_ac_kw ?? model.charging_ac_kw) != null && (
+                  <SpecCell icon={<PlugZap size={16} />} k="AC töltés max" v={(singleVariant.charging_ac_kw ?? model.charging_ac_kw)!} unit="kW" />
+                )}
+                {isEV && (singleVariant.charging_dc_kw ?? model.charging_dc_kw) != null && (
+                  <SpecCell icon={<BatteryCharging size={16} />} k="DC töltés max" v={(singleVariant.charging_dc_kw ?? model.charging_dc_kw)!} unit="kW" />
+                )}
+                {(singleVariant.consumption_text ?? model.consumption_text) && (
+                  <SpecCell icon={<Fuel size={16} />} k="Fogyasztás" v={(singleVariant.consumption_text ?? model.consumption_text)!} />
+                )}
+                {(singleVariant.charging_text ?? model.charging_text) && (
+                  <SpecCell icon={<BatteryCharging size={16} />} k="Töltési infó" v={(singleVariant.charging_text ?? model.charging_text)!} />
+                )}
+              </>
+            ) : (
+              /* Multi-variant or no variants: show model-level acceleration + charging.
+                 Variant-specific data (range, power, battery…) goes in the table below. */
+              <>
+                {model.acceleration_s != null && (
+                  <SpecCell icon={<Timer size={16} />} k="0–100 km/h" v={model.acceleration_s} unit="s" />
+                )}
+                {(isEV || isPHEV) && model.charging_ac_kw != null && (
+                  <SpecCell icon={<PlugZap size={16} />} k="AC töltés max" v={model.charging_ac_kw} unit="kW" />
+                )}
+                {isEV && model.charging_dc_kw != null && (
+                  <SpecCell icon={<BatteryCharging size={16} />} k="DC töltés max" v={model.charging_dc_kw} unit="kW" />
+                )}
+              </>
             )}
           </div>
 
-          {/* Variant table — shows per-variant specs (range, power, battery, trunk, seats, consumption).
-              effectiveOpts is always populated: either real engine_options rows, or a synthetic
-              single "Alap" row built from the model-level spec fields. */}
-          {effectiveOpts.length > 0 && (
-            <VariantsTable options={effectiveOpts} />
-          )}
+          {/* Variants table — only for multi-variant models */}
+          {showVariantsTable && <VariantsTable options={effectiveOpts} />}
         </div>
       </section>
 
