@@ -3,9 +3,11 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
+  BarChart2,
   Banknote,
   BatteryCharging,
   GitCompareArrows,
+  LayoutList,
   Package,
   Route,
   Ruler,
@@ -168,9 +170,11 @@ export function CatalogApp({
   const [cats,    setCats]    = useState<Set<string>>(initialCategory ? new Set([initialCategory]) : new Set());
   const [drvSel,  setDrvSel]  = useState<Set<string>>(initialDrive   ? new Set([initialDrive])   : new Set());
   const [brSel,   setBrSel]   = useState<Set<string>>(new Set());
-  const [param,   setParam]   = useState<Param>("priceMin");
-  const [pinned,  setPinned]  = useState<ModelRow | null>(null);
-  const [hovered, setHovered] = useState<ModelRow | null>(null);
+  const [param,    setParam]    = useState<Param>("priceMin");
+  const [pinned,   setPinned]   = useState<ModelRow | null>(null);
+  const [hovered,  setHovered]  = useState<ModelRow | null>(null);
+  // "grid" = block view (default, no axis); "chart" = vertical axis view
+  const [viewMode, setViewMode] = useState<"grid" | "chart">("grid");
 
   // ── Preload all thumbnails on mount ─────────────────────────────────────────
   // Model data is already on the client (prop). Triggering Image() downloads
@@ -342,19 +346,51 @@ export function CatalogApp({
         </div>
       </div>
 
-      {/* ── Desktop: chart + detail ─────────────────────────────────────────── */}
+      {/* ── Desktop: view toggle + chart/grid + detail ─────────────────────── */}
       <div className="container-wide">
+        {/* View mode toggle — desktop only (hidden on mobile via css) */}
+        <div className="cat-view-toggle-bar">
+          <button
+            type="button"
+            className={`cat-view-btn${viewMode === "grid" ? " on" : ""}`}
+            onClick={() => setViewMode("grid")}
+          >
+            <LayoutList size={14} />
+            Blokknézet
+          </button>
+          <button
+            type="button"
+            className={`cat-view-btn${viewMode === "chart" ? " on" : ""}`}
+            onClick={() => setViewMode("chart")}
+          >
+            <BarChart2 size={14} />
+            Számegyenes
+          </button>
+        </div>
+
         <div className="cat-main">
           <div className="cat-center">
-            <VBar
-              visible={visible}
-              renderCards={renderCards}
-              param={paramDef}
-              pinned={pinned}
-              hovered={hovered}
-              onHover={setHovered}
-              onPin={(m) => setPinned((curr) => (curr && curr.id === m.id ? null : m))}
-            />
+            {viewMode === "grid" ? (
+              <GridView
+                visible={visible}
+                renderCards={renderCards}
+                param={paramDef}
+                pinned={pinned}
+                hovered={hovered}
+                onHover={setHovered}
+                onPin={(m) => setPinned((curr) => (curr && curr.id === m.id ? null : m))}
+              />
+            ) : (
+              <VBar
+                visible={visible}
+                renderCards={renderCards}
+                param={paramDef}
+                pinned={pinned}
+                hovered={hovered}
+                onHover={setHovered}
+                onPin={(m) => setPinned((curr) => (curr && curr.id === m.id ? null : m))}
+              />
+            )}
           </div>
           <aside className="cat-right">
             {detail ? (
@@ -729,6 +765,120 @@ function VBar({
                   ) : null}
                 </span>
               </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Grid view: stacked colored blocks with large value headers, no axis ─────
+function GridView({
+  visible, renderCards, param, pinned, hovered, onHover, onPin,
+}: {
+  visible: ModelRow[];
+  renderCards: RenderCard[];
+  param: (typeof PARAMS)[number];
+  pinned: ModelRow | null;
+  hovered: ModelRow | null;
+  onHover: (m: ModelRow | null) => void;
+  onPin: (m: ModelRow) => void;
+}) {
+  if (!renderCards.length) {
+    return (
+      <div className="cat-gv-wrap">
+        <div className="cat-vbar-head">
+          <h2>Vizuális <em>{param.label.toLowerCase()}</em>-blokkok</h2>
+          <div className="meta"><b>0</b> modell</div>
+        </div>
+        <div className="cat-empty" style={{ marginTop: 40, padding: 28, textAlign: "center" }}>
+          Nincs adat ehhez a paraméterhez a szűrt modellekben.
+        </div>
+      </div>
+    );
+  }
+
+  // Sort and value-space cluster (same threshold as computeLayout pre-groups)
+  const sorted = [...renderCards].sort((a, b) => a.value - b.value);
+  const minV = sorted[0].value;
+  const maxV = sorted[sorted.length - 1].value;
+  const span = maxV - minV || 1;
+  const CLUSTER = Math.max(span * 0.015, 0.001);
+
+  const groups: { value: number; cards: RenderCard[] }[] = [];
+  {
+    let cur: RenderCard[] = [];
+    let curV = -Infinity;
+    for (const rc of sorted) {
+      if (cur.length === 0 || rc.value - curV <= CLUSTER) {
+        if (cur.length === 0) curV = rc.value;
+        cur.push(rc);
+      } else {
+        groups.push({ value: curV, cards: cur });
+        cur = [rc];
+        curV = rc.value;
+      }
+    }
+    if (cur.length > 0) groups.push({ value: curV, cards: cur });
+  }
+  const total = groups.length;
+
+  return (
+    <div className="cat-gv-wrap">
+      <div className="cat-vbar-head">
+        <h2>Vizuális <em>{param.label.toLowerCase()}</em>-blokkok</h2>
+        <div className="meta">
+          <b>{visible.length}</b> modell · {param.fmt(minV)} – {param.fmt(maxV)}
+        </div>
+      </div>
+
+      <div className="cat-gv-list">
+        {groups.map((g, idx) => {
+          const color = groupColor(idx, total);
+          return (
+            <div key={`gv-${idx}`} className="cat-gv-group">
+              {/* Large centered value label — the "axis" value for this block */}
+              <div
+                className="cat-gv-label"
+                style={{ paddingTop: idx === 0 ? 8 : 36 }}
+              >
+                {param.fmt(g.value)}
+              </div>
+
+              {/* Colored strip containing the cards */}
+              <div className="cat-gv-strip" style={{ background: color }}>
+                <div className="cat-gv-cards">
+                  {g.cards.map((rc) => {
+                    const photo = photoUrl(rc.model.primary_photo_path);
+                    return (
+                      <div
+                        key={rc.key}
+                        className={`cat-gv-card${pinned?.id === rc.model.id ? " pinned" : ""}`}
+                        onMouseEnter={() => onHover(rc.model)}
+                        onMouseLeave={() => onHover(null)}
+                        onClick={() => onPin(rc.model)}
+                      >
+                        <div className="cat-card-thumb">
+                          {photo ? <img src={photo} alt="" loading="lazy" /> : null}
+                        </div>
+                        <div className="cat-card-info">
+                          <span className="cat-card-name">
+                            <span className="cat-card-brand">{rc.model.brand_name}</span>{" "}
+                            {rc.model.name}
+                            {rc.variantName ? (
+                              <span className="cat-card-variant"> · {rc.variantName}</span>
+                            ) : null}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Faint horizontal separator between groups */}
+              {idx < total - 1 && <div className="cat-gv-sep" />}
             </div>
           );
         })}
