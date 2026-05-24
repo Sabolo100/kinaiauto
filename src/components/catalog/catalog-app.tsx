@@ -405,8 +405,8 @@ function gapBg(normalized: number): string {
 // idx=0 → lowest value → lightest tint; idx=total-1 → highest → darkest
 function groupColor(idx: number, total: number): string {
   const t = total <= 1 ? 0.35 : idx / (total - 1);
-  const l = (95 - t * 26).toFixed(1); // 95% (lightest) → 69% (darkest)
-  const c = (0.02 + t * 0.11).toFixed(3); // 0.02 → 0.13
+  const l = (94 - t * 32).toFixed(1); // 94% (lightest) → 62% (darkest) — wider range for contrast
+  const c = (0.03 + t * 0.15).toFixed(3); // 0.03 → 0.18 — more chroma differentiation
   return `oklch(${l}% ${c} 50)`; // warm amber, consistent with gap gradients
 }
 
@@ -608,7 +608,8 @@ function VBar({
   );
 
   // Group placed cards by axisY → one colored strip + one connector per group.
-  const GROUP_PAD_PX = 8;
+  // GROUP_PAD_PX: vertical padding around each strip (must be < GRP_GAP/2 to avoid overlap).
+  const GROUP_PAD_PX = 7;
   const groups = (() => {
     const map = new Map<number, PlacedCar[]>();
     for (const p of layout.placed) {
@@ -621,12 +622,16 @@ function VBar({
     return sorted.map(([axisY, cars], idx) => {
       const tops = cars.map((p) => p.cardY);
       const bots = cars.map((p) => p.cardY + CARD_H);
+      const stripTop = Math.min(...tops) - GROUP_PAD_PX;
+      const stripBot = Math.max(...bots) + GROUP_PAD_PX;
       return {
         axisY,
+        value: cars[0].v,           // representative value for axis label
         idx,
         total,
-        stripTop: Math.min(...tops) - GROUP_PAD_PX,
-        stripBot: Math.max(...bots) + GROUP_PAD_PX,
+        stripTop,
+        stripBot,
+        stripMidY: (stripTop + stripBot) / 2,
       };
     });
   })();
@@ -645,6 +650,7 @@ function VBar({
       <div ref={wrapRef} className="cat-chart" style={{ height: layout.chartH }}>
         <div className="cat-ax-line" style={{ height: layout.chartH }} />
 
+        {/* Regular interval ticks (5M / 100km / etc.) — background guides */}
         {layout.ticks.map((t) => (
           <div key={t.v} className="cat-ax-tick" style={{ top: t.y }}>
             <span className="cat-ax-tick-lbl">{t.label}</span>
@@ -665,16 +671,39 @@ function VBar({
           />
         ))}
 
-        {/* One connector per value group: axis → strip left edge */}
+        {/* Group value labels on the axis — one per group, in group color.
+            Rendered after strips so they appear on top of strip backgrounds. */}
+        {groups.map((g) => {
+          const color = groupColor(g.idx, g.total);
+          return (
+            <div
+              key={`gval-${g.axisY}`}
+              className="cat-ax-group-tick"
+              style={{ top: g.axisY, color }}
+            >
+              <span className="cat-ax-group-tick-lbl">{param.fmt(g.value)}</span>
+              <span className="cat-ax-group-tick-notch" />
+            </div>
+          );
+        })}
+
+        {/* Diagonal connectors — one per group, from axis value point → strip center.
+            Using diagonal (not horizontal) so they always visually connect axis to
+            the strip, even when the strip was pushed down due to crowding. */}
         <svg className="cat-connectors" style={{ height: layout.chartH }} xmlns="http://www.w3.org/2000/svg">
-          {groups.map((g) => (
-            <line
-              key={`conn-${g.axisY}`}
-              x1={AXIS_X} y1={g.axisY}
-              x2={CARDS_X - GROUP_PAD_PX} y2={g.axisY}
-              className="cat-group-conn"
-            />
-          ))}
+          {groups.map((g) => {
+            const color = groupColor(g.idx, g.total);
+            return (
+              <line
+                key={`conn-${g.axisY}`}
+                x1={AXIS_X} y1={g.axisY}
+                x2={CARDS_X - GROUP_PAD_PX} y2={g.stripMidY}
+                stroke={color}
+                strokeWidth="1.5"
+                strokeOpacity="0.75"
+              />
+            );
+          })}
         </svg>
 
         {/* Cards: photo + brand + model name only (no value text) */}

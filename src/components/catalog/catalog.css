@@ -477,12 +477,41 @@
   opacity: 0.9;
 }
 
-/* Group connector: one horizontal line per value-cluster, axis → strip */
-.cat-group-conn {
-  stroke: var(--ink-soft);
-  stroke-width: 1.5;
-  opacity: 0.45;
+/* Group value tick — colored label on the axis at each group's exact value.
+   Layered above the regular (gray) interval ticks so it's readable. */
+.cat-ax-group-tick {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 4; /* above regular ticks (z-index 1) and strips (z-index 0) */
 }
+.cat-ax-group-tick-lbl {
+  width: 82px;
+  text-align: right;
+  padding-right: 5px;
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cat-ax-group-tick-notch {
+  width: 6px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* Diagonal connector lines: color set inline (matching the group strip color) */
+/* .cat-group-conn kept for reference but connectors now use inline stroke */
 
 /* Colored background strip for each value-cluster of cards.
    Left edge = CARDS_X (128px) − GROUP_PAD (8px) = 120px.
