@@ -195,6 +195,31 @@ export type ArticleBlock =
 
 export type SiteSettings = Record<string, string>;
 
+export type ModelTestLink = {
+  id: string;
+  model_id: string;
+  url: string;
+  title: string | null;
+  source_name: string | null;
+  kind: "article" | "video";
+  is_approved: boolean;
+  found_by: "manual" | "auto";
+  created_at: string;
+  updated_at: string;
+};
+
+export type TestLinkSearchJob = {
+  id: string;
+  status: "pending" | "running" | "completed" | "failed";
+  model_ids: string[];
+  current_model: string | null;
+  progress: Record<string, { found: number; done: boolean }>;
+  total_found: number;
+  error_msg: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Dealer = {
   id: string;
   brand_id: string;

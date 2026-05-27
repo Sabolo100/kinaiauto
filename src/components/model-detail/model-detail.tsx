@@ -27,6 +27,7 @@ import type { Brand, Dealer, ModelEngineOption, ModelPhoto, ModelRow } from "@/l
 import { ModelGallery } from "./model-gallery";
 import { DealerSection } from "./dealer-section";
 import { VariantsTable } from "./variants-table";
+import { TestLinksSection } from "./test-links-section";
 import { QuoteButtonLarge } from "../quote-button-large";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
@@ -466,6 +467,9 @@ export function ModelDetail({
           </div>
         </div>
       </section>
+
+      {/* TEST LINKS */}
+      <TestLinksSection modelId={model.id} />
 
       {/* DEALERS — 07 */}
       <DealerSection dealers={dealers} brandName={model.brand_name} />

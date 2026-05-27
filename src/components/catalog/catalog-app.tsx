@@ -6,11 +6,13 @@ import {
   BarChart2,
   Banknote,
   BatteryCharging,
+  Check,
   GitCompareArrows,
   LayoutList,
   Package,
   Route,
   Ruler,
+  ShoppingBag,
   Tag,
   Users,
   Zap,
@@ -25,6 +27,7 @@ import type {
 } from "@/lib/types";
 import { fmtPrice, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
+import { useQuoteCart } from "../quote-context";
 import "./catalog.css";
 
 // ── Category metadata (mirrors homepage finder) ───────────────────────────────
@@ -993,6 +996,24 @@ function DetailCard({ model }: { model: ModelRow }) {
   const photo = photoUrl(model.primary_photo_path);
   const opts = model.engine_options ?? [];
   const hasOpts = opts.length > 0;
+
+  const quoteCart = useQuoteCart();
+  const isInQuote = quoteCart.has(model.id);
+  function handleQuoteToggle(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const item = {
+      modelId: model.id,
+      brandId: model.brand_id,
+      modelName: model.name,
+      brandName: model.brand_name,
+      modelSlug: model.slug,
+      brandSlug: model.brand_slug,
+    };
+    if (!isInQuote) quoteCart.showToast("Ajánlatkérésekhez hozzáadva");
+    quoteCart.toggle(item);
+  }
+
   return (
     <div className="cat-detail">
       <div className="ph">
@@ -1062,6 +1083,19 @@ function DetailCard({ model }: { model: ModelRow }) {
             <GitCompareArrows size={13} />
             Összevet
           </Link>
+          <button
+            type="button"
+            className={`btn cat-quote-btn${isInQuote ? " on" : ""}`}
+            aria-label={
+              isInQuote
+                ? "Eltávolítás az ajánlatkérési listából"
+                : "Hozzáadás az ajánlatkérési listához"
+            }
+            aria-pressed={isInQuote}
+            onClick={handleQuoteToggle}
+          >
+            {isInQuote ? <Check size={13} /> : <ShoppingBag size={13} />}
+          </button>
         </div>
       </div>
     </div>

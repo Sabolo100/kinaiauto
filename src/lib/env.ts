@@ -31,3 +31,13 @@ export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || "";
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 export const HAS_ANTHROPIC = Boolean(ANTHROPIC_API_KEY);
 export const HAS_OPENAI = Boolean(OPENAI_API_KEY);
+
+// Google Custom Search JSON API (100 free queries/day)
+// Get from: https://developers.google.com/custom-search/v1/introduction
+export const GOOGLE_CSE_API_KEY = process.env.GOOGLE_CSE_API_KEY || "";
+export const GOOGLE_CSE_CX = process.env.GOOGLE_CSE_CX || ""; // Search engine ID
+export const HAS_GOOGLE_CSE = Boolean(GOOGLE_CSE_API_KEY && GOOGLE_CSE_CX);
+
+// YouTube Data API v3
+export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || "";
+export const HAS_YOUTUBE = Boolean(YOUTUBE_API_KEY);

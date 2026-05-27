@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { TestLinksEditor } from "./test-links-editor";
 
 // Decimal-friendly controlled number input.
 // Keeps a local string while typing so "5." doesn't snap back to "5".
@@ -469,6 +470,12 @@ export function ModelForm({
         <div className="cms-card" style={{ padding: 14 }}>
           <h2 style={{ margin: "0 0 10px", fontSize: 14 }}>Fotók</h2>
           <PhotoGallery modelId={v.id} initialPhotos={photos ?? []} />
+        </div>
+      ) : null}
+
+      {mode === "edit" && v.id ? (
+        <div className="cms-card">
+          <TestLinksEditor modelId={v.id} />
         </div>
       ) : null}
 

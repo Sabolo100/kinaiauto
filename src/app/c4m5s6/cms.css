@@ -560,3 +560,244 @@
     margin: 14mm 12mm 14mm 12mm;
   }
 }
+
+/* ─── TestLinksEditor (in ModelForm) ─────────────────────────────────────── */
+.cms-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cms-section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.cms-section-head h3 { margin: 0; font-size: 14px; }
+.cms-section-meta {
+  font-size: 11px;
+  color: #64748b;
+  font-family: var(--font-mono, monospace);
+}
+
+.tle-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+}
+.tle-add-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.tle-url-input, .tle-title-input {
+  flex: 1;
+  min-width: 0;
+}
+.tle-kind-select {
+  flex: 0 0 90px;
+}
+.tle-err {
+  font-size: 12px;
+  color: #f87171;
+}
+
+.tle-group { margin-top: 8px; }
+.tle-group-head {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+.tle-group-head--pending { color: #f59e0b; }
+
+.tle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+.tle-row--pending { border-left: 3px solid #f59e0b; }
+.tle-row-icon { color: #64748b; flex-shrink: 0; }
+.tle-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tle-row-source {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  color: #64748b;
+}
+.tle-row-title {
+  font-size: 12.5px;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tle-row-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Danger button */
+.cms-btn.danger {
+  border-color: #7f1d1d;
+  color: #fca5a5;
+  background: transparent;
+}
+.cms-btn.danger:hover {
+  background: #450a0a;
+  border-color: #f87171;
+}
+
+/* ─── TestLinksSearchPage (CMS 2) ────────────────────────────────────────── */
+.tls-mgr {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Job banner */
+.tls-job-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+.tls-job-banner.done { border-left-color: #22c55e; }
+.tls-job-banner.error { border-left-color: #ef4444; }
+.tls-job-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #e2e8f0;
+}
+.tls-job-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px;
+}
+.tls-job-close:hover { color: #e2e8f0; }
+.tls-spinner { animation: spin 1s linear infinite; color: #3b82f6; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.tls-job-bar {
+  height: 4px;
+  background: #1e293b;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.tls-job-bar-fill {
+  height: 100%;
+  background: #3b82f6;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* Pending approvals section */
+.tls-pending-section { padding: 16px !important; }
+.tls-pending-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.tls-pending-head h2 { margin: 0; font-size: 15px; }
+
+.tls-pending-group {
+  margin-bottom: 16px;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.tls-pending-model {
+  padding: 8px 12px;
+  background: #1e293b;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.tls-pending-model strong { color: #e2e8f0; }
+
+.tls-pending-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-top: 1px solid #1e293b;
+  color: #94a3b8;
+}
+.tls-pending-row:first-of-type { border-top: none; }
+.tls-pending-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.tls-source-badge {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  background: #0f172a;
+  border: 1px solid #334155;
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: #64748b;
+  width: fit-content;
+}
+.tls-pending-title {
+  font-size: 12.5px;
+  color: #cbd5e1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.tls-pending-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Toolbar */
+.tls-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #1e293b;
+  flex-wrap: wrap;
+}
+.tls-search {
+  min-width: 200px;
+  max-width: 280px;
+}
+
+/* Row selected state */
+.tls-row-selected td { background: rgba(59,130,246,0.07) !important; }
+
+/* Pill variants */
+.pill.warn {
+  background: rgba(245,158,11,0.15);
+  color: #fbbf24;
+}

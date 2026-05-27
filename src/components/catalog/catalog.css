@@ -853,6 +853,22 @@
   color: #fff;
   border-color: var(--ink);
 }
+.cat-detail .actions .cat-quote-btn {
+  flex: 0 0 auto;
+  width: 34px;
+  padding: 0;
+  color: var(--ink-mute);
+  cursor: pointer;
+}
+.cat-detail .actions .cat-quote-btn:hover {
+  border-color: var(--ink-soft);
+  color: var(--ink);
+}
+.cat-detail .actions .cat-quote-btn.on {
+  background: oklch(96% 0.06 150);
+  border-color: oklch(60% 0.18 150);
+  color: oklch(40% 0.2 150);
+}
 
 /* ─── Empty state ─────────────────────────────────────────────────────────── */
 .cat-empty {
