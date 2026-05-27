@@ -44,7 +44,7 @@ async function googleSearch(
 ): Promise<{ results: FoundLink[]; raw?: unknown; error?: string }> {
   if (!HAS_GOOGLE_CSE) return { results: [], error: "Google CSE not configured" };
 
-  const url = new URL("https://www.googleapis.com/customsearch/v1");
+  const url = new URL("https://www.googleapis.com/customsearch/v1/siterestrict");
   url.searchParams.set("key", GOOGLE_CSE_API_KEY);
   url.searchParams.set("cx", GOOGLE_CSE_CX);
   url.searchParams.set("q", query);
