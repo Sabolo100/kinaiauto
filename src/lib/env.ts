@@ -32,11 +32,15 @@ export const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 export const HAS_ANTHROPIC = Boolean(ANTHROPIC_API_KEY);
 export const HAS_OPENAI = Boolean(OPENAI_API_KEY);
 
-// Google Custom Search JSON API (100 free queries/day)
-// Get from: https://developers.google.com/custom-search/v1/introduction
+// Google Custom Search JSON API (kept for reference, no longer used)
 export const GOOGLE_CSE_API_KEY = process.env.GOOGLE_CSE_API_KEY || "";
-export const GOOGLE_CSE_CX = process.env.GOOGLE_CSE_CX || ""; // Search engine ID
+export const GOOGLE_CSE_CX = process.env.GOOGLE_CSE_CX || "";
 export const HAS_GOOGLE_CSE = Boolean(GOOGLE_CSE_API_KEY && GOOGLE_CSE_CX);
+
+// Serper.dev — Google Search API, 2500 free queries/month
+// Get free key at: https://serper.dev
+export const SERPER_API_KEY = process.env.SERPER_API_KEY || "";
+export const HAS_SERPER = Boolean(SERPER_API_KEY);
 
 // YouTube Data API v3
 export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || "";

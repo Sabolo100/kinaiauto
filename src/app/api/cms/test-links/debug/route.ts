@@ -3,7 +3,7 @@
 // Only accessible from CMS (no public exposure).
 import { NextRequest, NextResponse } from "next/server";
 import { searchTestLinksDebug } from "@/lib/test-link-search";
-import { HAS_GOOGLE_CSE, HAS_YOUTUBE, GOOGLE_CSE_CX, GOOGLE_CSE_API_KEY, YOUTUBE_API_KEY } from "@/lib/env";
+import { HAS_SERPER, HAS_YOUTUBE, SERPER_API_KEY, YOUTUBE_API_KEY } from "@/lib/env";
 
 export const runtime = "nodejs";
 
@@ -16,11 +16,9 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     config: {
-      hasGoogleCse: HAS_GOOGLE_CSE,
+      hasSerper: HAS_SERPER,
       hasYoutube: HAS_YOUTUBE,
-      // Show only last 4 chars of keys for security
-      googleKeyHint: GOOGLE_CSE_API_KEY ? `...${GOOGLE_CSE_API_KEY.slice(-4)}` : "NOT SET",
-      googleCxHint: GOOGLE_CSE_CX ? `...${GOOGLE_CSE_CX.slice(-6)}` : "NOT SET",
+      serperKeyHint: SERPER_API_KEY ? `...${SERPER_API_KEY.slice(-4)}` : "NOT SET",
       youtubeKeyHint: YOUTUBE_API_KEY ? `...${YOUTUBE_API_KEY.slice(-4)}` : "NOT SET",
     },
     search: debug,

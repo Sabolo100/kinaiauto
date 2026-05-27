@@ -1,10 +1,9 @@
 // server-only — web search logic for auto-finding Hungarian test links
 import "server-only";
 import {
-  GOOGLE_CSE_API_KEY,
-  GOOGLE_CSE_CX,
-  HAS_GOOGLE_CSE,
+  HAS_SERPER,
   HAS_YOUTUBE,
+  SERPER_API_KEY,
   YOUTUBE_API_KEY,
 } from "./env";
 
@@ -16,12 +15,12 @@ export type FoundLink = {
 };
 
 export type SearchDebug = {
-  hasGoogleCse: boolean;
+  hasSerper: boolean;
   hasYoutube: boolean;
   webQuery: string;
   ytQuery: string;
-  googleRaw?: unknown;
-  googleError?: string;
+  serperRaw?: unknown;
+  serperError?: string;
   youtubeRaw?: unknown;
   youtubeError?: string;
   results: FoundLink[];
@@ -38,46 +37,62 @@ const HU_AUTO_SITES = [
   "hipermotor.hu",
 ];
 
-// ─── Google Custom Search JSON API ───────────────────────────────────────────
-async function googleSearch(
+// ─── Serper.dev — Google Search API ──────────────────────────────────────────
+async function serperSearch(
   query: string,
 ): Promise<{ results: FoundLink[]; raw?: unknown; error?: string }> {
-  if (!HAS_GOOGLE_CSE) return { results: [], error: "Google CSE not configured" };
-
-  const url = new URL("https://www.googleapis.com/customsearch/v1/siterestrict");
-  url.searchParams.set("key", GOOGLE_CSE_API_KEY);
-  url.searchParams.set("cx", GOOGLE_CSE_CX);
-  url.searchParams.set("q", query);
-  url.searchParams.set("lr", "lang_hu");
-  url.searchParams.set("gl", "hu");
-  url.searchParams.set("num", "10");
+  if (!HAS_SERPER) return { results: [], error: "Serper API not configured" };
 
   let res: Response | null = null;
   try {
-    res = await fetch(url.toString(), { cache: "no-store" });
+    res = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": SERPER_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        q: query,
+        gl: "hu",  // Hungary region
+        hl: "hu",  // Hungarian language
+        num: 10,
+      }),
+      cache: "no-store",
+    });
   } catch (e) {
     return { results: [], error: `fetch failed: ${e}` };
   }
 
   const text = await res.text();
   let json: unknown;
-  try { json = JSON.parse(text); } catch { return { results: [], error: `non-JSON response: ${text.slice(0, 200)}` }; }
+  try { json = JSON.parse(text); } catch { return { results: [], error: `non-JSON: ${text.slice(0, 200)}` }; }
 
   if (!res.ok) {
-    return { results: [], raw: json, error: `HTTP ${res.status}: ${JSON.stringify(json)}` };
+    return { results: [], raw: json, error: `HTTP ${res.status}: ${text.slice(0, 300)}` };
   }
 
-  const data = json as { items?: Array<{ link: string; title: string; displayLink: string }> };
-  if (!data.items?.length) return { results: [], raw: json, error: "no items in response" };
+  const data = json as {
+    organic?: Array<{ link: string; title: string; displayLink?: string }>;
+  };
 
-  const results: FoundLink[] = data.items
-    .map((item) => ({
-      url: item.link,
-      title: item.title ?? "",
-      source_name: (item.displayLink ?? "").replace("www.", "") || new URL(item.link).hostname.replace("www.", ""),
-      kind: "article" as const,
-    }))
-    .filter((r) => r.url.startsWith("http"));
+  if (!data.organic?.length) return { results: [], raw: json, error: "no organic results" };
+
+  const results: FoundLink[] = data.organic
+    .filter((item) => {
+      // Keep only results from known Hungarian auto sites
+      const url = item.link ?? "";
+      return HU_AUTO_SITES.some((s) => url.includes(s));
+    })
+    .map((item) => {
+      const host = (item.displayLink ?? "").replace("www.", "") ||
+        (() => { try { return new URL(item.link).hostname.replace("www.", ""); } catch { return ""; } })();
+      return {
+        url: item.link,
+        title: item.title ?? "",
+        source_name: host,
+        kind: "article" as const,
+      };
+    });
 
   return { results, raw: json };
 }
@@ -105,7 +120,7 @@ async function youtubeSearch(
 
   const text = await res.text();
   let json: unknown;
-  try { json = JSON.parse(text); } catch { return { results: [], error: `non-JSON response: ${text.slice(0, 200)}` }; }
+  try { json = JSON.parse(text); } catch { return { results: [], error: `non-JSON: ${text.slice(0, 200)}` }; }
 
   if (!res.ok) {
     return { results: [], raw: json, error: `HTTP ${res.status}: ${JSON.stringify(json)}` };
@@ -114,7 +129,7 @@ async function youtubeSearch(
   const data = json as {
     items?: Array<{ id: { videoId: string }; snippet: { title: string } }>;
   };
-  if (!data.items?.length) return { results: [], raw: json, error: "no items in response" };
+  if (!data.items?.length) return { results: [], raw: json, error: "no items" };
 
   const results: FoundLink[] = data.items
     .filter((item) => item.id?.videoId)
@@ -128,7 +143,7 @@ async function youtubeSearch(
   return { results, raw: json };
 }
 
-// ─── DuckDuckGo HTML fallback ─────────────────────────────────────────────────
+// ─── DuckDuckGo HTML fallback (no key needed) ─────────────────────────────────
 async function duckduckgoSearch(query: string): Promise<{ results: FoundLink[]; error?: string }> {
   const encoded = encodeURIComponent(query);
   const fetchUrl = `https://html.duckduckgo.com/html/?q=${encoded}&kl=hu-hu`;
@@ -144,9 +159,7 @@ async function duckduckgoSearch(query: string): Promise<{ results: FoundLink[]; 
   } catch (e) {
     return { results: [], error: `fetch failed: ${e}` };
   }
-
   if (!res.ok) return { results: [], error: `HTTP ${res.status}` };
-
   const html = await res.text();
   const results: FoundLink[] = [];
   const linkRegex = /href="(https?:\/\/[^"]+)"/g;
@@ -155,8 +168,7 @@ async function duckduckgoSearch(query: string): Promise<{ results: FoundLink[]; 
   while ((match = linkRegex.exec(html)) !== null) {
     const rawUrl = match[1];
     if (seen.has(rawUrl)) continue;
-    const isHuSite = HU_AUTO_SITES.some((s) => rawUrl.includes(s));
-    if (!isHuSite) continue;
+    if (!HU_AUTO_SITES.some((s) => rawUrl.includes(s))) continue;
     seen.add(rawUrl);
     const host = (() => { try { return new URL(rawUrl).hostname.replace("www.", ""); } catch { return ""; } })();
     results.push({ url: rawUrl, title: host, source_name: host, kind: "article" });
@@ -165,7 +177,7 @@ async function duckduckgoSearch(query: string): Promise<{ results: FoundLink[]; 
   return { results };
 }
 
-// ─── Main search (production use) ────────────────────────────────────────────
+// ─── Main search ──────────────────────────────────────────────────────────────
 export async function searchTestLinks(
   brandName: string,
   modelName: string,
@@ -174,19 +186,18 @@ export async function searchTestLinks(
   return results;
 }
 
-// ─── Debug search (returns full API responses for diagnosis) ─────────────────
+// ─── Debug search ─────────────────────────────────────────────────────────────
 export async function searchTestLinksDebug(
   brandName: string,
   modelName: string,
 ): Promise<SearchDebug> {
   const baseQuery = `${brandName} ${modelName} teszt`;
-  const webQuery = baseQuery; // CSE is already site-restricted
   const siteList = HU_AUTO_SITES.slice(0, 4).map((s) => `site:${s}`).join(" OR ");
-  const ddgQuery = `${baseQuery} (${siteList})`;
+  const webQuery = `${baseQuery} (${siteList})`;
   const ytQuery = `${brandName} ${modelName} teszt vélemény`;
 
   const debug: SearchDebug = {
-    hasGoogleCse: HAS_GOOGLE_CSE,
+    hasSerper: HAS_SERPER,
     hasYoutube: HAS_YOUTUBE,
     webQuery,
     ytQuery,
@@ -201,28 +212,23 @@ export async function searchTestLinksDebug(
     }
   }
 
-  if (HAS_GOOGLE_CSE) {
-    const [webRes, ytRes] = await Promise.all([
-      googleSearch(webQuery),
-      youtubeSearch(ytQuery),
-    ]);
-    debug.googleRaw = webRes.raw;
-    debug.googleError = webRes.error;
-    debug.youtubeRaw = ytRes.raw;
-    debug.youtubeError = ytRes.error;
-    add(webRes.results);
-    add(ytRes.results);
+  // Web: Serper.dev if available, DuckDuckGo fallback
+  if (HAS_SERPER) {
+    const serperRes = await serperSearch(webQuery);
+    debug.serperRaw = serperRes.raw;
+    debug.serperError = serperRes.error;
+    add(serperRes.results);
   } else {
-    const [ddgRes, ytRes] = await Promise.all([
-      duckduckgoSearch(ddgQuery),
-      youtubeSearch(ytQuery),
-    ]);
-    debug.googleError = `CSE not configured — used DDG fallback${ddgRes.error ? ": " + ddgRes.error : ""}`;
-    debug.youtubeRaw = ytRes.raw;
-    debug.youtubeError = ytRes.error;
+    const ddgRes = await duckduckgoSearch(webQuery);
+    debug.serperError = `Serper not configured — used DDG fallback${ddgRes.error ? ": " + ddgRes.error : ""}`;
     add(ddgRes.results);
-    add(ytRes.results);
   }
+
+  // Videos: YouTube
+  const ytRes = await youtubeSearch(ytQuery);
+  debug.youtubeRaw = ytRes.raw;
+  debug.youtubeError = ytRes.error;
+  add(ytRes.results);
 
   return debug;
 }
