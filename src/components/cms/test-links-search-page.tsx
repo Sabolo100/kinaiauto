@@ -141,6 +141,7 @@ export function TestLinksSearchPage() {
     if (selected.size === 0) return;
     setStarting(true);
     try {
+      // 1. Create the job record
       const res = await fetch("/api/cms/test-links/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,9 +149,23 @@ export function TestLinksSearchPage() {
       });
       const json = await res.json();
       if (json.jobId) {
-        setJob({ id: json.jobId, status: "pending", current_model: null, progress: {}, total_found: 0, model_ids: Array.from(selected), error_msg: null });
-        startPolling(json.jobId);
+        const jobId: string = json.jobId;
+        const modelIds = Array.from(selected);
+
+        setJob({ id: jobId, status: "pending", current_model: null, progress: {}, total_found: 0, model_ids: modelIds, error_msg: null });
         clearSelection();
+
+        // 2. Trigger the /run endpoint from the browser (fire-and-forget).
+        //    The browser keeps the request alive independently of React rendering.
+        //    We don't await this — it runs in the background while we poll.
+        fetch(`/api/cms/test-links/search/${jobId}/run`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true, // ensures request survives page navigation
+        }).catch(() => {});
+
+        // 3. Start polling for progress
+        startPolling(jobId);
       }
     } catch {}
     setStarting(false);
