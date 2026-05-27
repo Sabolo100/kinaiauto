@@ -15,50 +15,79 @@ export type FoundLink = {
   kind: "article" | "video";
 };
 
-// ─── Hungarian auto-review sites we prioritise ────────────────────────────────
+export type SearchDebug = {
+  hasGoogleCse: boolean;
+  hasYoutube: boolean;
+  webQuery: string;
+  ytQuery: string;
+  googleRaw?: unknown;
+  googleError?: string;
+  youtubeRaw?: unknown;
+  youtubeError?: string;
+  results: FoundLink[];
+};
+
+// ─── Hungarian auto-review sites ─────────────────────────────────────────────
 const HU_AUTO_SITES = [
   "vezess.hu",
   "totalcar.hu",
   "automotor.hu",
   "autonavigator.hu",
-  "autósélet.hu",
   "villanyautosok.hu",
   "zoldauto.hu",
   "hipermotor.hu",
-  "avtomobil.hu",
-  "autohírek.hu",
 ];
 
 // ─── Google Custom Search JSON API ───────────────────────────────────────────
-async function googleSearch(query: string): Promise<FoundLink[]> {
-  if (!HAS_GOOGLE_CSE) return [];
+async function googleSearch(
+  query: string,
+): Promise<{ results: FoundLink[]; raw?: unknown; error?: string }> {
+  if (!HAS_GOOGLE_CSE) return { results: [], error: "Google CSE not configured" };
+
   const url = new URL("https://www.googleapis.com/customsearch/v1");
   url.searchParams.set("key", GOOGLE_CSE_API_KEY);
   url.searchParams.set("cx", GOOGLE_CSE_CX);
   url.searchParams.set("q", query);
-  url.searchParams.set("lr", "lang_hu");        // Hungarian language results
-  url.searchParams.set("gl", "hu");             // Hungarian region
+  url.searchParams.set("lr", "lang_hu");
+  url.searchParams.set("gl", "hu");
   url.searchParams.set("num", "10");
 
-  const res = await fetch(url.toString(), { cache: "no-store" }).catch(() => null);
-  if (!res?.ok) return [];
+  let res: Response | null = null;
+  try {
+    res = await fetch(url.toString(), { cache: "no-store" });
+  } catch (e) {
+    return { results: [], error: `fetch failed: ${e}` };
+  }
 
-  const json = await res.json().catch(() => null);
-  if (!json?.items) return [];
+  const text = await res.text();
+  let json: unknown;
+  try { json = JSON.parse(text); } catch { return { results: [], error: `non-JSON response: ${text.slice(0, 200)}` }; }
 
-  return (json.items as Array<{ link: string; title: string; displayLink: string }>)
+  if (!res.ok) {
+    return { results: [], raw: json, error: `HTTP ${res.status}: ${JSON.stringify(json)}` };
+  }
+
+  const data = json as { items?: Array<{ link: string; title: string; displayLink: string }> };
+  if (!data.items?.length) return { results: [], raw: json, error: "no items in response" };
+
+  const results: FoundLink[] = data.items
     .map((item) => ({
       url: item.link,
       title: item.title ?? "",
-      source_name: item.displayLink ?? new URL(item.link).hostname,
+      source_name: (item.displayLink ?? "").replace("www.", "") || new URL(item.link).hostname.replace("www.", ""),
       kind: "article" as const,
     }))
     .filter((r) => r.url.startsWith("http"));
+
+  return { results, raw: json };
 }
 
 // ─── YouTube Data API v3 ─────────────────────────────────────────────────────
-async function youtubeSearch(query: string): Promise<FoundLink[]> {
-  if (!HAS_YOUTUBE) return [];
+async function youtubeSearch(
+  query: string,
+): Promise<{ results: FoundLink[]; raw?: unknown; error?: string }> {
+  if (!HAS_YOUTUBE) return { results: [], error: "YouTube API not configured" };
+
   const url = new URL("https://www.googleapis.com/youtube/v3/search");
   url.searchParams.set("key", YOUTUBE_API_KEY);
   url.searchParams.set("q", query);
@@ -67,18 +96,27 @@ async function youtubeSearch(query: string): Promise<FoundLink[]> {
   url.searchParams.set("relevanceLanguage", "hu");
   url.searchParams.set("maxResults", "8");
 
-  const res = await fetch(url.toString(), { cache: "no-store" }).catch(() => null);
-  if (!res?.ok) return [];
+  let res: Response | null = null;
+  try {
+    res = await fetch(url.toString(), { cache: "no-store" });
+  } catch (e) {
+    return { results: [], error: `fetch failed: ${e}` };
+  }
 
-  const json = await res.json().catch(() => null);
-  if (!json?.items) return [];
+  const text = await res.text();
+  let json: unknown;
+  try { json = JSON.parse(text); } catch { return { results: [], error: `non-JSON response: ${text.slice(0, 200)}` }; }
 
-  return (
-    json.items as Array<{
-      id: { videoId: string };
-      snippet: { title: string; channelTitle: string };
-    }>
-  )
+  if (!res.ok) {
+    return { results: [], raw: json, error: `HTTP ${res.status}: ${JSON.stringify(json)}` };
+  }
+
+  const data = json as {
+    items?: Array<{ id: { videoId: string }; snippet: { title: string } }>;
+  };
+  if (!data.items?.length) return { results: [], raw: json, error: "no items in response" };
+
+  const results: FoundLink[] = data.items
     .filter((item) => item.id?.videoId)
     .map((item) => ({
       url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
@@ -86,35 +124,37 @@ async function youtubeSearch(query: string): Promise<FoundLink[]> {
       source_name: "youtube.com",
       kind: "video" as const,
     }));
+
+  return { results, raw: json };
 }
 
-// ─── DuckDuckGo HTML fallback (no key needed) ─────────────────────────────────
-// Parses the DuckDuckGo Lite HTML search result page.
-// Works without API keys but is fragile — use as fallback only.
-async function duckduckgoSearch(query: string): Promise<FoundLink[]> {
+// ─── DuckDuckGo HTML fallback ─────────────────────────────────────────────────
+async function duckduckgoSearch(query: string): Promise<{ results: FoundLink[]; error?: string }> {
   const encoded = encodeURIComponent(query);
-  const url = `https://html.duckduckgo.com/html/?q=${encoded}&kl=hu-hu`;
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (compatible; kinaiauto-bot/1.0; +https://www.kinaiauto.com)",
-      Accept: "text/html",
-    },
-    cache: "no-store",
-  }).catch(() => null);
-  if (!res?.ok) return [];
+  const fetchUrl = `https://html.duckduckgo.com/html/?q=${encoded}&kl=hu-hu`;
+  let res: Response | null = null;
+  try {
+    res = await fetch(fetchUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; kinaiauto-bot/1.0; +https://www.kinaiauto.com)",
+        Accept: "text/html",
+      },
+      cache: "no-store",
+    });
+  } catch (e) {
+    return { results: [], error: `fetch failed: ${e}` };
+  }
 
-  const html = await res.text().catch(() => "");
+  if (!res.ok) return { results: [], error: `HTTP ${res.status}` };
+
+  const html = await res.text();
   const results: FoundLink[] = [];
-
-  // Extract result links from DuckDuckGo Lite HTML
   const linkRegex = /href="(https?:\/\/[^"]+)"/g;
   let match: RegExpExecArray | null;
   const seen = new Set<string>();
   while ((match = linkRegex.exec(html)) !== null) {
     const rawUrl = match[1];
     if (seen.has(rawUrl)) continue;
-    // Filter to known Hungarian auto sites
     const isHuSite = HU_AUTO_SITES.some((s) => rawUrl.includes(s));
     if (!isHuSite) continue;
     seen.add(rawUrl);
@@ -122,52 +162,67 @@ async function duckduckgoSearch(query: string): Promise<FoundLink[]> {
     results.push({ url: rawUrl, title: host, source_name: host, kind: "article" });
     if (results.length >= 8) break;
   }
-  return results;
+  return { results };
 }
 
-// ─── Main: search for Hungarian test links for a model ───────────────────────
+// ─── Main search (production use) ────────────────────────────────────────────
 export async function searchTestLinks(
   brandName: string,
   modelName: string,
 ): Promise<FoundLink[]> {
+  const { results } = await searchTestLinksDebug(brandName, modelName);
+  return results;
+}
+
+// ─── Debug search (returns full API responses for diagnosis) ─────────────────
+export async function searchTestLinksDebug(
+  brandName: string,
+  modelName: string,
+): Promise<SearchDebug> {
   const baseQuery = `${brandName} ${modelName} teszt`;
-  // Google CSE is already restricted to the configured sites — no site: operators needed
-  const webQuery = baseQuery;
-  // DuckDuckGo fallback searches the entire web, so site: filtering is still needed there
+  const webQuery = baseQuery; // CSE is already site-restricted
   const siteList = HU_AUTO_SITES.slice(0, 4).map((s) => `site:${s}`).join(" OR ");
   const ddgQuery = `${baseQuery} (${siteList})`;
-  const ytQuery = `${baseQuery} magyar teszt vélemény`;
+  const ytQuery = `${brandName} ${modelName} teszt vélemény`;
 
-  const results: FoundLink[] = [];
+  const debug: SearchDebug = {
+    hasGoogleCse: HAS_GOOGLE_CSE,
+    hasYoutube: HAS_YOUTUBE,
+    webQuery,
+    ytQuery,
+    results: [],
+  };
+
   const seen = new Set<string>();
-
   function add(links: FoundLink[]) {
     for (const l of links) {
-      const key = l.url.split("?")[0]; // deduplicate by base URL
-      if (!seen.has(key)) {
-        seen.add(key);
-        results.push(l);
-      }
+      const key = l.url.split("?")[0];
+      if (!seen.has(key)) { seen.add(key); debug.results.push(l); }
     }
   }
 
   if (HAS_GOOGLE_CSE) {
-    // Use Google CSE for web + YouTube
-    const [webResults, ytResults] = await Promise.all([
+    const [webRes, ytRes] = await Promise.all([
       googleSearch(webQuery),
       youtubeSearch(ytQuery),
     ]);
-    add(webResults);
-    add(ytResults);
+    debug.googleRaw = webRes.raw;
+    debug.googleError = webRes.error;
+    debug.youtubeRaw = ytRes.raw;
+    debug.youtubeError = ytRes.error;
+    add(webRes.results);
+    add(ytRes.results);
   } else {
-    // Fallback: DuckDuckGo HTML scraping + YouTube
-    const [ddgResults, ytResults] = await Promise.all([
+    const [ddgRes, ytRes] = await Promise.all([
       duckduckgoSearch(ddgQuery),
       youtubeSearch(ytQuery),
     ]);
-    add(ddgResults);
-    add(ytResults);
+    debug.googleError = `CSE not configured — used DDG fallback${ddgRes.error ? ": " + ddgRes.error : ""}`;
+    debug.youtubeRaw = ytRes.raw;
+    debug.youtubeError = ytRes.error;
+    add(ddgRes.results);
+    add(ytRes.results);
   }
 
-  return results;
+  return debug;
 }
