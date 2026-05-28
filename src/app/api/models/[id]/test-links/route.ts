@@ -14,7 +14,7 @@ export async function GET(
 
   const { data, error } = await supabase
     .from("model_test_links")
-    .select("id, url, title, source_name, kind")
+    .select("id, url, title, source_name, kind, found_by, ai_summary, ai_ok")
     .eq("model_id", id)
     .eq("is_approved", true)
     .order("kind") // articles first, then videos
