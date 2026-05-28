@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, Fragment } from "react";
 import {
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   ChevronsUpDown,
   ExternalLink,
@@ -25,7 +26,7 @@ type ModelMeta = {
   pending: number;
 };
 
-type PendingLink = {
+type LinkRow = {
   id: string;
   model_id: string;
   url: string;
@@ -35,6 +36,7 @@ type PendingLink = {
   found_by: "manual" | "auto";
   ai_ok: boolean | null;
   ai_summary: string | null;
+  is_approved: boolean;
 };
 
 type JobStatus = {
@@ -53,7 +55,13 @@ type SortDir = "asc" | "desc";
 // ─── Main component ───────────────────────────────────────────────────────────
 export function TestLinksSearchPage() {
   const [models, setModels] = useState<ModelMeta[]>([]);
-  const [pending, setPending] = useState<PendingLink[]>([]);
+  // pendingLinks: all unapproved links, keyed by model_id for fast lookup
+  const [pendingByModel, setPendingByModel] = useState<Record<string, LinkRow[]>>({});
+  // approvedLinks: loaded on demand when a model row is expanded
+  const [approvedByModel, setApprovedByModel] = useState<Record<string, LinkRow[]>>({});
+  const [loadingLinks, setLoadingLinks] = useState<Set<string>>(new Set());
+  const [expandedModels, setExpandedModels] = useState<Set<string>>(new Set());
+
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -63,20 +71,66 @@ export function TestLinksSearchPage() {
   const [starting, setStarting] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // ── Initial load ──────────────────────────────────────────────────────────
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/cms/test-links");
       const json = await res.json();
       setModels(json.models ?? []);
-      setPending(json.pending ?? []);
+      // Build pendingByModel map
+      const raw: LinkRow[] = (json.pending ?? []).map((l: LinkRow) => ({
+        ...l,
+        is_approved: false,
+      }));
+      const byModel: Record<string, LinkRow[]> = {};
+      for (const l of raw) {
+        if (!byModel[l.model_id]) byModel[l.model_id] = [];
+        byModel[l.model_id].push(l);
+      }
+      setPendingByModel(byModel);
     } catch {}
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  // ── Polling for active job ─────────────────────────────────────────────────
+  // ── Load approved links for a model (on demand) ───────────────────────────
+  async function loadApproved(modelId: string) {
+    if (approvedByModel[modelId] !== undefined) return; // already loaded
+    setLoadingLinks((prev) => new Set(prev).add(modelId));
+    try {
+      const res = await fetch(`/api/models/${modelId}/test-links`);
+      const data: LinkRow[] = await res.json();
+      setApprovedByModel((prev) => ({
+        ...prev,
+        [modelId]: data.map((l) => ({ ...l, model_id: modelId, is_approved: true })),
+      }));
+    } catch {
+      setApprovedByModel((prev) => ({ ...prev, [modelId]: [] }));
+    }
+    setLoadingLinks((prev) => {
+      const next = new Set(prev);
+      next.delete(modelId);
+      return next;
+    });
+  }
+
+  // ── Expand toggle ─────────────────────────────────────────────────────────
+  function toggleExpand(modelId: string) {
+    setExpandedModels((prev) => {
+      const next = new Set(prev);
+      if (next.has(modelId)) {
+        next.delete(modelId);
+      } else {
+        next.add(modelId);
+        loadApproved(modelId);
+      }
+      return next;
+    });
+  }
+
+  // ── Polling ───────────────────────────────────────────────────────────────
   function startPolling(jobId: string) {
     if (pollRef.current) clearInterval(pollRef.current);
     pollRef.current = setInterval(async () => {
@@ -87,7 +141,21 @@ export function TestLinksSearchPage() {
         if (data.status === "completed" || data.status === "failed") {
           if (pollRef.current) clearInterval(pollRef.current);
           pollRef.current = null;
-          await load(); // refresh model list + pending links
+          await load();
+          // Auto-expand models that got new links
+          const newModels = Object.entries(data.progress)
+            .filter(([, p]) => p.found > 0)
+            .map(([id]) => id);
+          if (newModels.length > 0) {
+            setExpandedModels(new Set(newModels));
+            // Clear approved cache for those models so fresh data loads
+            setApprovedByModel((prev) => {
+              const next = { ...prev };
+              for (const id of newModels) delete next[id];
+              return next;
+            });
+            for (const id of newModels) loadApproved(id);
+          }
         }
       } catch {}
     }, 2500);
@@ -143,7 +211,6 @@ export function TestLinksSearchPage() {
     if (selected.size === 0) return;
     setStarting(true);
     try {
-      // 1. Create the job record
       const res = await fetch("/api/cms/test-links/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -153,20 +220,13 @@ export function TestLinksSearchPage() {
       if (json.jobId) {
         const jobId: string = json.jobId;
         const modelIds = Array.from(selected);
-
         setJob({ id: jobId, status: "pending", current_model: null, progress: {}, total_found: 0, model_ids: modelIds, error_msg: null });
         clearSelection();
-
-        // 2. Trigger the /run endpoint from the browser (fire-and-forget).
-        //    The browser keeps the request alive independently of React rendering.
-        //    We don't await this — it runs in the background while we poll.
         fetch(`/api/cms/test-links/search/${jobId}/run`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          keepalive: true, // ensures request survives page navigation
+          keepalive: true,
         }).catch(() => {});
-
-        // 3. Start polling for progress
         startPolling(jobId);
       }
     } catch {}
@@ -174,28 +234,54 @@ export function TestLinksSearchPage() {
   }
 
   // ── Approve / reject pending link ──────────────────────────────────────────
-  async function approveLink(id: string) {
-    await fetch(`/api/cms/test-links/${id}`, {
+  async function approveLink(link: LinkRow) {
+    await fetch(`/api/cms/test-links/${link.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ is_approved: true }),
     });
-    setPending((prev) => prev.filter((l) => l.id !== id));
-    setModels((prev) => prev.map((m) => {
-      const link = pending.find((l) => l.id === id);
-      if (!link || m.id !== link.model_id) return m;
-      return { ...m, approved: m.approved + 1, pending: Math.max(0, m.pending - 1) };
+    // Move from pending to approved in local state
+    setPendingByModel((prev) => {
+      const next = { ...prev };
+      next[link.model_id] = (next[link.model_id] ?? []).filter((l) => l.id !== link.id);
+      return next;
+    });
+    setApprovedByModel((prev) => ({
+      ...prev,
+      [link.model_id]: [
+        ...(prev[link.model_id] ?? []),
+        { ...link, is_approved: true },
+      ],
     }));
+    setModels((prev) => prev.map((m) =>
+      m.id !== link.model_id ? m
+        : { ...m, approved: m.approved + 1, pending: Math.max(0, m.pending - 1) }
+    ));
   }
 
-  async function rejectLink(id: string) {
-    await fetch(`/api/cms/test-links/${id}`, { method: "DELETE" });
-    setPending((prev) => prev.filter((l) => l.id !== id));
-    setModels((prev) => prev.map((m) => {
-      const link = pending.find((l) => l.id === id);
-      if (!link || m.id !== link.model_id) return m;
-      return { ...m, pending: Math.max(0, m.pending - 1) };
+  async function rejectLink(link: LinkRow) {
+    await fetch(`/api/cms/test-links/${link.id}`, { method: "DELETE" });
+    setPendingByModel((prev) => {
+      const next = { ...prev };
+      next[link.model_id] = (next[link.model_id] ?? []).filter((l) => l.id !== link.id);
+      return next;
+    });
+    setModels((prev) => prev.map((m) =>
+      m.id !== link.model_id ? m
+        : { ...m, pending: Math.max(0, m.pending - 1) }
+    ));
+  }
+
+  async function removeApproved(link: LinkRow) {
+    await fetch(`/api/cms/test-links/${link.id}`, { method: "DELETE" });
+    setApprovedByModel((prev) => ({
+      ...prev,
+      [link.model_id]: (prev[link.model_id] ?? []).filter((l) => l.id !== link.id),
     }));
+    setModels((prev) => prev.map((m) =>
+      m.id !== link.model_id ? m
+        : { ...m, approved: Math.max(0, m.approved - 1) }
+    ));
   }
 
   // ── Th helper ─────────────────────────────────────────────────────────────
@@ -215,14 +301,8 @@ export function TestLinksSearchPage() {
   const pct = jobModelCount > 0 ? Math.round((doneCount / jobModelCount) * 100) : 0;
   const isJobRunning = job && (job.status === "pending" || job.status === "running");
 
-  // Group pending links by model
-  const pendingByModel = pending.reduce<Record<string, { modelMeta: ModelMeta | undefined; links: PendingLink[] }>>((acc, l) => {
-    if (!acc[l.model_id]) {
-      acc[l.model_id] = { modelMeta: models.find((m) => m.id === l.model_id), links: [] };
-    }
-    acc[l.model_id].links.push(l);
-    return acc;
-  }, {});
+  // Total pending count across all models
+  const totalPending = Object.values(pendingByModel).reduce((s, arr) => s + arr.length, 0);
 
   return (
     <div className="tls-mgr">
@@ -253,48 +333,6 @@ export function TestLinksSearchPage() {
         </div>
       )}
 
-      {/* ── Pending approvals ─────────────────────────────────────────────── */}
-      {pending.length > 0 && (
-        <div className="cms-card tls-pending-section">
-          <div className="tls-pending-head">
-            <h2>Jóváhagyásra váró linkek</h2>
-            <span className="pill">{pending.length}</span>
-          </div>
-          {Object.entries(pendingByModel).map(([modelId, { modelMeta, links }]) => (
-            <div key={modelId} className="tls-pending-group">
-              <div className="tls-pending-model">
-                {modelMeta?.brand?.name} <strong>{modelMeta?.name}</strong>
-              </div>
-              {links.map((l) => (
-                <div key={l.id} className="tls-pending-row">
-                  {l.kind === "video" ? <PlayCircle size={13} /> : <FileText size={13} />}
-                  <div className="tls-pending-meta">
-                    <span className="tls-source-badge">{l.source_name ?? "?"}</span>
-                    <span className="tls-pending-title">{l.title || l.url.slice(0, 70)}</span>
-                    {l.ai_summary && (
-                      <span className="tls-ai-summary" title="Claude AI indoklás">
-                        ✦ {l.ai_summary}
-                      </span>
-                    )}
-                  </div>
-                  <div className="tls-pending-actions">
-                    <a href={l.url} target="_blank" rel="noopener noreferrer" className="cms-btn ghost" title="Megnyitás">
-                      <ExternalLink size={12} />
-                    </a>
-                    <button type="button" className="cms-btn primary" onClick={() => approveLink(l.id)}>
-                      <Check size={12} /> Jóváhagy
-                    </button>
-                    <button type="button" className="cms-btn danger" onClick={() => rejectLink(l.id)}>
-                      <Trash2 size={12} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* ── Model list ────────────────────────────────────────────────────── */}
       <div className="cms-card" style={{ padding: 0, overflow: "hidden" }}>
         <div className="tls-toolbar">
@@ -305,6 +343,11 @@ export function TestLinksSearchPage() {
             onChange={(e) => setSearch(e.target.value)}
             className="tls-search"
           />
+          {totalPending > 0 && (
+            <span className="pill warn" style={{ fontSize: 12 }}>
+              {totalPending} jóváhagyásra vár
+            </span>
+          )}
           <div style={{ flex: 1 }} />
           <button type="button" className="cms-btn ghost" onClick={selectWithoutLinks} disabled={!!isJobRunning}>
             Jelöld ki a link nélkülieket
@@ -340,33 +383,175 @@ export function TestLinksSearchPage() {
                 <Th col="model" label="Modell" />
                 <Th col="approved" label="Jóváhagyott" />
                 <Th col="pending" label="Várakozik" />
+                <th style={{ width: 36 }} />
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={5} style={{ color: "#94a3b8" }}>Nincs találat.</td></tr>
+                <tr><td colSpan={6} style={{ color: "#94a3b8" }}>Nincs találat.</td></tr>
               )}
-              {filtered.map((m) => (
-                <tr key={m.id} className={selected.has(m.id) ? "tls-row-selected" : undefined} onClick={() => toggleModel(m.id)} style={{ cursor: "pointer" }}>
-                  <td onClick={(e) => e.stopPropagation()}>
-                    <input type="checkbox" checked={selected.has(m.id)} onChange={() => toggleModel(m.id)} readOnly />
-                  </td>
-                  <td style={{ color: "#cbd5e1" }}>{m.brand?.name ?? "—"}</td>
-                  <td><strong>{m.name}</strong></td>
-                  <td>
-                    {m.approved > 0
-                      ? <span className="pill ok">{m.approved} link</span>
-                      : <span className="pill muted">nincs</span>}
-                  </td>
-                  <td>
-                    {m.pending > 0
-                      ? <span className="pill warn">{m.pending} várakozik</span>
-                      : <span style={{ color: "#475569", fontSize: 12 }}>—</span>}
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((m) => {
+                const isExpanded = expandedModels.has(m.id);
+                const pendingLinks = pendingByModel[m.id] ?? [];
+                const approvedLinks = approvedByModel[m.id];
+                const isLoadingLinks = loadingLinks.has(m.id);
+                const hasPending = pendingLinks.length > 0;
+
+                return (
+                  <Fragment key={m.id}>
+                    {/* ── Model row ── */}
+                    <tr
+                      className={`${selected.has(m.id) ? "tls-row-selected" : ""} ${isExpanded ? "tls-row-expanded" : ""}`}
+                    >
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selected.has(m.id)}
+                          onChange={() => toggleModel(m.id)}
+                        />
+                      </td>
+                      <td style={{ color: "#cbd5e1" }}>{m.brand?.name ?? "—"}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="tls-model-expand-btn"
+                          onClick={() => toggleExpand(m.id)}
+                          title={isExpanded ? "Bezár" : "Linkek megtekintése"}
+                        >
+                          <strong>{m.name}</strong>
+                          {isExpanded
+                            ? <ChevronDown size={13} style={{ marginLeft: 6, color: "#64748b" }} />
+                            : <ChevronRight size={13} style={{ marginLeft: 6, color: "#475569" }} />}
+                        </button>
+                      </td>
+                      <td>
+                        {m.approved > 0
+                          ? <span className="pill ok">{m.approved} link</span>
+                          : <span className="pill muted">nincs</span>}
+                      </td>
+                      <td>
+                        {hasPending
+                          ? <span className="pill warn">{pendingLinks.length} várakozik</span>
+                          : m.pending > 0
+                            ? <span className="pill warn">{m.pending} várakozik</span>
+                            : <span style={{ color: "#475569", fontSize: 12 }}>—</span>}
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="tls-expand-icon-btn"
+                          onClick={() => toggleExpand(m.id)}
+                          aria-label={isExpanded ? "Bezár" : "Kinyit"}
+                        >
+                          {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* ── Expanded links section ── */}
+                    {isExpanded && (
+                      <tr className="tls-expanded-row">
+                        <td colSpan={6} style={{ padding: 0 }}>
+                          <div className="tls-links-panel">
+                            {isLoadingLinks && !approvedLinks ? (
+                              <div className="tls-links-loading">
+                                <Loader2 size={13} className="tls-spinner" /> Linkek betöltése…
+                              </div>
+                            ) : (
+                              <>
+                                {/* Pending links */}
+                                {pendingLinks.length > 0 && (
+                                  <div className="tls-links-group">
+                                    <div className="tls-links-group-head tls-links-group-head--pending">
+                                      Jóváhagyásra vár ({pendingLinks.length})
+                                    </div>
+                                    {pendingLinks.map((l) => (
+                                      <LinkItem
+                                        key={l.id}
+                                        link={l}
+                                        onApprove={() => approveLink(l)}
+                                        onReject={() => rejectLink(l)}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Approved links */}
+                                {approvedLinks && approvedLinks.length > 0 && (
+                                  <div className="tls-links-group">
+                                    <div className="tls-links-group-head">
+                                      Jóváhagyott ({approvedLinks.length})
+                                    </div>
+                                    {approvedLinks.map((l) => (
+                                      <LinkItem
+                                        key={l.id}
+                                        link={l}
+                                        onRemove={() => removeApproved(l)}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+
+                                {pendingLinks.length === 0 && (!approvedLinks || approvedLinks.length === 0) && (
+                                  <div className="tls-links-empty">
+                                    Még nincs tesztlink ehhez a modellhez.
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
             </tbody>
           </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── LinkItem subcomponent ─────────────────────────────────────────────────────
+function LinkItem({
+  link,
+  onApprove,
+  onReject,
+  onRemove,
+}: {
+  link: LinkRow;
+  onApprove?: () => void;
+  onReject?: () => void;
+  onRemove?: () => void;
+}) {
+  const Icon = link.kind === "video" ? PlayCircle : FileText;
+  const isPending = !!onApprove;
+
+  return (
+    <div className={`tls-link-item${isPending ? " tls-link-item--pending" : ""}`}>
+      <Icon size={13} className="tls-link-icon" />
+      <div className="tls-link-meta">
+        <span className="tls-source-badge">{link.source_name ?? "?"}</span>
+        <span className="tls-pending-title">{link.title || link.url.slice(0, 70)}</span>
+        {link.ai_summary && (
+          <span className="tls-ai-summary">✦ {link.ai_summary}</span>
+        )}
+      </div>
+      <div className="tls-pending-actions">
+        <a href={link.url} target="_blank" rel="noopener noreferrer" className="cms-btn ghost" title="Megnyitás">
+          <ExternalLink size={12} />
+        </a>
+        {onApprove && (
+          <button type="button" className="cms-btn primary" onClick={onApprove}>
+            <Check size={12} /> Jóváhagy
+          </button>
+        )}
+        {(onReject || onRemove) && (
+          <button type="button" className="cms-btn danger" onClick={onReject ?? onRemove}>
+            <Trash2 size={12} />
+          </button>
         )}
       </div>
     </div>
