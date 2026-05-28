@@ -1,0 +1,326 @@
+/* ================================================================
+   Welcome / Onboarding Popup
+   Shown to users arriving from Google Ads or Facebook ads.
+   ================================================================ */
+
+/* ── Overlay ─────────────────────────────────────────────────── */
+.wp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+
+  background: rgba(8, 12, 18, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+.wp-overlay.wp-entered {
+  opacity: 1;
+}
+
+/* ── Modal card ──────────────────────────────────────────────── */
+.wp-modal {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  max-height: calc(100svh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  background: #0d1520;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow:
+    0 0 0 1px rgba(220, 38, 38, 0.15),
+    0 32px 80px -12px rgba(0, 0, 0, 0.7),
+    0 0 120px -40px rgba(220, 38, 38, 0.18);
+
+  padding: 36px 40px 32px;
+
+  transform: translateY(22px) scale(0.97);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Subtle radial glow top-right */
+  background-image:
+    radial-gradient(ellipse 60% 40% at 75% -10%, rgba(220, 38, 38, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 60% at -5% 110%, rgba(59, 130, 246, 0.07) 0%, transparent 60%);
+}
+.wp-entered .wp-modal {
+  transform: translateY(0) scale(1);
+}
+
+/* ── Close button ────────────────────────────────────────────── */
+.wp-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.wp-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* ── Header: logo + headline ─────────────────────────────────── */
+.wp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+  margin-bottom: 30px;
+}
+
+.wp-logo-wrap {
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  background: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(220, 38, 38, 0.25);
+}
+.wp-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.wp-headline {
+  flex: 1;
+  min-width: 0;
+  padding-top: 4px;
+}
+.wp-pre {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #dc2626;
+  margin-bottom: 6px;
+}
+.wp-title {
+  margin: 0 0 10px;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #f1f5f9;
+  letter-spacing: -0.02em;
+}
+.wp-title em {
+  font-style: normal;
+  color: #fff;
+  background: linear-gradient(90deg, #f97316 0%, #dc2626 60%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.wp-sub {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #94a3b8;
+}
+
+/* ── Feature grid ────────────────────────────────────────────── */
+.wp-features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.wp-feat {
+  display: flex;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: background 0.18s, border-color 0.18s;
+  cursor: default;
+
+  /* Stagger animation */
+  opacity: 0;
+  transform: translateY(12px);
+}
+.wp-feat.wp-feat-in {
+  animation: wp-feat-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(0.18s + var(--fi) * 0.08s);
+}
+@keyframes wp-feat-enter {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wp-feat:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Feature icon badge */
+.wp-feat-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+.wp-feat-red   { background: rgba(220, 38, 38, 0.18);  color: #f87171; }
+.wp-feat-blue  { background: rgba(59, 130, 246, 0.18); color: #60a5fa; }
+.wp-feat-green { background: rgba(34, 197, 94, 0.15);  color: #4ade80; }
+.wp-feat-amber { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+
+.wp-feat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.wp-feat-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+.wp-feat-title {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.3;
+}
+.wp-feat-text {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+/* ── Footer: CTA + footnote ──────────────────────────────────── */
+.wp-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.wp-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 32px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.15) inset,
+    0 6px 20px rgba(220, 38, 38, 0.38);
+  transition: transform 0.14s, box-shadow 0.14s, background 0.14s;
+}
+.wp-cta:hover {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.18) inset,
+    0 8px 28px rgba(220, 38, 38, 0.48);
+  transform: translateY(-1px);
+}
+.wp-cta:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(220, 38, 38, 0.35);
+}
+.wp-cta svg {
+  transition: transform 0.14s;
+}
+.wp-cta:hover svg {
+  transform: translateX(3px);
+}
+
+.wp-footnote {
+  font-size: 12px;
+  color: #475569;
+}
+
+/* ── Divider between header and features ─────────────────────── */
+.wp-header::after {
+  display: none;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .wp-modal {
+    padding: 24px 20px 24px;
+    border-radius: 18px 18px 0 0;
+    max-height: 92svh;
+  }
+  .wp-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .wp-overlay.wp-entered .wp-modal {
+    transform: translateY(0);
+  }
+  .wp-modal {
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .wp-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+  }
+  .wp-features {
+    grid-template-columns: 1fr;
+  }
+  .wp-title {
+    font-size: 19px;
+  }
+  .wp-logo-wrap {
+    width: 64px;
+    height: 64px;
+  }
+  .wp-logo {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (max-width: 380px) {
+  .wp-cta {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 24px;
+  }
+}

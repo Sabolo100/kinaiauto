@@ -6,11 +6,13 @@ import { Footer } from "@/components/footer";
 import { QuoteProvider } from "@/components/quote-context";
 import { QuoteToast } from "@/components/quote-toast";
 import { CookieBanner } from "@/components/cookie-banner";
+import { WelcomePopupWrapper } from "@/components/welcome-popup-wrapper";
 import { getDataLastUpdated } from "@/lib/data";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { JsonLd } from "@/components/json-ld";
 import { organizationSchema, websiteSchema } from "@/lib/seo";
 import "./globals.css";
+import "./welcome-popup.css";
 
 const GA_ID  = process.env.NEXT_PUBLIC_GA_ID         ?? "";
 const ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "";
@@ -159,6 +161,7 @@ export default async function RootLayout({
           <Footer lastUpdated={lastUpdated} />
           <QuoteToast />
           <CookieBanner />
+          <WelcomePopupWrapper />
         </QuoteProvider>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
