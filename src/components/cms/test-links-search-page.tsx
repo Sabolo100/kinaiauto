@@ -98,10 +98,11 @@ export function TestLinksSearchPage() {
   // ── Load approved links for a model (on demand) ───────────────────────────
   async function loadApproved(modelId: string) {
     if (approvedByModel[modelId] !== undefined) return; // already loaded
-    setLoadingLinks((prev) => new Set(prev).add(modelId));
+    setLoadingLinks((prev) => { const n = new Set(prev); n.add(modelId); return n; });
     try {
       const res = await fetch(`/api/models/${modelId}/test-links`);
-      const data: LinkRow[] = await res.json();
+      const json = await res.json();
+      const data: LinkRow[] = Array.isArray(json) ? json : [];
       setApprovedByModel((prev) => ({
         ...prev,
         [modelId]: data.map((l) => ({ ...l, model_id: modelId, is_approved: true })),
@@ -118,16 +119,16 @@ export function TestLinksSearchPage() {
 
   // ── Expand toggle ─────────────────────────────────────────────────────────
   function toggleExpand(modelId: string) {
+    const expanding = !expandedModels.has(modelId);
     setExpandedModels((prev) => {
       const next = new Set(prev);
-      if (next.has(modelId)) {
-        next.delete(modelId);
-      } else {
-        next.add(modelId);
-        loadApproved(modelId);
-      }
+      if (expanding) next.add(modelId);
+      else next.delete(modelId);
       return next;
     });
+    if (expanding) {
+      loadApproved(modelId);
+    }
   }
 
   // ── Polling ───────────────────────────────────────────────────────────────
