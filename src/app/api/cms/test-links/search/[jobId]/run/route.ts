@@ -3,7 +3,7 @@
 // Has a long maxDuration so it can process many models.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { searchTestLinks } from "@/lib/test-link-search";
+import { searchTestLinksVerified } from "@/lib/test-link-search";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes max on Vercel Pro; 60s on Hobby
@@ -68,7 +68,8 @@ export async function POST(
     progress[modelId] = { found: 0, done: false };
 
     try {
-      const links = await searchTestLinks(brandName, modelName);
+      // Search + AI-verify: only confirmed-relevant links come back
+      const verifiedLinks = await searchTestLinksVerified(brandName, modelName);
 
       // Deduplicate against already-existing links for this model
       const { data: existing } = await sa
@@ -76,7 +77,7 @@ export async function POST(
         .select("url")
         .eq("model_id", modelId);
       const existingUrls = new Set((existing ?? []).map((e) => e.url as string));
-      const toInsert = links.filter((l) => !existingUrls.has(l.url));
+      const toInsert = verifiedLinks.filter((l) => !existingUrls.has(l.url));
 
       if (toInsert.length > 0) {
         await sa.from("model_test_links").insert(
@@ -88,6 +89,8 @@ export async function POST(
             kind: l.kind,
             is_approved: false,
             found_by: "auto",
+            ai_ok: true,
+            ai_summary: l.ai_summary || null,
           })),
         );
       }

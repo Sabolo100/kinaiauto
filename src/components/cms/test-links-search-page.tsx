@@ -33,6 +33,8 @@ type PendingLink = {
   source_name: string | null;
   kind: "article" | "video";
   found_by: "manual" | "auto";
+  ai_ok: boolean | null;
+  ai_summary: string | null;
 };
 
 type JobStatus = {
@@ -269,6 +271,11 @@ export function TestLinksSearchPage() {
                   <div className="tls-pending-meta">
                     <span className="tls-source-badge">{l.source_name ?? "?"}</span>
                     <span className="tls-pending-title">{l.title || l.url.slice(0, 70)}</span>
+                    {l.ai_summary && (
+                      <span className="tls-ai-summary" title="Claude AI indoklás">
+                        ✦ {l.ai_summary}
+                      </span>
+                    )}
                   </div>
                   <div className="tls-pending-actions">
                     <a href={l.url} target="_blank" rel="noopener noreferrer" className="cms-btn ghost" title="Megnyitás">

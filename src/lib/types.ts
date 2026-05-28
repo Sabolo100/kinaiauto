@@ -204,6 +204,8 @@ export type ModelTestLink = {
   kind: "article" | "video";
   is_approved: boolean;
   found_by: "manual" | "auto";
+  ai_ok: boolean | null;      // null = not checked (manually added)
+  ai_summary: string | null;  // short Claude reason shown in admin
   created_at: string;
   updated_at: string;
 };

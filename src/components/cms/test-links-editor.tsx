@@ -11,6 +11,8 @@ type LinkRow = {
   kind: "article" | "video";
   is_approved: boolean;
   found_by: "manual" | "auto";
+  ai_ok: boolean | null;
+  ai_summary: string | null;
 };
 
 export function TestLinksEditor({ modelId }: { modelId: string }) {
@@ -196,6 +198,9 @@ function LinkRow({
       <div className="tle-row-body">
         <span className="tle-row-source">{link.source_name ?? "—"}</span>
         <span className="tle-row-title">{link.title || link.url.slice(0, 60)}</span>
+        {link.ai_summary && (
+          <span className="tle-ai-summary" title="Claude AI indoklás">✦ {link.ai_summary}</span>
+        )}
       </div>
       <div className="tle-row-actions">
         <a

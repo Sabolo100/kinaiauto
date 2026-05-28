@@ -64,6 +64,9 @@ export function Footer({ lastUpdated }: { lastUpdated: string }) {
                 <Link href="/cookie">Cookie beállítások</Link>
               </li>
               <li>
+                <Link href="/adatok-torlese">Adatok törlése</Link>
+              </li>
+              <li>
                 <Link href="/jogi-nyilatkozat">Jogi nyilatkozat</Link>
               </li>
             </ul>

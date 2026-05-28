@@ -773,6 +773,16 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+/* AI verification summary shown below article title */
+.tls-ai-summary,
+.tle-ai-summary {
+  font-size: 10.5px;
+  color: #6ee7b7;           /* emerald-300 — AI green */
+  font-family: var(--font-mono, monospace);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .tls-pending-actions {
   display: flex;
   gap: 4px;
