@@ -5,13 +5,17 @@ import { Topbar } from "@/components/topbar";
 import { Footer } from "@/components/footer";
 import { QuoteProvider } from "@/components/quote-context";
 import { QuoteToast } from "@/components/quote-toast";
+import { CookieBanner } from "@/components/cookie-banner";
 import { getDataLastUpdated } from "@/lib/data";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { JsonLd } from "@/components/json-ld";
 import { organizationSchema, websiteSchema } from "@/lib/seo";
 import "./globals.css";
 
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
+const GA_ID  = process.env.NEXT_PUBLIC_GA_ID         ?? "";
+const ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "";
+// Primary tracking ID for the gtag.js src URL
+const GTAG_SRC_ID = GA_ID || ADS_ID;
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -121,27 +125,59 @@ export default async function RootLayout({
       className={`${inter.variable} ${instrument.variable} ${mono.variable}`}
     >
       <body>
+        {/* ── Consent Mode v2 — must run before any GA/Ads tags ─────────────────
+            Sets default denied state, then immediately restores a previous
+            user choice from localStorage so returning visitors are not
+            re-prompted and tracking resumes without a flash.                    */}
+        <Script id="consent-init" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              ad_storage:        'denied',
+              analytics_storage: 'denied',
+              ad_user_data:      'denied',
+              ad_personalization:'denied',
+              wait_for_update:    500,
+            });
+            try {
+              if (localStorage.getItem('cookie_consent') === 'all') {
+                gtag('consent', 'update', {
+                  ad_storage:        'granted',
+                  analytics_storage: 'granted',
+                  ad_user_data:      'granted',
+                  ad_personalization:'granted',
+                });
+              }
+            } catch(e) {}
+          `}
+        </Script>
+
         <QuoteProvider>
           <Topbar lastUpdated={lastUpdated} />
           {children}
           <Footer lastUpdated={lastUpdated} />
           <QuoteToast />
+          <CookieBanner />
         </QuoteProvider>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />
-        {GA_ID && (
+
+        {/* ── Google Analytics + Ads ─────────────────────────────────────────── */}
+        {GTAG_SRC_ID && (
           <>
             <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              src={`https://www.googletagmanager.com/gtag/js?id=${GTAG_SRC_ID}`}
               strategy="afterInteractive"
             />
-            <Script id="ga-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_ID}', { page_path: window.location.pathname });
-              `}
+            <Script id="gtag-init" strategy="afterInteractive">
+              {[
+                "window.dataLayer = window.dataLayer || [];",
+                "function gtag(){dataLayer.push(arguments);}",
+                "gtag('js', new Date());",
+                GA_ID  ? `gtag('config', '${GA_ID}');`  : "",
+                ADS_ID ? `gtag('config', '${ADS_ID}');` : "",
+              ].filter(Boolean).join("\n")}
             </Script>
           </>
         )}

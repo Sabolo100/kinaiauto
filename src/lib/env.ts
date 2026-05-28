@@ -45,3 +45,6 @@ export const HAS_SERPER = Boolean(SERPER_API_KEY);
 // YouTube Data API v3
 export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || "";
 export const HAS_YOUTUBE = Boolean(YOUTUBE_API_KEY);
+
+// Google Ads Conversion ID (e.g. AW-XXXXXXXXXX)
+export const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "";
