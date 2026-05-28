@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Image from "next/image";
 import {
   SlidersHorizontal,
   BarChart3,
@@ -14,7 +13,6 @@ import {
 
 const SESSION_KEY = "kinai_welcome_seen";
 
-// Ad click-through params: Google Ads (gclid), Facebook (fbclid), or any UTM
 function hasAdParam(params: URLSearchParams): boolean {
   return (
     params.has("gclid") ||
@@ -22,38 +20,38 @@ function hasAdParam(params: URLSearchParams): boolean {
     params.has("utm_source") ||
     params.has("utm_medium") ||
     params.has("utm_campaign") ||
-    params.has("welcome") // manual test trigger: ?welcome=1
+    params.has("welcome")
   );
 }
 
 const FEATURES = [
   {
-    icon: <SlidersHorizontal size={22} />,
-    color: "wp-feat-red",
-    label: "Főoldal — Szűrő",
+    icon: <SlidersHorizontal size={24} />,
+    color: "wp-c-red",
+    nav: "Főoldal — Szűrő",
     title: "Válaszd ki, mi számodra a fontos",
     body: "Kategória, ársáv és hajtás alapján egyből látod, melyik kínai modellek illenek hozzád — a teljes hazai kínálatból.",
   },
   {
-    icon: <BarChart3 size={22} />,
-    color: "wp-feat-blue",
-    label: "Kínálat",
+    icon: <BarChart3 size={24} />,
+    color: "wp-c-blue",
+    nav: "Kínálat",
     title: "Lásd egymás mellett, ki a legjobb",
     body: "Hatótáv, csomagtartó, méret és ár szerint vizuálisan rendezve. Azonnal kiderül, melyik modell vezet az adott szempontnál.",
   },
   {
-    icon: <BookOpen size={22} />,
-    color: "wp-feat-green",
-    label: "Márkák & Modellek",
+    icon: <BookOpen size={24} />,
+    color: "wp-c-green",
+    nav: "Márkák & Modellek",
     title: "Minden adat, teszt és kereskedő egy helyen",
-    body: "Részletes műszaki adatok, tesztvideók, cikkek — és megtalálod a közeledben lévő márkakereskedőket is.",
+    body: "Részletes műszaki adatok, tesztvideók, cikkek — és a közeledben lévő márkakereskedők elérhetőségei is.",
   },
   {
-    icon: <ShoppingBag size={22} />,
-    color: "wp-feat-amber",
-    label: "Ajánlatkérés",
+    icon: <ShoppingBag size={24} />,
+    color: "wp-c-amber",
+    nav: "Ajánlatkérés",
     title: "Egy lépésben, sok kereskedőtől",
-    body: "Bárhol hozzáadhatod a modelleket a kosárhoz (a képernyő tetején látod). Kereskedőket választasz, és egyetlen gombbal árajánlatot kérsz mindegyiktől.",
+    body: "Bárhol hozzáadhatod a modelleket a kosárhoz (a képernyő tetején látod). Kereskedőket választasz, majd egyetlen gombbal árajánlatot kérsz mindegyiktől.",
   },
 ];
 
@@ -66,13 +64,12 @@ export function WelcomePopup() {
     if (!hasAdParam(searchParams)) return;
     if (sessionStorage.getItem(SESSION_KEY)) return;
 
-    // Small delay so the page loads first, then popup slides in
     const t = setTimeout(() => {
       setVisible(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setEntered(true));
-      });
-    }, 400);
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => setEntered(true))
+      );
+    }, 350);
     return () => clearTimeout(t);
   }, [searchParams]);
 
@@ -93,64 +90,69 @@ export function WelcomePopup() {
       aria-label="Üdvözlő bemutatkozás"
     >
       <div className="wp-modal">
+
         {/* Close */}
         <button className="wp-close" onClick={close} aria-label="Bezárás">
-          <X size={16} />
+          <X size={15} />
         </button>
 
-        {/* Logo + header */}
+        {/* ── Header ─────────────────────────────────────────────── */}
         <div className="wp-header">
-          <div className="wp-logo-wrap">
-            <Image
+          <div className="wp-logo-col">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src="/logo.png"
-              alt="kinaiauto.com"
-              width={88}
-              height={88}
+              alt="kinaiauto.com logó"
               className="wp-logo"
-              priority
+              width={100}
+              height={100}
             />
           </div>
           <div className="wp-headline">
-            <span className="wp-pre">Ha már döntöttél a kínai autó mellett —</span>
+            <span className="wp-eyebrow">Ha már döntöttél a kínai autó mellett —</span>
             <h2 className="wp-title">
-              mi segítünk eligazodni<br />
-              <em>a teljes kínálatban.</em>
+              mi segítünk<br />
+              <span className="wp-title-accent">eligazodni a kínálatban.</span>
             </h2>
-            <p className="wp-sub">
-              A kínai márkákat még nem ismerjük elég jól. Ezért összegyűjtöttük
-              az összes hazai modellt, hogy biztosan a legjobb választást hozd meg.
+            <p className="wp-desc">
+              A kínai márkákat még nem ismerjük jól. Összegyűjtöttük az összes
+              hazai modellt, hogy biztosan a legjobb választást hozd meg.
             </p>
           </div>
         </div>
 
-        {/* Feature grid */}
+        {/* ── Divider ────────────────────────────────────────────── */}
+        <div className="wp-divider" />
+
+        {/* ── Feature grid ───────────────────────────────────────── */}
         <div className="wp-features">
           {FEATURES.map((f, i) => (
             <div
-              key={f.label}
+              key={f.nav}
               className={`wp-feat${entered ? " wp-feat-in" : ""}`}
               style={{ "--fi": i } as React.CSSProperties}
             >
-              <div className={`wp-feat-icon ${f.color}`}>
+              <div className={`wp-feat-icon-wrap ${f.color}`}>
                 {f.icon}
               </div>
-              <div className="wp-feat-body">
-                <span className="wp-feat-label">{f.label}</span>
+              <div className="wp-feat-content">
+                <span className="wp-feat-nav">{f.nav}</span>
                 <strong className="wp-feat-title">{f.title}</strong>
-                <p className="wp-feat-text">{f.body}</p>
+                <p className="wp-feat-body">{f.body}</p>
               </div>
             </div>
           ))}
         </div>
 
-        {/* CTA */}
+        {/* ── CTA ────────────────────────────────────────────────── */}
         <div className="wp-footer">
           <button className="wp-cta" onClick={close}>
-            Kezdjük a felfedezést
-            <ChevronRight size={17} strokeWidth={2.5} />
+            <span>Kezdjük a felfedezést</span>
+            <ChevronRight size={18} strokeWidth={2.5} />
           </button>
-          <span className="wp-footnote">Ingyenes · Regisztráció nélkül</span>
+          <p className="wp-note">Ingyenes · Regisztráció nélkül · 60+ modell</p>
         </div>
+
       </div>
     </div>
   );
