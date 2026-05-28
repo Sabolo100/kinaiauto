@@ -1,3 +1,5 @@
+import { TrackView } from "@/components/track-view";
+import { TrackGalleryOpen } from "@/components/track-gallery-open";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -106,6 +108,9 @@ export function ModelDetail({
 
   return (
     <div style={{ ["--brand-tone" as string]: tone }}>
+      {/* Track model view — fires once on client mount, renders nothing */}
+      <TrackView modelId={model.id} modelSlug={model.slug} />
+
       {/* HERO */}
       <section className="model-hero">
         <div className="container model-hero-inner">
@@ -192,7 +197,9 @@ export function ModelDetail({
               </div>
             )}
           </div>
-          <ModelGallery photos={photos} />
+          <TrackGalleryOpen modelId={model.id} modelSlug={model.slug}>
+            <ModelGallery photos={photos} />
+          </TrackGalleryOpen>
         </div>
       </section>
 

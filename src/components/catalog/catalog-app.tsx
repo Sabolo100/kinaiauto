@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { track } from "@/lib/track";
 import Link from "next/link";
 import {
   BarChart2,
@@ -250,7 +251,7 @@ export function CatalogApp({
               {bands.map((b) => (
                 <button key={b.id} type="button"
                   className={`fltr-chip${prices.has(b.id) ? " on" : ""}`}
-                  onClick={() => setPrices(toggleSet(prices, b.id))}
+                  onClick={() => { const n = toggleSet(prices, b.id); setPrices(n); if (n.has(b.id)) track({ type: "filter_catalog", param: "ársáv", val: b.label_hu }); }}
                 >{b.label_hu}</button>
               ))}
             </div>
@@ -269,7 +270,7 @@ export function CatalogApp({
               {drives.map((d) => (
                 <button key={d.id} type="button"
                   className={`fltr-chip${drvSel.has(d.label_hu) ? " on" : ""}`}
-                  onClick={() => setDrvSel(toggleSet(drvSel, d.label_hu))}
+                  onClick={() => { const n = toggleSet(drvSel, d.label_hu); setDrvSel(n); if (n.has(d.label_hu)) track({ type: "filter_catalog", param: "hajtás", val: d.label_hu }); }}
                 >{d.label_hu}</button>
               ))}
             </div>
@@ -294,7 +295,7 @@ export function CatalogApp({
                 return (
                   <button key={c.id} type="button"
                     className={`cat-chip${isOn ? " on" : ""}`}
-                    onClick={() => setCats(toggleSet(cats, c.label_hu))}
+                    onClick={() => { const n = toggleSet(cats, c.label_hu); setCats(n); if (n.has(c.label_hu)) track({ type: "filter_catalog", param: "kategória", val: c.label_hu }); }}
                   >
                     {icon ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -322,7 +323,7 @@ export function CatalogApp({
               {brands.map((b) => (
                 <button key={b.id} type="button"
                   className={`fltr-chip${brSel.has(b.name) ? " on" : ""}`}
-                  onClick={() => setBrSel(toggleSet(brSel, b.name))}
+                  onClick={() => { const n = toggleSet(brSel, b.name); setBrSel(n); if (n.has(b.name)) track({ type: "filter_catalog", param: "márka", val: b.name }); }}
                 >{b.name}</button>
               ))}
             </div>
@@ -337,7 +338,7 @@ export function CatalogApp({
               {PARAMS.map((p) => (
                 <button key={p.id} type="button"
                   className={`cat-param${p.id === param ? " on" : ""}`}
-                  onClick={() => setParam(p.id)}
+                  onClick={() => { setParam(p.id); track({ type: "catalog_param", param: p.id, val: p.label }); }}
                 >
                   {p.icon}
                   {p.label}

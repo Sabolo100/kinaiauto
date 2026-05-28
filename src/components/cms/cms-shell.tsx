@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const ITEMS = [
   { href: "/c4m5s6", label: "Áttekintés" },
+  { href: "/c4m5s6/statisztikak", label: "📊 Statisztikák" },
   { href: "/c4m5s6/markak", label: "Márkák" },
   { href: "/c4m5s6/modellek", label: "Modellek" },
   { href: "/c4m5s6/kereskedok", label: "Kereskedők" },
