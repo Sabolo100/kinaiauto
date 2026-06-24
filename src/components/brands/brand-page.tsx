@@ -102,7 +102,7 @@ function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap 
       <section className="block">
         <div className="container">
           <div className="block-head">
-            <div><div className="step">A márkáról</div><h2>Mi van <em>a háttérben</em>.</h2></div>
+            <div><div className="step">A márkáról</div><h2><em>Háttér</em>.</h2></div>
           </div>
           <div className="about-grid">
             <div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TutorialLink } from "./tutorial-link";
 
 export function Footer({ lastUpdated }: { lastUpdated: string }) {
   return (
@@ -45,6 +46,9 @@ export function Footer({ lastUpdated }: { lastUpdated: string }) {
               </li>
               <li>
                 <Link href="/tudastar">Tudástár</Link>
+              </li>
+              <li>
+                <TutorialLink>Bemutató / Hogyan működik</TutorialLink>
               </li>
             </ul>
           </div>

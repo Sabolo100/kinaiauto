@@ -1,0 +1,230 @@
+/* ================================================================
+   Tutorial — step-by-step onboarding walkthrough
+   ================================================================ */
+
+/* ── Floating re-invoke button ───────────────────────────────── */
+.tut-fab {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 7000;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 15px 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px -8px rgba(20, 24, 28, 0.3);
+  cursor: pointer;
+  transition: color 0.14s, border-color 0.14s, background 0.14s, transform 0.14s;
+}
+.tut-fab:hover {
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  transform: translateY(-1px);
+}
+.tut-fab svg { flex-shrink: 0; }
+
+@media (max-width: 560px) {
+  .tut-fab span { display: none; }
+  .tut-fab { padding: 0; width: 42px; height: 42px; justify-content: center; }
+}
+
+/* ── Overlay ─────────────────────────────────────────────────── */
+.tut-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 15, 25, 0.55);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.tut-overlay.tut-entered { opacity: 1; }
+
+/* ── Modal ───────────────────────────────────────────────────── */
+.tut-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border: 1px solid #e5e2da;
+  border-radius: 20px;
+  box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.32);
+  padding: 0 0 22px;
+  overflow: hidden;
+  transform: translateY(26px) scale(0.96);
+  transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tut-entered .tut-modal { transform: translateY(0) scale(1); }
+
+.tut-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.85);
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s;
+}
+.tut-close:hover { background: #fff; color: #15181a; }
+
+/* ── Illustration area ───────────────────────────────────────── */
+.tut-illo {
+  height: 184px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.4s ease;
+}
+.tut-svg {
+  width: 100%;
+  height: 100%;
+  max-width: 320px;
+}
+
+/* ── Content ─────────────────────────────────────────────────── */
+.tut-content {
+  padding: 22px 28px 0;
+  text-align: center;
+  min-height: 132px;
+}
+.tut-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.tut-title {
+  margin: 0 0 9px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #15181a;
+}
+.tut-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #4a5158;
+}
+
+/* Step transition animations */
+.tut-illo[data-anim="next"] .tut-svg,
+.tut-content[data-anim="next"] { animation: tut-slide-next 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.tut-illo[data-anim="prev"] .tut-svg,
+.tut-content[data-anim="prev"] { animation: tut-slide-prev 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+.tut-illo[data-anim="in"] .tut-svg,
+.tut-content[data-anim="in"] { animation: tut-fade-in 0.4s ease; }
+@keyframes tut-slide-next {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes tut-slide-prev {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes tut-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Progress dots ───────────────────────────────────────────── */
+.tut-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  padding: 20px 0 18px;
+}
+.tut-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  background: #e5e2da;
+  cursor: pointer;
+  padding: 0;
+  transition: width 0.25s, background 0.2s;
+}
+.tut-dot.done { background: #cfcbc0; }
+.tut-dot.on { width: 22px; }
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.tut-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 24px;
+}
+.tut-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s, border-color 0.14s, transform 0.14s, box-shadow 0.14s;
+}
+.tut-btn.ghost {
+  background: transparent;
+  border: 1px solid #e5e2da;
+  color: #4a5158;
+}
+.tut-btn.ghost:hover {
+  border-color: #cfcbc0;
+  background: #f7f6f2;
+  color: #15181a;
+}
+.tut-btn.primary {
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.4);
+}
+.tut-btn.primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+.tut-btn.primary svg { transition: transform 0.14s; }
+.tut-btn.primary:hover svg { transform: translateX(3px); }
+
+/* ── Mobile ──────────────────────────────────────────────────── */
+@media (max-width: 560px) {
+  .tut-overlay { align-items: flex-end; padding: 0; }
+  .tut-modal {
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tut-entered .tut-modal { transform: translateY(0); }
+  .tut-illo { height: 160px; }
+  .tut-title { font-size: 18px; }
+}

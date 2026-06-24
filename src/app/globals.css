@@ -195,24 +195,67 @@ nav.menu a.active::after {
   color: var(--ink);
   background: #fff;
 }
+/* Active accent once the cart has at least one model */
+.quote-cart-btn.has-items {
+  border-color: #fca5a5;
+  background: #fff5f5;
+  color: #b91c1c;
+}
+.quote-cart-btn.has-items:hover {
+  border-color: #f87171;
+  background: #ffecec;
+}
 .quote-cart-icon {
   position: relative;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
 }
-.quote-cart-dot {
+/* Count badge replacing the old plain dot */
+.quote-cart-count {
   position: absolute;
-  top: -4px;
-  right: -5px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  top: -7px;
+  right: -9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
   background: #dc2626;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
   box-shadow: 0 0 0 2px var(--surface);
 }
 .quote-cart-label {
   line-height: 1;
+}
+/* "Bump" animation when a model is added — draws the eye to the cart */
+.quote-cart-btn.bump {
+  animation: qcart-bump 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.quote-cart-btn.bump .quote-cart-icon {
+  animation: qcart-icon-wiggle 0.6s ease;
+}
+.quote-cart-btn.bump .quote-cart-count {
+  animation: qcart-count-pop 0.6s ease;
+}
+@keyframes qcart-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.12); }
+  60%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+@keyframes qcart-icon-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  30%      { transform: rotate(-12deg); }
+  60%      { transform: rotate(9deg); }
+}
+@keyframes qcart-count-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  50%  { transform: scale(1.35); opacity: 1; }
+  100% { transform: scale(1); }
 }
 .pill {
   display: inline-flex;
@@ -475,12 +518,22 @@ footer.foot ul {
   flex-direction: column;
   gap: 8px;
 }
-footer.foot li a {
+footer.foot li a,
+footer.foot li .foot-link-btn {
   font-size: 13.5px;
   color: var(--ink-soft);
 }
-footer.foot li a:hover {
+footer.foot li a:hover,
+footer.foot li .foot-link-btn:hover {
   color: var(--ink);
+}
+footer.foot li .foot-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
 }
 footer.foot .foot-disclaimer {
   font-size: 12px;
@@ -900,10 +953,25 @@ footer.foot .foot-disclaimer {
   margin-bottom: 0;
 }
 .card.zoom-1 .meta,
-.card.zoom-1 .price,
 .card.zoom-1 .specs,
+.card.zoom-1 .mc-variants,
 .card.zoom-1 .actions {
   display: none;
+}
+/* Overview card keeps the price, but compact and without the dashed rule */
+.card.zoom-1 .price {
+  margin-top: 6px;
+  padding-top: 0;
+  border-top: none;
+}
+.card.zoom-1 .price .from {
+  display: none;
+}
+.card.zoom-1 .price .val {
+  font-size: 18px;
+}
+.card.zoom-1 .price .max {
+  font-size: 11px;
 }
 .card.zoom-2 .specs,
 .card.zoom-2 .actions {

@@ -172,12 +172,13 @@
 .quote-dealer-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 14px;
-  font-size: 13px;
+  gap: 7px;
+  height: 40px;
+  padding: 0 18px;
+  font-size: 13.5px;
+  font-weight: 600;
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
@@ -187,6 +188,24 @@
   border-color: var(--ink-soft);
   background: #fff;
 }
+/* Not yet chosen — this is the user's next step, so make it loud. */
+.quote-dealer-btn.off {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 18px -6px oklch(54% 0.075 175 / 0.7);
+  animation: quote-dealer-pulse 2.2s ease-in-out infinite;
+}
+.quote-dealer-btn.off:hover {
+  background: var(--accent-ink);
+  border-color: var(--accent-ink);
+  transform: translateY(-1px);
+}
+@keyframes quote-dealer-pulse {
+  0%   { box-shadow: 0 6px 18px -6px oklch(54% 0.075 175 / 0.7), 0 0 0 0 oklch(54% 0.075 175 / 0.45); }
+  70%  { box-shadow: 0 6px 18px -6px oklch(54% 0.075 175 / 0.7), 0 0 0 10px oklch(54% 0.075 175 / 0); }
+  100% { box-shadow: 0 6px 18px -6px oklch(54% 0.075 175 / 0.7), 0 0 0 0 oklch(54% 0.075 175 / 0); }
+}
 .quote-dealer-btn.on {
   background: #ecfdf5;
   border-color: #10b981;
@@ -195,6 +214,11 @@
 .quote-dealer-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  animation: none;
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+  box-shadow: none;
 }
 .quote-cards {
   display: grid;

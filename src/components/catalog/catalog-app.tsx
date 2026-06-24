@@ -10,6 +10,7 @@ import {
   Check,
   GitCompareArrows,
   LayoutList,
+  MousePointer2,
   Package,
   Route,
   Ruler,
@@ -400,8 +401,16 @@ export function CatalogApp({
             {detail ? (
               <DetailCard model={detail} />
             ) : (
-              <div className="cat-empty">
-                Vigyél kurzort egy modell fölé, vagy kattints rá a részletekért.
+              <div className="cat-empty cat-empty--cta">
+                <span className="cat-empty-pointer" aria-hidden>
+                  <MousePointer2 size={26} />
+                </span>
+                <strong className="cat-empty-title">Nézd meg a részleteket</strong>
+                <span className="cat-empty-text">
+                  <span className="cat-empty-hl">Vidd a kurzort</span> egy modell fölé,
+                  vagy <span className="cat-empty-hl">kattints rá</span> — itt jelennek
+                  meg az adatok, fotók és a változatok.
+                </span>
               </div>
             )}
           </aside>
@@ -1011,7 +1020,7 @@ function DetailCard({ model }: { model: ModelRow }) {
       modelSlug: model.slug,
       brandSlug: model.brand_slug,
     };
-    if (!isInQuote) quoteCart.showToast("Ajánlatkérésekhez hozzáadva");
+    if (!isInQuote) quoteCart.showToast("Hozzáadva — fent az „Ajánlatkérések”-nél találod");
     quoteCart.toggle(item);
   }
 

@@ -101,7 +101,7 @@ export function WelcomePopup() {
           <div className="wp-logo-col">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo.png"
+              src="/Logo.png"
               alt="kinaiauto.com logó"
               className="wp-logo"
               width={100}

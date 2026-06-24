@@ -53,7 +53,7 @@ export function ModelCard({
       modelSlug: model.slug,
       brandSlug: model.brand_slug,
     };
-    if (!isInQuote) quoteCart.showToast("Ajánlatkérésekhez hozzáadva");
+    if (!isInQuote) quoteCart.showToast("Hozzáadva — fent az „Ajánlatkérések”-nél találod");
     quoteCart.toggle(item);
   }
 
@@ -179,11 +179,6 @@ export function ModelCard({
             {!hideTags?.drive && <span className="tag">{model.drive}</span>}
           </div>
         )}
-        <div className="price">
-          <span className="from">Listaár</span>
-          <span className="val">{fmtPrice(model.price_min_m_ft)}</span>
-          <span className="max">— {fmtPrice(model.price_max_m_ft)}</span>
-        </div>
         <div className="specs">
           <div className="spec">
             <div className="k">Hossz</div>
@@ -226,6 +221,11 @@ export function ModelCard({
             </ul>
           </div>
         )}
+        <div className="price">
+          <span className="from">Listaár</span>
+          <span className="val">{fmtPrice(model.price_min_m_ft)}</span>
+          <span className="max">— {fmtPrice(model.price_max_m_ft)}</span>
+        </div>
         <div className="actions" style={{ position: "relative", zIndex: 1 }}>
           <Link
             href={`/osszehasonlitas?models=${encodeURIComponent(

@@ -53,11 +53,11 @@ export function DealerMap({ dealers, activeId, onMarkerClick }: Props) {
         document.head.appendChild(link);
       }
 
-      const avgLat = withCoords.reduce((s, d) => s + d.lat!, 0) / withCoords.length;
-      const avgLng = withCoords.reduce((s, d) => s + d.lng!, 0) / withCoords.length;
-      const zoom = withCoords.length === 1 ? 13 : 7;
-
-      const map = L.map(containerRef.current).setView([avgLat, avgLng], zoom);
+      // Default view: Hungary. Markers are framed afterwards via fitBounds,
+      // so even with sparse/odd coordinates the map never drifts off (e.g. to
+      // the sea) the way a naive average-of-points center could.
+      const HUNGARY_CENTER: [number, number] = [47.16, 19.5];
+      const map = L.map(containerRef.current).setView(HUNGARY_CENTER, 7);
       mapRef.current = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -67,6 +67,7 @@ export function DealerMap({ dealers, activeId, onMarkerClick }: Props) {
 
       markersRef.current.clear();
 
+      const latLngs: [number, number][] = [];
       withCoords.forEach((d) => {
         const popup = `
           <strong>${d.name}</strong><br>
@@ -77,11 +78,19 @@ export function DealerMap({ dealers, activeId, onMarkerClick }: Props) {
         `;
         const marker = L.marker([d.lat!, d.lng!]).addTo(map).bindPopup(popup);
         markersRef.current.set(d.id, marker);
+        latLngs.push([d.lat!, d.lng!]);
 
         marker.on("click", () => {
           onMarkerClickRef.current?.(d.id);
         });
       });
+
+      // Frame the markers: single dealer → zoom in; multiple → fit all.
+      if (latLngs.length === 1) {
+        map.setView(latLngs[0], 13);
+      } else if (latLngs.length > 1) {
+        map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40], maxZoom: 12 });
+      }
     })();
 
     return () => {

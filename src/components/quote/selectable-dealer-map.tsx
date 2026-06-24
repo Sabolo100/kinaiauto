@@ -46,11 +46,9 @@ export function SelectableDealerMap({
         document.head.appendChild(link);
       }
 
-      const avgLat = withCoords.reduce((s, d) => s + d.lat!, 0) / withCoords.length;
-      const avgLng = withCoords.reduce((s, d) => s + d.lng!, 0) / withCoords.length;
-      const zoom = withCoords.length === 1 ? 13 : 7;
-
-      map = L.map(containerRef.current).setView([avgLat, avgLng], zoom);
+      // Default to Hungary, then fit to the actual markers below.
+      const HUNGARY_CENTER: [number, number] = [47.16, 19.5];
+      map = L.map(containerRef.current).setView(HUNGARY_CENTER, 7);
       mapRef.current = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -61,6 +59,7 @@ export function SelectableDealerMap({
 
       markersRef.current.clear();
 
+      const latLngs: [number, number][] = [];
       for (const d of withCoords) {
         const icon = makeIcon(L, false);
         const marker = L.marker([d.lat!, d.lng!], { icon }).addTo(map!);
@@ -72,6 +71,13 @@ export function SelectableDealerMap({
         );
         marker.on("click", () => onToggle(d.id));
         markersRef.current.set(d.id, marker);
+        latLngs.push([d.lat!, d.lng!]);
+      }
+
+      if (latLngs.length === 1) {
+        map.setView(latLngs[0], 13);
+      } else if (latLngs.length > 1) {
+        map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40], maxZoom: 12 });
       }
 
       // Apply initial selection styling

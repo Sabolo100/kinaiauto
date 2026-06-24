@@ -7,12 +7,14 @@ import { QuoteProvider } from "@/components/quote-context";
 import { QuoteToast } from "@/components/quote-toast";
 import { CookieBanner } from "@/components/cookie-banner";
 import { WelcomePopupWrapper } from "@/components/welcome-popup-wrapper";
+import { TutorialWrapper } from "@/components/tutorial-wrapper";
 import { getDataLastUpdated } from "@/lib/data";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { JsonLd } from "@/components/json-ld";
 import { organizationSchema, websiteSchema } from "@/lib/seo";
 import "./globals.css";
 import "./welcome-popup.css";
+import "./tutorial.css";
 
 const GA_ID  = process.env.NEXT_PUBLIC_GA_ID         ?? "";
 const ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "";
@@ -156,12 +158,13 @@ export default async function RootLayout({
         </Script>
 
         <QuoteProvider>
-          <Topbar lastUpdated={lastUpdated} />
+          <Topbar />
           {children}
           <Footer lastUpdated={lastUpdated} />
           <QuoteToast />
           <CookieBanner />
           <WelcomePopupWrapper />
+          <TutorialWrapper />
         </QuoteProvider>
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />

@@ -1,24 +1,23 @@
-// The pagehead + brand/model strip live in layout.tsx so they persist.
-// This page only contributes SEO metadata and structured data.
-import type { Metadata } from "next";
-import { JsonLd } from "@/components/json-ld";
-import { breadcrumbSchema } from "@/lib/seo";
-import { SITE_URL } from "@/lib/env";
+// Landing on /modellek with no brand/model selected used to show an empty area
+// below the brand strip. Instead we open a model right away so the page always
+// has something to look at. The pick rotates once per day (deterministic within
+// the day, so it is cache- and SEO-friendly) — a different model each day.
+export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "Modellek — válassz márkát, majd modellt",
-  description:
-    "60+ kínai modell részletes adatlapja. Felül a márka, alatta a kiválasztott márka modelljei — bármelyikre kattintva a teljes adatlap megnyílik.",
-  alternates: { canonical: `${SITE_URL}/modellek` },
-};
+import { redirect } from "next/navigation";
+import { getModels } from "@/lib/data";
 
-export default function ModelsBrowseRoot() {
-  return (
-    <JsonLd
-      data={breadcrumbSchema([
-        { name: "Főoldal", url: "/" },
-        { name: "Modellek", url: "/modellek" },
-      ])}
-    />
-  );
+export default async function ModelsBrowseRoot() {
+  const models = await getModels();
+
+  if (models.length > 0) {
+    // Day index since epoch → hashed for a pseudo-random (but stable-per-day) pick.
+    const day = Math.floor(Date.now() / 86_400_000);
+    const idx = ((day * 2654435761) >>> 0) % models.length;
+    const m = models[idx];
+    redirect(`/modellek/${m.brand_slug}/${m.slug}`);
+  }
+
+  // No models at all — render nothing meaningful (the layout strip still shows).
+  return null;
 }

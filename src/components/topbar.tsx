@@ -15,7 +15,7 @@ const NAV = [
   { href: "/tudastar", label: "Tudástár" },
 ];
 
-export function Topbar({ lastUpdated }: { lastUpdated: string }) {
+export function Topbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -59,10 +59,6 @@ export function Topbar({ lastUpdated }: { lastUpdated: string }) {
           </nav>
           <div className="topbar-cta">
             <QuoteCartButton />
-            <span className="pill">
-              <span className="live" />
-              Frissítve · {lastUpdated}
-            </span>
             <button
               type="button"
               className="menu-toggle"
@@ -94,16 +90,6 @@ export function Topbar({ lastUpdated }: { lastUpdated: string }) {
             </Link>
           ))}
         </nav>
-        <div
-          style={{
-            padding: "0 18px 24px",
-            color: "var(--ink-mute)",
-            fontSize: 12,
-            fontFamily: "var(--font-mono), monospace",
-          }}
-        >
-          Frissítve · {lastUpdated}
-        </div>
       </div>
     </>
   );

@@ -170,7 +170,12 @@ export function QuotePage({ brands, dealers, models, maxDealersPerBrand }: Props
                   <Users size={15} />
                   {brandDealers.length === 0
                     ? "Nincs kereskedő"
-                    : `Kereskedők kiválasztása (${selectedIds.length}/${maxDealersPerBrand})`}
+                    : selectedIds.length > 0
+                      ? `Kereskedők kiválasztva (${selectedIds.length}/${maxDealersPerBrand})`
+                      : "Válassz kereskedőt"}
+                  {brandDealers.length > 0 && selectedIds.length === 0 && (
+                    <ArrowRight size={15} />
+                  )}
                 </button>
               </header>
 
