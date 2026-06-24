@@ -8,6 +8,7 @@ const ITEMS = [
   { href: "/c4m5s6/statisztikak", label: "📊 Statisztikák" },
   { href: "/c4m5s6/markak", label: "Márkák" },
   { href: "/c4m5s6/modellek", label: "Modellek" },
+  { href: "/c4m5s6/uj-modellek", label: "🔎 Új modellek keresése" },
   { href: "/c4m5s6/kereskedok", label: "Kereskedők" },
   { href: "/c4m5s6/tesztlinkek", label: "🔗 Tesztlinkek" },
   { href: "/c4m5s6/extract", label: "PDF / URL / Kép kinyerés" },

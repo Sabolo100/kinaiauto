@@ -222,6 +222,42 @@ export type TestLinkSearchJob = {
   updated_at: string;
 };
 
+// ─── Model discovery (Új modellek keresése) ──────────────────────────────────
+export type DiscoverySource = {
+  url: string;
+  title: string | null;
+  date: string | null;           // ISO date if known, else null
+  kind: "official" | "news" | "other";
+};
+
+export type DiscoveredModel = {
+  id: string;
+  brand_id: string;
+  name: string;
+  category_guess: string | null;
+  drive_guess: string | null;
+  reason: string | null;
+  sources: DiscoverySource[];
+  confidence: "high" | "medium" | "low";
+  status: "pending" | "dismissed" | "promoted";
+  promoted_model_id: string | null;
+  found_by_job: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ModelDiscoveryJob = {
+  id: string;
+  status: "pending" | "running" | "completed" | "failed";
+  brand_ids: string[];
+  current_brand: string | null;
+  progress: Record<string, { found: number; done: boolean; error?: string }>;
+  total_found: number;
+  error_msg: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Dealer = {
   id: string;
   brand_id: string;

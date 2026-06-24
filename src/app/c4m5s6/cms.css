@@ -906,3 +906,102 @@
   background: rgba(245,158,11,0.15);
   color: #fbbf24;
 }
+.pill.ok { background: #064e3b; color: #6ee7b7; }
+.pill.muted { background: #1f2937; color: #94a3b8; }
+
+/* ─── Új modellek keresése (model discovery) ─────────────────────────────── */
+.mdisc { display: flex; flex-direction: column; gap: 16px; }
+
+.mdisc-provider {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: #94a3b8;
+  padding: 8px 12px; border-radius: 8px;
+  background: #0f172a; border: 1px solid #1e293b;
+}
+.mdisc-provider strong { color: #cbd5e1; }
+.mdisc-provider.warn {
+  color: #fbbf24; border-color: #422006; background: #1c1407;
+  align-items: flex-start; line-height: 1.5;
+}
+.mdisc-provider.warn code {
+  background: #0b1020; border: 1px solid #334155; border-radius: 4px;
+  padding: 0 4px; font-size: 11.5px; color: #fcd34d;
+}
+.mdisc-provider svg { flex-shrink: 0; margin-top: 1px; }
+
+.mdisc-muted { color: #64748b; font-size: 12px; }
+
+.mdisc-launch { padding: 16px 18px; }
+.mdisc-launch-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+}
+.mdisc-launch-head strong { color: #e2e8f0; font-size: 14px; }
+.mdisc-launch-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.mdisc-brand-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.mdisc-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  font-size: 12.5px; font-weight: 500;
+  background: #0b1020; color: #94a3b8;
+  border: 1px solid #334155; transition: all 0.12s ease;
+}
+.mdisc-chip:hover:not(:disabled) { border-color: #475569; color: #cbd5e1; }
+.mdisc-chip.on {
+  background: #1e3a8a; color: #dbeafe; border-color: #2563eb;
+}
+.mdisc-chip:disabled { opacity: 0.55; cursor: default; }
+
+.mdisc-table-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 16px; border-bottom: 1px solid #1e293b;
+  font-size: 13px; font-weight: 600; color: #cbd5e1;
+}
+.mdisc-table-head svg { color: #64748b; }
+
+.mdisc-empty { padding: 36px 24px; text-align: center; color: #64748b; font-size: 13px; line-height: 1.6; }
+
+.mdisc-tbl td { vertical-align: top; }
+.mdisc-guess { font-size: 11.5px; color: #94a3b8; margin-top: 3px; text-transform: capitalize; }
+.mdisc-reason { font-size: 11.5px; color: #818cf8; margin-top: 3px; }
+
+.mdisc-sources { display: flex; flex-direction: column; gap: 4px; }
+.mdisc-src {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; color: #cbd5e1; text-decoration: none;
+  padding: 3px 7px; border-radius: 6px;
+  background: #0b1020; border: 1px solid #1e293b;
+  max-width: 320px;
+}
+.mdisc-src:hover { border-color: #475569; }
+.mdisc-src.official { border-color: #065f46; }
+.mdisc-src.official svg:first-child { color: #34d399; }
+.mdisc-src.news svg:first-child { color: #fbbf24; }
+.mdisc-src-host { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mdisc-src-date { color: #64748b; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.mdisc-src-ext { color: #475569; flex-shrink: 0; }
+
+.mdisc-actions { display: flex; align-items: center; gap: 6px; }
+.mdisc-list-btn { padding: 6px 8px; }
+
+/* Current-models popup */
+.mdisc-modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(2, 6, 23, 0.7);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; backdrop-filter: blur(2px);
+}
+.mdisc-modal {
+  width: 100%; max-width: 420px; max-height: 80vh;
+  display: flex; flex-direction: column;
+  background: #0f172a; border: 1px solid #334155; border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
+}
+.mdisc-modal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-bottom: 1px solid #1e293b; color: #e2e8f0;
+}
+.mdisc-modal-body { padding: 14px 16px; overflow-y: auto; }
+.mdisc-model-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+.mdisc-model-list li { color: #cbd5e1; font-size: 13px; }

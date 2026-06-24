@@ -46,5 +46,12 @@ export const HAS_SERPER = Boolean(SERPER_API_KEY);
 export const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || "";
 export const HAS_YOUTUBE = Boolean(YOUTUBE_API_KEY);
 
+// Perplexity API — web-grounded research (used for "find new models").
+// Server-only secret: do NOT prefix with NEXT_PUBLIC_, so it never reaches the
+// browser. Set it in Vercel → Project → Settings → Environment Variables and in
+// local .env.local. Get a key at: https://www.perplexity.ai/settings/api
+export const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY || "";
+export const HAS_PERPLEXITY = Boolean(PERPLEXITY_API_KEY);
+
 // Google Ads Conversion ID (e.g. AW-XXXXXXXXXX)
 export const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "";
