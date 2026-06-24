@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertTriangle,
@@ -64,13 +64,12 @@ export function ModelDiscoveryPage() {
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [starting, setStarting] = useState(false);
+  const [running, setRunning] = useState(false); // client-driven loop is active
   const [job, setJob] = useState<JobStatus | null>(null);
   const [promoting, setPromoting] = useState<Set<string>>(new Set());
   const [popupBrand, setPopupBrand] = useState<BrandLite | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Load ────────────────────────────────────────────────────────────────────
+  // ── Load everything ───────────────────────────────────────────────────────
   const load = useCallback(async () => {
     try {
       const res = await fetch("/api/cms/model-discovery");
@@ -80,37 +79,21 @@ export function ModelDiscoveryPage() {
       setExistingByBrand(json.existingByBrand ?? {});
       setCandidates(json.candidates ?? []);
       setProvider(json.provider ?? "none");
-      // Default: all brands selected for the next search
       setSelected((prev) => (prev.size === 0 ? new Set(b.map((x) => x.id)) : prev));
-      // Resume polling if a job is still running
-      const lj: JobStatus | null = json.latestJob ?? null;
-      if (lj && (lj.status === "pending" || lj.status === "running")) {
-        setJob(lj);
-        startPolling(lj.id);
-      }
     } catch {}
     setLoading(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
-  // ── Polling ───────────────────────────────────────────────────────────────
-  function startPolling(jobId: string) {
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/cms/model-discovery/search/${jobId}`);
-        const data: JobStatus = await res.json();
-        setJob(data);
-        if (data.status === "completed" || data.status === "failed") {
-          if (pollRef.current) clearInterval(pollRef.current);
-          pollRef.current = null;
-          await load();
-        }
-      } catch {}
-    }, 2500);
+  // Light refresh — only the work table, leaves brand selection untouched.
+  async function refreshCandidates() {
+    try {
+      const res = await fetch("/api/cms/model-discovery");
+      const json = await res.json();
+      setCandidates(json.candidates ?? []);
+      setExistingByBrand(json.existingByBrand ?? {});
+    } catch {}
   }
 
   // ── Brand selection ─────────────────────────────────────────────────────────
@@ -128,37 +111,72 @@ export function ModelDiscoveryPage() {
     else setSelected(new Set(brands.map((b) => b.id)));
   }
 
-  // ── Start search ─────────────────────────────────────────────────────────────
+  // ── Start search — one brand per request, driven from the client ────────────
   async function startSearch() {
-    if (selected.size === 0) return;
-    setStarting(true);
+    if (selected.size === 0 || running) return;
+    const brandIds = Array.from(selected);
+    setRunning(true);
+
+    // 1. Create the job
+    let jobId = "";
     try {
       const res = await fetch("/api/cms/model-discovery/search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brand_ids: Array.from(selected) }),
+        body: JSON.stringify({ brand_ids: brandIds }),
       });
       const json = await res.json();
-      if (json.jobId) {
-        const jobId: string = json.jobId;
-        setJob({
-          id: jobId,
-          status: "pending",
-          current_brand: null,
-          progress: {},
-          total_found: 0,
-          brand_ids: Array.from(selected),
-          error_msg: null,
-        });
-        fetch(`/api/cms/model-discovery/search/${jobId}/run`, {
+      jobId = json.jobId ?? "";
+    } catch {}
+
+    if (!jobId) {
+      setJob({
+        id: "", status: "failed", current_brand: null, progress: {},
+        total_found: 0, brand_ids: brandIds,
+        error_msg: "A keresés indítása nem sikerült (ellenőrizd, hogy lefutott-e a migráció).",
+      });
+      setRunning(false);
+      return;
+    }
+
+    const nameOf = (id: string) => brands.find((b) => b.id === id)?.name ?? "…";
+    const progress: JobStatus["progress"] = {};
+    let total = 0;
+    setJob({
+      id: jobId, status: "running", current_brand: nameOf(brandIds[0]),
+      progress: {}, total_found: 0, brand_ids: brandIds, error_msg: null,
+    });
+
+    // 2. Process each brand sequentially (short requests = no timeouts)
+    for (const bid of brandIds) {
+      setJob((j) => (j ? { ...j, current_brand: nameOf(bid) } : j));
+      try {
+        const res = await fetch(`/api/cms/model-discovery/search/${jobId}/run`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          keepalive: true,
-        }).catch(() => {});
-        startPolling(jobId);
+          body: JSON.stringify({ brandId: bid }),
+        });
+        const data = await res.json();
+        progress[bid] = { found: data.found ?? 0, done: true, error: data.error };
+        total += data.found ?? 0;
+      } catch (e) {
+        progress[bid] = { found: 0, done: true, error: String(e) };
       }
+      setJob((j) => (j ? { ...j, progress: { ...progress }, total_found: total } : j));
+      if ((progress[bid]?.found ?? 0) > 0) await refreshCandidates();
+    }
+
+    // 3. Finalize
+    try {
+      await fetch(`/api/cms/model-discovery/search/${jobId}/run`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ finalize: true }),
+      });
     } catch {}
-    setStarting(false);
+    setJob((j) => (j ? { ...j, status: "completed", current_brand: null } : j));
+    await refreshCandidates();
+    setRunning(false);
   }
 
   // ── Promote / dismiss ─────────────────────────────────────────────────────────
@@ -193,10 +211,11 @@ export function ModelDiscoveryPage() {
   const jobBrandCount = job?.brand_ids?.length ?? 0;
   const doneCount = job ? Object.values(job.progress).filter((p) => p.done).length : 0;
   const pct = jobBrandCount > 0 ? Math.round((doneCount / jobBrandCount) * 100) : 0;
-  const isJobRunning = job && (job.status === "pending" || job.status === "running");
+  const jobActive = job && (job.status === "pending" || job.status === "running");
+  const errorCount = job ? Object.values(job.progress).filter((p) => p.error).length : 0;
 
-  // Candidates grouped by brand for display, brand order from `brands`
-  const byBrandName = (c: Candidate) => c.brand?.name ?? brands.find((b) => b.id === c.brand_id)?.name ?? "—";
+  const byBrandName = (c: Candidate) =>
+    c.brand?.name ?? brands.find((b) => b.id === c.brand_id)?.name ?? "—";
 
   return (
     <div className="mdisc">
@@ -225,17 +244,17 @@ export function ModelDiscoveryPage() {
             <div className="mdisc-muted">Alapból minden aktív márka ki van jelölve.</div>
           </div>
           <div className="mdisc-launch-actions">
-            <button type="button" className="cms-btn ghost" onClick={toggleAll} disabled={!!isJobRunning}>
+            <button type="button" className="cms-btn ghost" onClick={toggleAll} disabled={running}>
               {allSelected ? "Egyik se" : "Mind"}
             </button>
             <button
               type="button"
               className="cms-btn primary"
               onClick={startSearch}
-              disabled={selected.size === 0 || !!isJobRunning || starting || provider === "none"}
+              disabled={selected.size === 0 || running || provider === "none"}
             >
-              {starting || isJobRunning ? <Loader2 size={14} className="tls-spinner" /> : <Search size={14} />}
-              {isJobRunning ? "Keresés folyamatban…" : `Új modellek keresése (${selected.size} márka)`}
+              {running ? <Loader2 size={14} className="tls-spinner" /> : <Search size={14} />}
+              {running ? "Keresés folyamatban…" : `Új modellek keresése (${selected.size} márka)`}
             </button>
           </div>
         </div>
@@ -246,7 +265,7 @@ export function ModelDiscoveryPage() {
               type="button"
               className={`mdisc-chip${selected.has(b.id) ? " on" : ""}`}
               onClick={() => toggleBrand(b.id)}
-              disabled={!!isJobRunning}
+              disabled={running}
             >
               {selected.has(b.id) && <Check size={12} />}
               {b.name}
@@ -259,20 +278,22 @@ export function ModelDiscoveryPage() {
       {job && (
         <div className={`tls-job-banner${job.status === "completed" ? " done" : job.status === "failed" ? " error" : ""}`}>
           <div className="tls-job-top">
-            {isJobRunning ? <Loader2 size={15} className="tls-spinner" /> : job.status === "completed" ? <Check size={15} /> : <X size={15} />}
+            {jobActive ? <Loader2 size={15} className="tls-spinner" /> : job.status === "completed" ? <Check size={15} /> : <X size={15} />}
             <span>
               {job.status === "pending" && "Keresés előkészítése…"}
               {job.status === "running" && (
                 <>Keresés folyamatban — most: <strong>{job.current_brand ?? "…"}</strong> · {doneCount}/{jobBrandCount} márka · {job.total_found} új modell</>
               )}
-              {job.status === "completed" && <>Keresés kész — {job.total_found} új modell a munkatáblában ({jobBrandCount} márka átvizsgálva)</>}
+              {job.status === "completed" && (
+                <>Keresés kész — {job.total_found} új modell a munkatáblában ({jobBrandCount} márka átvizsgálva{errorCount > 0 ? `, ${errorCount} hibával` : ""})</>
+              )}
               {job.status === "failed" && `Hiba: ${job.error_msg ?? "ismeretlen"}`}
             </span>
-            {(job.status === "completed" || job.status === "failed") && (
+            {!running && (job.status === "completed" || job.status === "failed") && (
               <button type="button" className="tls-job-close" onClick={() => setJob(null)}><X size={13} /></button>
             )}
           </div>
-          {isJobRunning && (
+          {jobActive && (
             <div className="tls-job-bar"><div className="tls-job-bar-fill" style={{ width: `${pct}%` }} /></div>
           )}
         </div>
