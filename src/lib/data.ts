@@ -331,6 +331,7 @@ export async function getAllDealers(): Promise<(Dealer & { brand_name: string; b
     const { data, error } = await supabase
       .from("dealers")
       .select("*, contacts:dealer_contacts(*), brand:brands(name,slug)")
+      .eq("is_active", true)
       .order("sort_order");
     if (!error && data) return data as (Dealer & { brand_name: string; brand_slug: string })[];
   }

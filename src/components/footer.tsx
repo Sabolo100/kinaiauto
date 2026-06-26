@@ -87,9 +87,6 @@ export function Footer({ lastUpdated }: { lastUpdated: string }) {
               <li>
                 <Link href="/llms.txt">LLM iránytű (llms.txt)</Link>
               </li>
-              <li>
-                <Link href="/sitemap.xml">Webhelytérkép</Link>
-              </li>
             </ul>
           </div>
         </div>

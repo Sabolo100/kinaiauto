@@ -16,7 +16,6 @@ import {
   Ruler,
   ShoppingBag,
   Tag,
-  Users,
   Zap,
 } from "lucide-react";
 import type {
@@ -98,7 +97,6 @@ const PARAMS: {
   { id: "trunk",    label: "Csomagtartó",  col: "trunk_l",        variantCol: "trunk_l",      icon: <Package size={13} />,         fmt: (v) => `${Math.round(v)} l` },
   { id: "battery",  label: "Akku",         col: "battery_kwh",    variantCol: "battery_kwh",  icon: <BatteryCharging size={13} />, fmt: (v) => (Math.round(v * 10) / 10).toString().replace(".", ",") + " kWh" },
   { id: "power",    label: "Teljesítmény", col: "power_hp",       variantCol: "power_hp",     icon: <Zap size={13} />,             fmt: (v) => `${Math.round(v)} LE` },
-  { id: "seats",    label: "Ülőhelyek",    col: "seats",          variantCol: "seats",        icon: <Users size={13} />,           fmt: (v) => `${Math.round(v)} fő` },
 ];
 
 // A single render entry on the chart. When a model has multiple distinct

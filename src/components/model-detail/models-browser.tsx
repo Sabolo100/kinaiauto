@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Brand, ModelRow } from "@/lib/types";
 import { brandLogoUrl } from "@/lib/data";
@@ -28,10 +28,19 @@ export function ModelsBrowserStrip({
   models: ModelRow[];
 }) {
   const params = useParams() as { brand?: string; model?: string };
+  const router = useRouter();
   const brandFromUrl = (params?.brand as string) ?? null;
   const modelFromUrl = (params?.model as string) ?? null;
 
   const [activeBrand, setActiveBrand] = useState<string | null>(brandFromUrl);
+
+  // Selecting a brand jumps straight to its first model, so the detail view
+  // updates immediately instead of lingering on the previous brand's model.
+  function selectBrand(slug: string) {
+    setActiveBrand(slug);
+    const first = models.find((m) => m.brand_slug === slug);
+    if (first) router.push(`/modellek/${first.brand_slug}/${first.slug}`);
+  }
 
   // Sync when the user navigates directly to a different brand URL
   useEffect(() => {
@@ -78,7 +87,7 @@ export function ModelsBrowserStrip({
                   key={b.id}
                   type="button"
                   className={`brand-tab${activeBrand === b.slug ? " on" : ""}`}
-                  onClick={() => setActiveBrand(b.slug)}
+                  onClick={() => selectBrand(b.slug)}
                 >
                   {tabLogo ? (
                     // eslint-disable-next-line @next/next/no-img-element
