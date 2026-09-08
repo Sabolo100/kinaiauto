@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -24,11 +24,7 @@ export type ImportRow = {
   last_checked_at: string | null;
 };
 
-type ImportBody = {
-  rows: ImportRow[];
-  clear_first?: boolean;
-  dry_run?: boolean;
-};
+type ImportBody = { rows: ImportRow[]; clear_first?: boolean; dry_run?: boolean };
 
 export async function POST(req: NextRequest) {
   let body: ImportBody;
@@ -37,49 +33,30 @@ export async function POST(req: NextRequest) {
   } catch {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
   }
-
   const { rows, clear_first = false, dry_run = false } = body;
-
   if (!Array.isArray(rows) || rows.length === 0) {
     return NextResponse.json({ error: "rows array required" }, { status: 400 });
   }
 
-  const sa = supabaseAdmin();
+  const sql = db();
 
   // Load all brands: slug -> id map
-  const { data: brands, error: brandsErr } = await sa
-    .from("brands")
-    .select("id, slug");
-  if (brandsErr) {
-    return NextResponse.json({ error: brandsErr.message }, { status: 500 });
+  let brands: { id: string; slug: string }[];
+  try {
+    brands = await sql<{ id: string; slug: string }[]>`select id, slug from brands`;
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
-
-  const slugToId = new Map<string, string>(
-    (brands ?? []).map((b: { id: string; slug: string }) => [b.slug, b.id])
-  );
+  const slugToId = new Map(brands.map((b) => [b.slug, b.id]));
 
   // Build resolved rows (one per brand_slug per ImportRow)
   type ResolvedRow = {
-    brand_id: string;
-    brand_slug: string;
-    name: string;
-    city: string;
-    zip_code: string | null;
-    street: string | null;
-    lat: number | null;
-    lng: number | null;
-    email: string | null;
-    phone: string | null;
-    website: string | null;
-    notes: string | null;
-    extra_emails: string[];
-    extra_phones: string[];
-    source_url: string | null;
-    data_quality: string | null;
-    data_source: string | null;
-    last_checked_at: string | null;
-    is_active: boolean;
-    sort_order: number;
+    brand_id: string; brand_slug: string; name: string; city: string;
+    zip_code: string | null; street: string | null; lat: number | null; lng: number | null;
+    email: string | null; phone: string | null; website: string | null; notes: string | null;
+    extra_emails: string[]; extra_phones: string[]; source_url: string | null;
+    data_quality: string | null; data_source: string | null; last_checked_at: string | null;
+    is_active: boolean; sort_order: number;
   };
 
   const resolvedRows: ResolvedRow[] = [];
@@ -95,45 +72,29 @@ export async function POST(req: NextRequest) {
         continue;
       }
       resolvedRows.push({
-        brand_id,
-        brand_slug: slug,
-        name: row.name || "",
-        city: row.city || "",
-        zip_code: row.zip_code || null,
-        street: row.street || null,
-        lat: row.lat,
-        lng: row.lng,
-        email: row.email || null,
-        phone: row.phone || null,
-        website: row.website || null,
-        notes: row.notes || null,
-        extra_emails: row.extra_emails ?? [],
-        extra_phones: row.extra_phones ?? [],
-        source_url: row.source_url || null,
-        data_quality: row.data_quality || null,
-        data_source: row.data_source || null,
-        last_checked_at: row.last_checked_at || null,
-        is_active: true,
-        sort_order: 0,
+        brand_id, brand_slug: slug,
+        name: row.name || "", city: row.city || "",
+        zip_code: row.zip_code || null, street: row.street || null,
+        lat: row.lat, lng: row.lng,
+        email: row.email || null, phone: row.phone || null,
+        website: row.website || null, notes: row.notes || null,
+        extra_emails: row.extra_emails ?? [], extra_phones: row.extra_phones ?? [],
+        source_url: row.source_url || null, data_quality: row.data_quality || null,
+        data_source: row.data_source || null, last_checked_at: row.last_checked_at || null,
+        is_active: true, sort_order: 0,
       });
     }
   }
 
   if (dry_run) {
-    return NextResponse.json({
-      ok: true,
-      dry_run: true,
-      would_insert: resolvedRows.length,
-      skipped,
-      errors,
-      rows: resolvedRows,
-    });
+    return NextResponse.json({ ok: true, dry_run: true, would_insert: resolvedRows.length, skipped, errors, rows: resolvedRows });
   }
 
   if (clear_first) {
-    const { error: delErr } = await sa.from("dealers").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    if (delErr) {
-      return NextResponse.json({ error: `Delete failed: ${delErr.message}` }, { status: 500 });
+    try {
+      await sql`delete from dealers`;
+    } catch (e) {
+      return NextResponse.json({ error: `Delete failed: ${(e as Error).message}` }, { status: 500 });
     }
   }
 
@@ -141,19 +102,18 @@ export async function POST(req: NextRequest) {
   const BATCH = 50;
   let imported = 0;
   for (let i = 0; i < resolvedRows.length; i += BATCH) {
-    const batch = resolvedRows.slice(i, i + BATCH).map(({ brand_slug: _slug, ...rest }) => rest);
-    const { error: insErr } = await sa.from("dealers").insert(batch);
-    if (insErr) {
-      errors.push(`Insert batch ${Math.floor(i / BATCH) + 1} error: ${insErr.message}`);
-    } else {
+    // extra_emails / extra_phones are jsonb → send as JSON text (server infers jsonb);
+    // a raw JS array would be sent as text[] and the insert would fail.
+    const batch = resolvedRows.slice(i, i + BATCH).map(({ brand_slug: _slug, extra_emails, extra_phones, ...rest }) => ({
+      ...rest, extra_emails: JSON.stringify(extra_emails), extra_phones: JSON.stringify(extra_phones),
+    }));
+    try {
+      await sql`insert into dealers ${sql(batch)}`;
       imported += batch.length;
+    } catch (e) {
+      errors.push(`Insert batch ${Math.floor(i / BATCH) + 1} error: ${(e as Error).message}`);
     }
   }
 
-  return NextResponse.json({
-    ok: true,
-    imported,
-    skipped,
-    errors,
-  });
+  return NextResponse.json({ ok: true, imported, skipped, errors });
 }

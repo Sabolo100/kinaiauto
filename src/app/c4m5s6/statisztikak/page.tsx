@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Statisztikák — CMS" };
 export const dynamic = "force-dynamic";
@@ -43,24 +43,18 @@ export default async function StatisztikakPage({
       : "7d";
 
   const since = cutoff(range);
-  const sa = supabaseAdmin();
+  const sql = db();
 
   // ── Quote stats ──────────────────────────────────────────────────────────
-  const qrQuery = sa
-    .from("quote_requests")
-    .select("id, created_at, status");
-  const { data: qrRaw } = since
-    ? await qrQuery.gte("created_at", since)
-    : await qrQuery;
-  const qrRows = qrRaw ?? [];
+  type QR = { id: string; created_at: string; status: string };
+  const qrRows = await (since
+    ? sql<QR[]>`select id, created_at, status from quote_requests where created_at >= ${since}::timestamptz`
+    : sql<QR[]>`select id, created_at, status from quote_requests`);
 
-  const dispQuery = sa
-    .from("quote_request_dispatches")
-    .select("id, success, sent_at, quote_request_id");
-  const { data: dispRaw } = since
-    ? await dispQuery.gte("sent_at", since)
-    : await dispQuery;
-  const dispRows = dispRaw ?? [];
+  type Disp = { id: string; success: boolean; sent_at: string | null; quote_request_id: string };
+  const dispRows = await (since
+    ? sql<Disp[]>`select id, success, sent_at, quote_request_id from quote_request_dispatches where sent_at >= ${since}::timestamptz`
+    : sql<Disp[]>`select id, success, sent_at, quote_request_id from quote_request_dispatches`);
   const sentCount  = dispRows.filter((d) => d.success).length;
   const failCount  = dispRows.filter((d) => !d.success).length;
 
@@ -68,12 +62,11 @@ export default async function StatisztikakPage({
   const qrIds = qrRows.map((q) => q.id as string);
   let quotesByModel: { brand: string; model: string; cnt: number }[] = [];
   if (qrIds.length > 0) {
-    const { data: items } = await sa
-      .from("quote_request_items")
-      .select("brand_name_snapshot, model_name_snapshot")
-      .in("quote_request_id", qrIds);
+    const items = await sql<{ brand_name_snapshot: string; model_name_snapshot: string }[]>`
+      select brand_name_snapshot, model_name_snapshot from quote_request_items
+      where quote_request_id = any(${qrIds})`;
     const byModel: Record<string, { brand: string; model: string; cnt: number }> = {};
-    for (const it of items ?? []) {
+    for (const it of items) {
       const key = `${it.brand_name_snapshot}||${it.model_name_snapshot}`;
       if (!byModel[key]) byModel[key] = { brand: it.brand_name_snapshot, model: it.model_name_snapshot, cnt: 0 };
       byModel[key].cnt++;
@@ -83,11 +76,10 @@ export default async function StatisztikakPage({
   const maxQuoteCnt = quotesByModel[0]?.cnt ?? 1;
 
   // ── Site events ───────────────────────────────────────────────────────────
-  const evQuery = sa.from("site_events").select("type, model_slug, param, val");
-  const { data: evRaw } = since
-    ? await evQuery.gte("ts", since)
-    : await evQuery;
-  const events = evRaw ?? [];
+  type Ev = { type: string; model_slug: string | null; param: string | null; val: string | null };
+  const events = await (since
+    ? sql<Ev[]>`select type, model_slug, param, val from site_events where ts >= ${since}::timestamptz`
+    : sql<Ev[]>`select type, model_slug, param, val from site_events`);
 
   // Model views
   const viewCounts: Record<string, number> = {};

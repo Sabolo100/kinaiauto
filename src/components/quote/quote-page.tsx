@@ -6,7 +6,7 @@ import { ShoppingBag, Users, X, ArrowRight } from "lucide-react";
 import type { Brand, Dealer, ModelRow } from "@/lib/types";
 import { useQuoteCart } from "@/components/quote-context";
 import { ModelCard } from "@/components/model-card";
-import { brandLogoUrl } from "@/lib/data";
+import { brandLogoUrl } from "@/lib/media-urls";
 import { DealerPicker } from "./dealer-picker";
 import { ContactModal } from "./contact-modal";
 import "./quote.css";

@@ -1,13 +1,11 @@
 export const dynamic = "force-dynamic";
 import { CmsShell } from "@/components/cms/cms-shell";
 import { DealerForm } from "@/components/cms/dealer-form";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 import { HAS_ANTHROPIC, HAS_OPENAI } from "@/lib/env";
 
 async function getBrands() {
-  const sa = supabaseAdmin();
-  const { data } = await sa.from("brands").select("id, name").eq("is_active", true).order("name");
-  return (data ?? []) as { id: string; name: string }[];
+  return db()<{ id: string; name: string }[]>`select id, name from brands where is_active = true order by name`;
 }
 
 export default async function NewDealerPage() {

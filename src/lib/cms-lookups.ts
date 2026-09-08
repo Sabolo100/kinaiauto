@@ -1,16 +1,12 @@
 import "server-only";
-import { supabaseAdmin } from "./supabase-admin";
+import { db } from "./db";
 
 export async function getLookups() {
-  const sa = supabaseAdmin();
+  const sql = db();
   const [brands, categories, drives] = await Promise.all([
-    sa.from("brands").select("id, name").order("sort_order", { ascending: true }),
-    sa.from("categories").select("id, slug, label_hu").order("sort_order", { ascending: true }),
-    sa.from("drives").select("id, label_hu").order("sort_order", { ascending: true }),
+    sql<{ id: string; name: string }[]>`select id, name from brands order by sort_order asc`,
+    sql<{ id: number; slug: string; label_hu: string }[]>`select id, slug, label_hu from categories order by sort_order asc`,
+    sql<{ id: number; label_hu: string }[]>`select id, label_hu from drives order by sort_order asc`,
   ]);
-  return {
-    brands: (brands.data ?? []) as { id: string; name: string }[],
-    categories: (categories.data ?? []) as { id: number; slug: string; label_hu: string }[],
-    drives: (drives.data ?? []) as { id: number; label_hu: string }[],
-  };
+  return { brands, categories, drives };
 }

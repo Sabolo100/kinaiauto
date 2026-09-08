@@ -2,46 +2,41 @@
 // Returns the work table: pending candidates, the brands that can be searched,
 // each brand's current live models (for the per-row popup), and the latest job.
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 import { DISCOVERY_PROVIDER } from "@/lib/model-discovery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const sa = supabaseAdmin();
+  try {
+    const sql = db();
+    const [candidates, brands, models, [latestJob]] = await Promise.all([
+      sql`
+        select c.*, json_build_object('id', b.id, 'name', b.name, 'slug', b.slug) as brand
+        from discovered_models c
+        left join brands b on b.id = c.brand_id
+        where c.status = 'pending'
+        order by c.created_at desc`,
+      sql`select id, name, slug, importer_site, is_active, sort_order from brands
+          where is_active = true order by sort_order`,
+      sql<{ id: string; name: string; slug: string; brand_id: string }[]>`
+        select id, name, slug, brand_id from models order by name`,
+      sql`select * from model_discovery_jobs order by created_at desc limit 1`,
+    ]);
 
-  const [candidatesRes, brandsRes, modelsRes, jobRes] = await Promise.all([
-    sa
-      .from("discovered_models")
-      .select("*, brand:brands(id,name,slug)")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false }),
-    sa
-      .from("brands")
-      .select("id,name,slug,importer_site,is_active,sort_order")
-      .eq("is_active", true)
-      .order("sort_order"),
-    sa.from("models").select("id,name,slug,brand_id").order("name"),
-    sa
-      .from("model_discovery_jobs")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+    // Group existing live models by brand for the popup list.
+    const existingByBrand: Record<string, { id: string; name: string; slug: string }[]> = {};
+    for (const m of models) {
+      (existingByBrand[m.brand_id] ??= []).push({ id: m.id, name: m.name, slug: m.slug });
+    }
 
-  // Group existing live models by brand for the popup list.
-  const existingByBrand: Record<string, { id: string; name: string; slug: string }[]> = {};
-  for (const m of (modelsRes.data ?? []) as { id: string; name: string; slug: string; brand_id: string }[]) {
-    (existingByBrand[m.brand_id] ??= []).push({ id: m.id, name: m.name, slug: m.slug });
+    return NextResponse.json({
+      candidates, brands, existingByBrand,
+      latestJob: latestJob ?? null,
+      provider: DISCOVERY_PROVIDER,
+    });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
-
-  return NextResponse.json({
-    candidates: candidatesRes.data ?? [],
-    brands: brandsRes.data ?? [],
-    existingByBrand,
-    latestJob: jobRes.data ?? null,
-    provider: DISCOVERY_PROVIDER,
-  });
 }

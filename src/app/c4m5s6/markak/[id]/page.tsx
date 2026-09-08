@@ -1,30 +1,24 @@
 import { notFound } from "next/navigation";
 import { CmsShell } from "@/components/cms/cms-shell";
 import { BrandForm } from "@/components/cms/brand-form";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
+import type { Brand } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditBrandPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const sa = supabaseAdmin();
-  const [b, logo] = await Promise.all([
-    sa.from("brands").select("*").eq("id", id).single(),
-    sa
-      .from("brand_logos")
-      .select("storage_path")
-      .eq("brand_id", id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
-  if (b.error || !b.data) return notFound();
+type BrandDbRow = Brand & { archived_at: string | null };
 
-  const r = b.data;
+export default async function EditBrandPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const sql = db();
+  const [[r], [logo]] = await Promise.all([
+    sql<BrandDbRow[]>`select * from brands where id = ${id}`,
+    sql<{ storage_path: string }[]>`
+      select storage_path from brand_logos where brand_id = ${id}
+      order by created_at desc limit 1`,
+  ]);
+  if (!r) return notFound();
+
   return (
     <CmsShell>
       <h1>{r.name}</h1>
@@ -50,7 +44,7 @@ export default async function EditBrandPage({
           sort_order: r.sort_order ?? 0,
           is_active: r.is_active ?? true,
           archived_at: r.archived_at ?? null,
-          logo_path: logo.data?.storage_path ?? null,
+          logo_path: logo?.storage_path ?? null,
         }}
       />
     </CmsShell>

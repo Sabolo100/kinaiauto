@@ -1,120 +1,80 @@
 // POST /api/cms/test-links/search/[jobId]/run
-// Runs the actual search job. Called fire-and-forget from the /search route.
-// Has a long maxDuration so it can process many models.
+// Runs the actual search job. Called fire-and-forget from the client.
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 import { searchTestLinksVerified } from "@/lib/test-link-search";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes max on Vercel Pro; 60s on Hobby
 
-export async function POST(
-  _req: NextRequest,
-  ctx: { params: Promise<{ jobId: string }> },
-) {
+type Progress = Record<string, { found: number; done: boolean; error?: string }>;
+
+export async function POST(_req: NextRequest, ctx: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await ctx.params;
-  const sa = supabaseAdmin();
+  const sql = db();
 
-  // Fetch the job
-  const { data: jobRow } = await sa
-    .from("test_link_search_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .single();
-
+  const [jobRow] = await sql<{ status: string; model_ids: string[] }[]>`
+    select status, model_ids from test_link_search_jobs where id = ${jobId}`;
   if (!jobRow || jobRow.status === "completed" || jobRow.status === "running") {
     return NextResponse.json({ ok: true, skipped: true });
   }
+  const modelIds = jobRow.model_ids ?? [];
 
-  const modelIds = jobRow.model_ids as string[];
+  // Model info with brand name (embed shape: brand{name})
+  const models = await sql<{ id: string; name: string; brand: { name: string } | null }[]>`
+    select m.id, m.name, case when b.id is null then null else json_build_object('name', b.name) end as brand
+    from models m left join brands b on b.id = m.brand_id
+    where m.id = any(${modelIds})`;
 
-  // Fetch model info
-  const { data: models } = await sa
-    .from("models")
-    .select("id, name, brand:brands(name)")
-    .in("id", modelIds);
-
-  if (!models?.length) {
-    await sa.from("test_link_search_jobs")
-      .update({ status: "completed", updated_at: new Date().toISOString() })
-      .eq("id", jobId);
+  if (models.length === 0) {
+    await sql`update test_link_search_jobs set status = 'completed', updated_at = now() where id = ${jobId}`;
     return NextResponse.json({ ok: true });
   }
 
-  // Mark running
-  await sa.from("test_link_search_jobs")
-    .update({ status: "running", updated_at: new Date().toISOString() })
-    .eq("id", jobId);
+  await sql`update test_link_search_jobs set status = 'running', updated_at = now() where id = ${jobId}`;
 
-  const progress: Record<string, { found: number; done: boolean; error?: string }> = {};
+  const progress: Progress = {};
   let totalFound = 0;
 
   for (const model of models) {
-    const brandName = (model.brand as unknown as { name: string } | null)?.name ?? "";
-    const modelName = model.name as string;
-    const modelId = model.id as string;
-    const label = `${brandName} ${modelName}`.trim();
+    const brandName = model.brand?.name ?? "";
+    const label = `${brandName} ${model.name}`.trim();
 
-    // Update progress: which model we're on now
-    await sa.from("test_link_search_jobs")
-      .update({
-        current_model: label,
-        progress,
-        total_found: totalFound,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", jobId);
+    await sql`update test_link_search_jobs
+      set current_model = ${label}, progress = ${JSON.stringify(progress)}::jsonb,
+          total_found = ${totalFound}, updated_at = now()
+      where id = ${jobId}`;
 
-    progress[modelId] = { found: 0, done: false };
+    progress[model.id] = { found: 0, done: false };
 
     try {
       // Search + AI-verify: only confirmed-relevant links come back
-      const verifiedLinks = await searchTestLinksVerified(brandName, modelName);
+      const verifiedLinks = await searchTestLinksVerified(brandName, model.name);
 
       // Deduplicate against already-existing links for this model
-      const { data: existing } = await sa
-        .from("model_test_links")
-        .select("url")
-        .eq("model_id", modelId);
-      const existingUrls = new Set((existing ?? []).map((e) => e.url as string));
+      const existing = await sql<{ url: string }[]>`select url from model_test_links where model_id = ${model.id}`;
+      const existingUrls = new Set(existing.map((e) => e.url));
       const toInsert = verifiedLinks.filter((l) => !existingUrls.has(l.url));
 
       if (toInsert.length > 0) {
-        await sa.from("model_test_links").insert(
+        await sql`insert into model_test_links ${sql(
           toInsert.map((l) => ({
-            model_id: modelId,
-            url: l.url,
-            title: l.title || null,
-            source_name: l.source_name,
-            kind: l.kind,
-            is_approved: false,
-            found_by: "auto",
-            ai_ok: true,
-            ai_summary: l.ai_summary || null,
+            model_id: model.id, url: l.url, title: l.title || null, source_name: l.source_name,
+            kind: l.kind, is_approved: false, found_by: "auto", ai_ok: true, ai_summary: l.ai_summary || null,
           })),
-        );
+        )}`;
       }
-
-      progress[modelId] = { found: toInsert.length, done: true };
+      progress[model.id] = { found: toInsert.length, done: true };
       totalFound += toInsert.length;
-
     } catch (e) {
-      progress[modelId] = { found: 0, done: true, error: String(e) };
+      progress[model.id] = { found: 0, done: true, error: String(e) };
     }
-
     await new Promise((r) => setTimeout(r, 400));
   }
 
-  // Done
-  await sa.from("test_link_search_jobs")
-    .update({
-      status: "completed",
-      current_model: null,
-      progress,
-      total_found: totalFound,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", jobId);
-
+  await sql`update test_link_search_jobs
+    set status = 'completed', current_model = null, progress = ${JSON.stringify(progress)}::jsonb,
+        total_found = ${totalFound}, updated_at = now()
+    where id = ${jobId}`;
   return NextResponse.json({ ok: true, total_found: totalFound });
 }

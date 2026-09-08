@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Plus, X } from "lucide-react";
 import type { ModelRow } from "@/lib/types";
 import { fmtPrice, parseCompareTokens } from "@/lib/format";
-import { photoUrl } from "@/lib/data";
+import { photoUrl } from "@/lib/media-urls";
 import "./compare.css";
 
 // Variant-specific fields — when a variant is selected, these come from the

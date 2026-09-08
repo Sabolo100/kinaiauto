@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ModelRow } from "@/lib/types";
 import { fmtUnit, brandInitials } from "@/lib/format";
-import { photoUrl } from "@/lib/data";
+import { photoUrl } from "@/lib/media-urls";
 
 type Key =
   | "priceMin"

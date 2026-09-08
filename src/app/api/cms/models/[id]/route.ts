@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db, updateById } from "@/lib/db";
 import { syncEngineOptions, type EngineOptionInput } from "../engine-options";
 
 export const runtime = "nodejs";
@@ -29,33 +29,24 @@ export async function PATCH(
   const { id } = await ctx.params;
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "invalid body" }, { status: 400 });
-  const sa = supabaseAdmin();
 
   const picked = pick(body);
   // Skip the model-row update if the request only carries auxiliary keys
   // (e.g. engine_options only) and no model column changes.
   let data: Record<string, unknown> | null = null;
   if (Object.keys(picked).length > 0) {
-    const res = await sa
-      .from("models")
-      .update(picked)
-      .eq("id", id)
-      .select("*")
-      .single();
-    if (res.error) return NextResponse.json({ error: res.error.message }, { status: 500 });
-    data = res.data as Record<string, unknown>;
+    try {
+      data = await updateById("models", id, picked);
+      if (!data) return NextResponse.json({ error: "modell nem található" }, { status: 404 });
+    } catch (e) {
+      return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    }
   }
 
   // Engine options sync (optional)
   if (Array.isArray(body.engine_options)) {
-    const syncErr = await syncEngineOptions(
-      sa,
-      id,
-      body.engine_options as EngineOptionInput[],
-    );
-    if (syncErr) {
-      return NextResponse.json({ error: syncErr }, { status: 500 });
-    }
+    const syncErr = await syncEngineOptions(id, body.engine_options as EngineOptionInput[]);
+    if (syncErr) return NextResponse.json({ error: syncErr }, { status: 500 });
   }
 
   return NextResponse.json(data ?? { id });
@@ -66,11 +57,11 @@ export async function DELETE(
   ctx: { params: Promise<{ id: string }> },
 ) {
   const { id } = await ctx.params;
-  const sa = supabaseAdmin();
-  const { error } = await sa
-    .from("models")
-    .update({ archived_at: new Date().toISOString() })
-    .eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true });
+  try {
+    // Soft-delete via archive
+    await db()`update models set archived_at = now() where id = ${id}`;
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
 }

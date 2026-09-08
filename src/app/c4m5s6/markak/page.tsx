@@ -1,17 +1,12 @@
 import Link from "next/link";
 import { CmsShell } from "@/components/cms/cms-shell";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 import { BrandsTable, type BrandRow } from "@/components/cms/brands-table";
 
 export const dynamic = "force-dynamic";
 
 async function getBrands(): Promise<BrandRow[]> {
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("brands")
-    .select("id, slug, name, is_active, archived_at, sort_order");
-  if (error) throw error;
-  return (data ?? []) as BrandRow[];
+  return db()<BrandRow[]>`select id, slug, name, is_active, archived_at, sort_order from brands`;
 }
 
 export default async function BrandsListPage() {

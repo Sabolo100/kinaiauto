@@ -1,15 +1,15 @@
 // Data access layer. All page-facing fetches go through these helpers so the
-// pages don't care whether data comes from Supabase or the local seed fallback.
+// pages don't care whether data comes from Postgres or the local seed fallback.
 //
-// • If env vars are set, queries hit the v_models / brands / etc. views.
+// • If DATABASE_URL is set, queries hit the tables / v_models view over the
+//   read-only connection (dbRo).
 // • Otherwise we serve the local seed dataset (handy for local preview).
 //
 // All return values strictly conform to the SQL column shapes (snake_case),
 // so the components can be authored against one schema.
 
 import { cache } from "react";
-import { supabase } from "./supabase";
-import { HAS_SUPABASE } from "./env";
+import { dbRo, HAS_DB } from "./db";
 import {
   BRANDS as SEED_BRANDS,
   CATEGORIES as SEED_CATS,
@@ -32,39 +32,40 @@ import type {
   PriceBand,
 } from "./types";
 
+// Client-safe URL helpers live in media-urls.ts; re-exported here so existing
+// SERVER imports keep working. Client components import media-urls directly.
+export { photoUrl, brandLogoUrl } from "./media-urls";
+
 // -----------------------------------------------------------------------------
 // Lookups
 // -----------------------------------------------------------------------------
 
 export async function getCategories(): Promise<Category[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("categories")
-      .select("id, slug, label_hu, sort_order")
-      .order("sort_order");
-    if (!error && data) return data as Category[];
+  if (HAS_DB) {
+    try {
+      return await dbRo()<Category[]>`
+        select id, slug, label_hu, sort_order from categories order by sort_order`;
+    } catch {}
   }
   return [...SEED_CATS].sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export async function getDrives(): Promise<Drive[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("drives")
-      .select("id, label_hu, sort_order")
-      .order("sort_order");
-    if (!error && data) return data as Drive[];
+  if (HAS_DB) {
+    try {
+      return await dbRo()<Drive[]>`
+        select id, slug, label_hu, short_code, sort_order from drives order by sort_order`;
+    } catch {}
   }
   return [...SEED_DRIVES].sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export async function getPriceBands(): Promise<PriceBand[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("price_bands")
-      .select("id, min_m_ft, max_m_ft, label_hu, sort_order")
-      .order("sort_order");
-    if (!error && data) return data as PriceBand[];
+  if (HAS_DB) {
+    try {
+      return await dbRo()<PriceBand[]>`
+        select id, min_m_ft, max_m_ft, label_hu, sort_order from price_bands order by sort_order`;
+    } catch {}
   }
   return [...SEED_BANDS].sort((a, b) => a.sort_order - b.sort_order);
 }
@@ -74,40 +75,29 @@ export async function getPriceBands(): Promise<PriceBand[]> {
 // -----------------------------------------------------------------------------
 
 async function fetchBrandLogoMap(): Promise<Record<string, string>> {
-  if (!HAS_SUPABASE || !supabase) return {};
-  const { data, error } = await supabase
-    .from("brand_logos")
-    .select("brand_id, storage_path")
-    .eq("variant", "primary");
-  if (error || !data) return {};
-  const map: Record<string, string> = {};
-  for (const r of data as { brand_id: string; storage_path: string }[]) {
-    if (!map[r.brand_id]) map[r.brand_id] = r.storage_path;
+  if (!HAS_DB) return {};
+  try {
+    const rows = await dbRo()<{ brand_id: string; storage_path: string }[]>`
+      select brand_id, storage_path from brand_logos where variant = 'primary'`;
+    const map: Record<string, string> = {};
+    for (const r of rows) if (!map[r.brand_id]) map[r.brand_id] = r.storage_path;
+    return map;
+  } catch {
+    return {};
   }
-  return map;
 }
 
 export async function getBrands(): Promise<Brand[]> {
-  if (HAS_SUPABASE && supabase) {
-    const [brandsRes, logoMap] = await Promise.all([
-      supabase.from("brands").select("*").eq("is_active", true).order("sort_order"),
-      fetchBrandLogoMap(),
-    ]);
-    if (!brandsRes.error && brandsRes.data) {
-      return (brandsRes.data as Brand[]).map((b) => ({
-        ...b,
-        logo_path: logoMap[b.id] ?? null,
-      }));
-    }
+  if (HAS_DB) {
+    try {
+      const [brands, logoMap] = await Promise.all([
+        dbRo()<Brand[]>`select * from brands where is_active order by sort_order`,
+        fetchBrandLogoMap(),
+      ]);
+      return brands.map((b) => ({ ...b, logo_path: logoMap[b.id] ?? null }));
+    } catch {}
   }
   return [...SEED_BRANDS].sort((a, b) => a.sort_order - b.sort_order);
-}
-
-export function brandLogoUrl(storagePath: string | null | undefined): string | null {
-  if (!storagePath) return null;
-  if (storagePath.startsWith("http")) return storagePath;
-  if (!STORAGE_PUBLIC_BASE) return null;
-  return `${STORAGE_PUBLIC_BASE}/brand-logos/${storagePath}`;
 }
 
 export async function getBrandBySlug(slug: string): Promise<Brand | null> {
@@ -120,19 +110,15 @@ export async function getBrandBySlug(slug: string): Promise<Brand | null> {
 // -----------------------------------------------------------------------------
 
 export async function getModels(): Promise<ModelRow[]> {
-  if (HAS_SUPABASE && supabase) {
-    // Archived models are filtered at the database level by the `v_models`
-    // view (WHERE m.archived_at IS NULL). The view doesn't expose archived_at
-    // as a column, so we must NOT add `.is("archived_at", null)` here — doing
-    // so makes the query fail and falls back to SEED_MODELS (no photos).
-    const [modelsRes, options] = await Promise.all([
-      supabase.from("v_models").select("*"),
-      getAllEngineOptions(),
-    ]);
-    if (!modelsRes.error && modelsRes.data) {
-      const rows = modelsRes.data as ModelRow[];
+  if (HAS_DB) {
+    try {
+      // Archived models are filtered by the v_models view (archived_at is null).
+      const [rows, options] = await Promise.all([
+        dbRo()<ModelRow[]>`select * from v_models`,
+        getAllEngineOptions(),
+      ]);
       return attachEngineOptions(rows, options);
-    }
+    } catch {}
   }
   return SEED_MODELS;
 }
@@ -142,11 +128,7 @@ export async function getModelByBrandAndSlug(
   modelSlug: string,
 ): Promise<ModelRow | null> {
   const all = await getModels();
-  return (
-    all.find(
-      (m) => m.brand_slug === brandSlug && m.slug === modelSlug,
-    ) ?? null
-  );
+  return all.find((m) => m.brand_slug === brandSlug && m.slug === modelSlug) ?? null;
 }
 
 // Match by display name (used when the UI passes "Brand·Model Name").
@@ -155,76 +137,55 @@ export async function getModelByBrandAndName(
   modelName: string,
 ): Promise<ModelRow | null> {
   const all = await getModels();
-  return (
-    all.find(
-      (m) => m.brand_name === brandName && m.name === modelName,
-    ) ?? null
-  );
+  return all.find((m) => m.brand_name === brandName && m.name === modelName) ?? null;
 }
 
 // -----------------------------------------------------------------------------
 // Engine options (model variants)
 // -----------------------------------------------------------------------------
 
-export async function getEngineOptionsForModel(
-  modelId: string,
-): Promise<ModelEngineOption[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("model_engine_options")
-      .select("*")
-      .eq("model_id", modelId)
-      .order("sort_order");
-    if (!error && data) return data as ModelEngineOption[];
+export async function getEngineOptionsForModel(modelId: string): Promise<ModelEngineOption[]> {
+  if (HAS_DB) {
+    try {
+      return await dbRo()<ModelEngineOption[]>`
+        select * from model_engine_options where model_id = ${modelId} order by sort_order`;
+    } catch {}
   }
   return [];
 }
 
 export async function getAllEngineOptions(): Promise<ModelEngineOption[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("model_engine_options")
-      .select("*")
-      .order("model_id")
-      .order("sort_order");
-    if (!error && data) return data as ModelEngineOption[];
+  if (HAS_DB) {
+    try {
+      return await dbRo()<ModelEngineOption[]>`
+        select * from model_engine_options order by model_id, sort_order`;
+    } catch {}
   }
   return [];
 }
 
 // Group engine options by model_id and attach them to each ModelRow.
 // Models without options get an empty array.
-export function attachEngineOptions(
-  models: ModelRow[],
-  options: ModelEngineOption[],
-): ModelRow[] {
+export function attachEngineOptions(models: ModelRow[], options: ModelEngineOption[]): ModelRow[] {
   const byModel = new Map<string, ModelEngineOption[]>();
   for (const o of options) {
     const arr = byModel.get(o.model_id) ?? [];
     arr.push(o);
     byModel.set(o.model_id, arr);
   }
-  return models.map((m) => ({
-    ...m,
-    engine_options: byModel.get(m.id) ?? [],
-  }));
+  return models.map((m) => ({ ...m, engine_options: byModel.get(m.id) ?? [] }));
 }
 
 export async function getTrimsForModel(modelId: string): Promise<ModelTrim[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("model_trims")
-      .select("*")
-      .eq("model_id", modelId)
-      .order("sort_order");
-    if (!error && data) {
-      return (data as ModelTrim[]).map((t) => ({
+  if (HAS_DB) {
+    try {
+      const rows = await dbRo()<ModelTrim[]>`
+        select * from model_trims where model_id = ${modelId} order by sort_order`;
+      return rows.map((t) => ({
         ...t,
-        features: Array.isArray(t.features)
-          ? (t.features as string[])
-          : [],
+        features: Array.isArray(t.features) ? (t.features as string[]) : [],
       }));
-    }
+    } catch {}
   }
   // Seed fallback
   const all = await getModels();
@@ -238,16 +199,15 @@ export async function getTrimsForModel(modelId: string): Promise<ModelTrim[]> {
 // -----------------------------------------------------------------------------
 
 export async function getDataLastUpdated(): Promise<string> {
-  if (HAS_SUPABASE && supabase) {
-    const { data } = await supabase.from("v_data_freshness").select("*").single();
-    if (data?.last_updated_at) return formatDate(data.last_updated_at);
+  if (HAS_DB) {
+    try {
+      const [row] = await dbRo()<{ last_updated_at: string | null }[]>`
+        select last_updated_at from v_data_freshness limit 1`;
+      if (row?.last_updated_at) return formatDate(String(row.last_updated_at));
+    } catch {}
   }
   // Newest data_updated_at in seed
-  const newest = SEED_MODELS
-    .map((m) => m.data_updated_at)
-    .filter(Boolean)
-    .sort()
-    .at(-1);
+  const newest = SEED_MODELS.map((m) => m.data_updated_at).filter(Boolean).sort().at(-1);
   return formatDate(newest ?? "2026-05-04");
 }
 
@@ -269,85 +229,79 @@ export async function getArticleIndex() {
 // Photos
 // -----------------------------------------------------------------------------
 
+const PHOTO_COLS = "id, model_id, storage_path, is_primary, kind, sort_order";
+
 export async function getPhotosForModel(modelId: string): Promise<ModelPhoto[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("model_photos")
-      .select("id, model_id, storage_path, is_primary, kind, sort_order")
-      .eq("model_id", modelId)
-      .order("sort_order");
-    if (!error && data) return data as ModelPhoto[];
+  if (HAS_DB) {
+    try {
+      return await dbRo()<ModelPhoto[]>`
+        select ${dbRo().unsafe(PHOTO_COLS)} from model_photos
+        where model_id = ${modelId} order by sort_order`;
+    } catch {}
   }
   return [];
 }
 
-export async function getPhotoMapForModels(
-  modelIds: string[],
-): Promise<Record<string, ModelPhoto[]>> {
-  if (modelIds.length === 0 || !HAS_SUPABASE || !supabase) return {};
-  const { data, error } = await supabase
-    .from("model_photos")
-    .select("id, model_id, storage_path, is_primary, kind, sort_order")
-    .in("model_id", modelIds)
-    .order("sort_order");
-  if (error || !data) return {};
-  const map: Record<string, ModelPhoto[]> = {};
-  for (const p of data as ModelPhoto[]) {
-    (map[p.model_id] ??= []).push(p);
+export async function getPhotoMapForModels(modelIds: string[]): Promise<Record<string, ModelPhoto[]>> {
+  if (modelIds.length === 0 || !HAS_DB) return {};
+  try {
+    const rows = await dbRo()<ModelPhoto[]>`
+      select ${dbRo().unsafe(PHOTO_COLS)} from model_photos
+      where model_id = any(${modelIds}) order by sort_order`;
+    const map: Record<string, ModelPhoto[]> = {};
+    for (const p of rows) (map[p.model_id] ??= []).push(p);
+    return map;
+  } catch {
+    return {};
   }
-  return map;
 }
-
-// -----------------------------------------------------------------------------
-// Photo URL helper
-// -----------------------------------------------------------------------------
-
-import { STORAGE_PUBLIC_BASE } from "./env";
 
 // -----------------------------------------------------------------------------
 // Dealers
 // -----------------------------------------------------------------------------
 
+// dealer_contacts embedded as a JSON array, sorted, '[]' when none —
+// same shape the PostgREST `contacts:dealer_contacts(*)` embed produced.
+const DEALER_SELECT = `
+  d.*,
+  coalesce(
+    (select json_agg(c order by c.sort_order)
+       from dealer_contacts c where c.dealer_id = d.id),
+    '[]'::json) as contacts`;
+
 export async function getDealersForBrand(brandId: string): Promise<Dealer[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("dealers")
-      .select("*, contacts:dealer_contacts(*)")
-      .eq("brand_id", brandId)
-      .eq("is_active", true)
-      .order("sort_order");
-    if (!error && data) {
-      return (data as Dealer[]).map((d) => ({
+  if (HAS_DB) {
+    try {
+      const rows = await dbRo()<Dealer[]>`
+        select ${dbRo().unsafe(DEALER_SELECT)}
+        from dealers d
+        where d.brand_id = ${brandId} and d.is_active
+        order by d.sort_order`;
+      return rows.map((d) => ({
         ...d,
         contacts: (d.contacts ?? []).sort((a: DealerContact, b: DealerContact) => a.sort_order - b.sort_order),
       }));
-    }
+    } catch {}
   }
   return [];
 }
 
 export async function getAllDealers(): Promise<(Dealer & { brand_name: string; brand_slug: string })[]> {
-  if (HAS_SUPABASE && supabase) {
-    const { data, error } = await supabase
-      .from("dealers")
-      .select("*, contacts:dealer_contacts(*), brand:brands(name,slug)")
-      .eq("is_active", true)
-      .order("sort_order");
-    if (!error && data) return data as (Dealer & { brand_name: string; brand_slug: string })[];
+  if (HAS_DB) {
+    try {
+      // Also expose the nested `brand` object the old embed returned, plus flat
+      // brand_name/brand_slug to match the declared return type.
+      return await dbRo()<(Dealer & { brand_name: string; brand_slug: string })[]>`
+        select ${dbRo().unsafe(DEALER_SELECT)},
+          b.name as brand_name, b.slug as brand_slug,
+          json_build_object('name', b.name, 'slug', b.slug) as brand
+        from dealers d
+        join brands b on b.id = d.brand_id
+        where d.is_active
+        order by d.sort_order`;
+    } catch {}
   }
   return [];
-}
-
-export function photoUrl(storagePath: string | null | undefined): string | null {
-  if (!storagePath) return null;
-  if (storagePath.startsWith("http")) return storagePath;
-  // Special case: the seed Tiggo photo lives at /public/assets in dev.
-  if (storagePath === "models/tiggo-8/hero.avif") {
-    if (!HAS_SUPABASE) return "/assets/tiggo8-green.avif";
-    return `${STORAGE_PUBLIC_BASE}/car-photos/${storagePath}`;
-  }
-  if (!HAS_SUPABASE) return null;
-  return `${STORAGE_PUBLIC_BASE}/car-photos/${storagePath}`;
 }
 
 // -----------------------------------------------------------------------------

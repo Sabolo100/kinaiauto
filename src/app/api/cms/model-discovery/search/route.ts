@@ -1,39 +1,32 @@
 // POST /api/cms/model-discovery/search
 // Creates a discovery job (which brands to research) and returns the jobId.
-// The client then fire-and-forget triggers /run.
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
-  const sa = supabaseAdmin();
+  const sql = db();
 
   // brand_ids optional — empty/missing means "all active brands".
   let brandIds: string[] = Array.isArray(body?.brand_ids) ? body.brand_ids : [];
   if (brandIds.length === 0) {
-    const { data } = await sa
-      .from("brands")
-      .select("id")
-      .eq("is_active", true)
-      .order("sort_order");
-    brandIds = (data ?? []).map((b) => b.id as string);
+    const rows = await sql<{ id: string }[]>`select id from brands where is_active = true order by sort_order`;
+    brandIds = rows.map((b) => b.id);
   }
-
   if (brandIds.length === 0) {
     return NextResponse.json({ error: "nincs kereshető márka" }, { status: 400 });
   }
 
-  const { data: job, error } = await sa
-    .from("model_discovery_jobs")
-    .insert({ status: "pending", brand_ids: brandIds, progress: {}, total_found: 0 })
-    .select()
-    .single();
-
-  if (error || !job) {
-    return NextResponse.json({ error: error?.message ?? "failed to create job" }, { status: 500 });
+  try {
+    // brand_ids is jsonb → stringify + cast (a bare JS array would become text[]).
+    const [job] = await sql<{ id: string }[]>`
+      insert into model_discovery_jobs (status, brand_ids, progress, total_found)
+      values ('pending', ${JSON.stringify(brandIds)}::jsonb, '{}'::jsonb, 0)
+      returning id`;
+    return NextResponse.json({ jobId: job.id });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message ?? "failed to create job" }, { status: 500 });
   }
-
-  return NextResponse.json({ jobId: job.id });
 }

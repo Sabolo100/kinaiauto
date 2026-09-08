@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Brand, ModelRow } from "@/lib/types";
-import { brandLogoUrl } from "@/lib/data";
+import { brandLogoUrl } from "@/lib/media-urls";
 import "./models-browser.css";
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 // Local seed dataset — mirror of supabase/schema.sql.
-// Used as a fallback when Supabase env vars are not configured (for local
+// Used as a fallback when DATABASE_URL is not configured (for local
 // preview / Vercel preview deploys without the integration), and as the input
 // to the data layer's normalization. All field names match the SQL columns,
 // so swapping to a real DB row is a no-op for the UI.

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db, insertOne } from "@/lib/db";
 import { syncEngineOptions, type EngineOptionInput } from "./engine-options";
 
 export const runtime = "nodejs";
@@ -23,13 +23,18 @@ function pick(input: Record<string, unknown>) {
 }
 
 export async function GET() {
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("models")
-    .select("*, brand:brands(name,slug)")
-    .order("name", { ascending: true });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data });
+  try {
+    const sql = db();
+    // `brand` embedded as { name, slug } — same shape the old PostgREST embed gave.
+    const data = await sql`
+      select m.*, json_build_object('name', b.name, 'slug', b.slug) as brand
+      from models m
+      left join brands b on b.id = m.brand_id
+      order by m.name asc`;
+    return NextResponse.json({ data });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -41,24 +46,17 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("models")
-    .insert(pick(body))
-    .select("*")
-    .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  let data: Record<string, unknown>;
+  try {
+    data = await insertOne("models", pick(body));
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
 
   // Engine options sync (optional, only if the form sent any)
   if (Array.isArray(body.engine_options)) {
-    const syncErr = await syncEngineOptions(
-      sa,
-      data.id as string,
-      body.engine_options as EngineOptionInput[],
-    );
-    if (syncErr) {
-      return NextResponse.json({ error: syncErr }, { status: 500 });
-    }
+    const syncErr = await syncEngineOptions(data.id as string, body.engine_options as EngineOptionInput[]);
+    if (syncErr) return NextResponse.json({ error: syncErr }, { status: 500 });
   }
 
   return NextResponse.json(data);

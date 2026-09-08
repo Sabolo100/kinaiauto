@@ -9,7 +9,7 @@ import type {
   PriceBand,
 } from "@/lib/types";
 import { fmtMFt, CATEGORY_SEGMENT } from "@/lib/format";
-import { brandLogoUrl } from "@/lib/data";
+import { brandLogoUrl } from "@/lib/media-urls";
 
 // ── Category metadata for the horizontal "row" view ──────────────────────────
 const CAT_SHORT: Record<string, string> = {

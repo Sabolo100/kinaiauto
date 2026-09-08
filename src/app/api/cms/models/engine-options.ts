@@ -1,11 +1,11 @@
 // Shared helper used by /api/cms/models POST + /api/cms/models/[id] PATCH.
-// Performs a delete-then-insert sync for a model's engine variant rows.
+// Performs a delete-then-insert sync for a model's engine variant rows,
+// inside ONE transaction so a mid-way failure can never lose the variants.
 //
 // The shape sent from the CMS form is forgiving — name + nullable numeric/text
 // fields — and we normalise it before insert. An empty array clears existing
 // variants for that model.
-
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { db } from "@/lib/db";
 
 export type EngineOptionInput = {
   id?: string;
@@ -23,18 +23,9 @@ export type EngineOptionInput = {
 };
 
 export async function syncEngineOptions(
-  sa: SupabaseClient,
   modelId: string,
   options: EngineOptionInput[],
 ): Promise<string | null> {
-  const del = await sa
-    .from("model_engine_options")
-    .delete()
-    .eq("model_id", modelId);
-  if (del.error) return del.error.message;
-
-  if (options.length === 0) return null;
-
   const rows = options.map((o, i) => ({
     model_id: modelId,
     name: (o.name ?? "").trim() || "Base",
@@ -50,8 +41,13 @@ export async function syncEngineOptions(
     acceleration_s: o.acceleration_s ?? null,
     sort_order: i,
   }));
-
-  const ins = await sa.from("model_engine_options").insert(rows);
-  if (ins.error) return ins.error.message;
-  return null;
+  try {
+    await db().begin(async (tx) => {
+      await tx`delete from model_engine_options where model_id = ${modelId}`;
+      if (rows.length > 0) await tx`insert into model_engine_options ${tx(rows)}`;
+    });
+    return null;
+  } catch (e) {
+    return (e as Error).message;
+  }
 }

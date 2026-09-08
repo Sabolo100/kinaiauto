@@ -2,16 +2,10 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { CmsShell } from "@/components/cms/cms-shell";
 import { DealerImport } from "@/components/cms/dealer-import";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 async function getBrands() {
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("brands")
-    .select("id, name, slug")
-    .order("sort_order");
-  if (error) throw error;
-  return (data ?? []) as { id: string; name: string; slug: string }[];
+  return db()<{ id: string; name: string; slug: string }[]>`select id, name, slug from brands order by sort_order`;
 }
 
 export default async function DealerImportPage() {

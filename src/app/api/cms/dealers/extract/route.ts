@@ -5,7 +5,7 @@ import {
   extractDealerWith, extractDealerWithVision,
   type LlmProvider, type VisionMediaType,
 } from "@/lib/llm-extract";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { downloadObject } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -31,17 +31,15 @@ export async function POST(req: NextRequest) {
     let visionMediaType: VisionMediaType = "image/jpeg";
     let useVision = false;
 
-    const sa = supabaseAdmin();
-
     if (payload.source_kind === "url") {
       if (!payload.url) return NextResponse.json({ error: "URL kötelező" }, { status: 400 });
       const f = await fetchUrlText(payload.url);
       rawText = f.text;
     } else if (payload.source_kind === "pdf" || payload.source_kind === "image") {
       if (!payload.storage_path) return NextResponse.json({ error: "storage_path hiányzik" }, { status: 400 });
-      const dl = await sa.storage.from("pdf-uploads").download(payload.storage_path);
-      if (dl.error || !dl.data) return NextResponse.json({ error: "Letöltési hiba" }, { status: 400 });
-      const buf = Buffer.from(await dl.data.arrayBuffer());
+      let buf: Buffer;
+      try { buf = await downloadObject("pdf-uploads", payload.storage_path); }
+      catch { return NextResponse.json({ error: "Letöltési hiba" }, { status: 400 }); }
 
       if (payload.source_kind === "image") {
         visionBase64 = buf.toString("base64");

@@ -1,22 +1,21 @@
 import Link from "next/link";
 import { CmsShell } from "@/components/cms/cms-shell";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const sa = supabaseAdmin();
-  const [brands, models, photos, pending] = await Promise.all([
-    sa.from("brands").select("id", { count: "exact", head: true }).is("archived_at", null),
-    sa.from("models").select("id", { count: "exact", head: true }).is("archived_at", null),
-    sa.from("model_photos").select("id", { count: "exact", head: true }),
-    sa.from("model_extractions").select("id", { count: "exact", head: true }).eq("status", "pending"),
-  ]);
+  const [r] = await db()<{ brands: number; models: number; photos: number; pending: number }[]>`
+    select
+      (select count(*)::int from brands           where archived_at is null)  as brands,
+      (select count(*)::int from models           where archived_at is null)  as models,
+      (select count(*)::int from model_photos)                                as photos,
+      (select count(*)::int from model_extractions where status = 'pending')  as pending`;
   return {
-    brands: brands.count ?? 0,
-    models: models.count ?? 0,
-    photos: photos.count ?? 0,
-    pending: pending.count ?? 0,
+    brands: r?.brands ?? 0,
+    models: r?.models ?? 0,
+    photos: r?.photos ?? 0,
+    pending: r?.pending ?? 0,
   };
 }
 

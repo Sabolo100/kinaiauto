@@ -27,7 +27,7 @@ import type {
   PriceBand,
 } from "@/lib/types";
 import { fmtPrice, catLabel } from "@/lib/format";
-import { photoUrl } from "@/lib/data";
+import { photoUrl } from "@/lib/media-urls";
 import { useQuoteCart } from "../quote-context";
 import "./catalog.css";
 

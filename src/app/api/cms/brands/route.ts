@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db, insertOne } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -11,20 +11,17 @@ const ALLOWED = [
 
 function pick(input: Record<string, unknown>) {
   const out: Record<string, unknown> = {};
-  for (const k of ALLOWED) {
-    if (k in input) out[k] = input[k];
-  }
+  for (const k of ALLOWED) if (k in input) out[k] = input[k];
   return out;
 }
 
 export async function GET() {
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("brands")
-    .select("*")
-    .order("sort_order", { ascending: true });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ data });
+  try {
+    const data = await db()`select * from brands order by sort_order asc`;
+    return NextResponse.json({ data });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -33,12 +30,10 @@ export async function POST(req: NextRequest) {
   if (!body.slug || !body.name) {
     return NextResponse.json({ error: "slug és name kötelező" }, { status: 400 });
   }
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("brands")
-    .insert(pick(body))
-    .select("*")
-    .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  try {
+    const data = await insertOne("brands", pick(body));
+    return NextResponse.json(data);
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+  }
 }

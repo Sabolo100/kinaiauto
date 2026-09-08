@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db, insertOne } from "@/lib/db";
 import { getSettings } from "@/lib/settings";
 import {
   buildHtmlBody,
@@ -125,12 +125,12 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Persist quote_request + items ───────────────────────────────────────
-  const sa = supabaseAdmin();
+  const sql = db();
   const userAgent = req.headers.get("user-agent")?.slice(0, 500) ?? null;
 
-  const { data: qrInsert, error: qrErr } = await sa
-    .from("quote_requests")
-    .insert({
+  let quoteRequestId: string;
+  try {
+    const qr = await insertOne<{ id: string }>("quote_requests", {
       customer_name: name,
       customer_email: email,
       customer_phone: phone,
@@ -138,17 +138,14 @@ export async function POST(req: NextRequest) {
       gdpr_accepted_at: new Date().toISOString(),
       status: "pending",
       user_agent: userAgent,
-    })
-    .select("id")
-    .single();
-
-  if (qrErr || !qrInsert) {
+    });
+    quoteRequestId = qr.id;
+  } catch (e) {
     return NextResponse.json(
-      { error: `DB hiba (quote_requests): ${qrErr?.message ?? "ismeretlen"}` },
+      { error: `DB hiba (quote_requests): ${(e as Error).message ?? "ismeretlen"}` },
       { status: 500 },
     );
   }
-  const quoteRequestId = qrInsert.id as string;
 
   // Insert items
   const itemRows = body.items.map((it) => ({
@@ -160,10 +157,11 @@ export async function POST(req: NextRequest) {
     brand_slug_snapshot: it.brandSlug,
     model_slug_snapshot: it.modelSlug,
   }));
-  const { error: itemsErr } = await sa.from("quote_request_items").insert(itemRows);
-  if (itemsErr) {
+  try {
+    await sql`insert into quote_request_items ${sql(itemRows)}`;
+  } catch (e) {
     return NextResponse.json(
-      { error: `DB hiba (items): ${itemsErr.message}` },
+      { error: `DB hiba (items): ${(e as Error).message}` },
       { status: 500 },
     );
   }
@@ -172,20 +170,19 @@ export async function POST(req: NextRequest) {
   const allDealerIds = Array.from(
     new Set(Object.values(body.dealer_ids_by_brand).flat()),
   );
-  const { data: dealersData, error: dealersErr } = await sa
-    .from("dealers")
-    .select("id, name, email, brand_id")
-    .in("id", allDealerIds);
-
-  if (dealersErr) {
+  let dealersData: { id: string; name: string; email: string | null; brand_id: string }[];
+  try {
+    dealersData = allDealerIds.length
+      ? await sql<{ id: string; name: string; email: string | null; brand_id: string }[]>`
+          select id, name, email, brand_id from dealers where id = any(${allDealerIds})`
+      : [];
+  } catch (e) {
     return NextResponse.json(
-      { error: `DB hiba (dealers): ${dealersErr.message}` },
+      { error: `DB hiba (dealers): ${(e as Error).message}` },
       { status: 500 },
     );
   }
-  const dealerById = new Map(
-    (dealersData ?? []).map((d) => [d.id as string, d as { id: string; name: string; email: string | null; brand_id: string }]),
-  );
+  const dealerById = new Map(dealersData.map((d) => [d.id, d]));
 
   // ── Build dispatch plan: one per (brand, dealer) ───────────────────────
   type Dispatch = {
@@ -249,7 +246,7 @@ export async function POST(req: NextRequest) {
     // No API key — record dispatches as not-sent and return informative error,
     // but the DB rows still capture the user's intent.
     for (const d of dispatches) {
-      await sa.from("quote_request_dispatches").insert({
+      await sql`insert into quote_request_dispatches ${sql({
         quote_request_id: quoteRequestId,
         brand_id: d.brandId,
         dealer_id: d.dealerId,
@@ -265,12 +262,9 @@ export async function POST(req: NextRequest) {
         }),
         success: false,
         error_message: "Resend API kulcs nincs beállítva az admin panelen.",
-      });
+      })}`;
     }
-    await sa
-      .from("quote_requests")
-      .update({ status: "error" })
-      .eq("id", quoteRequestId);
+    await sql`update quote_requests set status = 'error' where id = ${quoteRequestId}`;
     return NextResponse.json(
       {
         error:
@@ -297,7 +291,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (!d.dealerEmail) {
-      await sa.from("quote_request_dispatches").insert({
+      await sql`insert into quote_request_dispatches ${sql({
         quote_request_id: quoteRequestId,
         brand_id: d.brandId,
         dealer_id: d.dealerId,
@@ -305,7 +299,7 @@ export async function POST(req: NextRequest) {
         subject,
         success: false,
         error_message: "A kereskedőnek nincs e-mail címe rögzítve.",
-      });
+      })}`;
       errors.push(`${d.dealerName}: nincs e-mail cím`);
       continue;
     }
@@ -344,7 +338,7 @@ export async function POST(req: NextRequest) {
       const errorObj = (res as { error?: { message?: string } | null }).error ?? null;
       if (errorObj) {
         console.error(`[quote] resend error for ${d.dealerEmail}:`, errorObj);
-        await sa.from("quote_request_dispatches").insert({
+        await sql`insert into quote_request_dispatches ${sql({
           quote_request_id: quoteRequestId,
           brand_id: d.brandId,
           dealer_id: d.dealerId,
@@ -352,10 +346,10 @@ export async function POST(req: NextRequest) {
           subject,
           success: false,
           error_message: errorObj.message ?? "Ismeretlen Resend hiba",
-        });
+        })}`;
         errors.push(`${d.dealerName}: ${errorObj.message ?? "küldési hiba"}`);
       } else {
-        await sa.from("quote_request_dispatches").insert({
+        await sql`insert into quote_request_dispatches ${sql({
           quote_request_id: quoteRequestId,
           brand_id: d.brandId,
           dealer_id: d.dealerId,
@@ -364,12 +358,12 @@ export async function POST(req: NextRequest) {
           success: true,
           sent_at: new Date().toISOString(),
           resend_message_id: messageId,
-        });
+        })}`;
         sentCount++;
       }
     } catch (e) {
       const msg = (e as Error).message ?? "unknown";
-      await sa.from("quote_request_dispatches").insert({
+      await sql`insert into quote_request_dispatches ${sql({
         quote_request_id: quoteRequestId,
         brand_id: d.brandId,
         dealer_id: d.dealerId,
@@ -377,7 +371,7 @@ export async function POST(req: NextRequest) {
         subject,
         success: false,
         error_message: msg,
-      });
+      })}`;
       errors.push(`${d.dealerName}: ${msg}`);
     }
   }
@@ -389,10 +383,7 @@ export async function POST(req: NextRequest) {
       : sentCount > 0
         ? "partial"
         : "error";
-  await sa
-    .from("quote_requests")
-    .update({ status: finalStatus })
-    .eq("id", quoteRequestId);
+  await sql`update quote_requests set status = ${finalStatus} where id = ${quoteRequestId}`;
 
   return NextResponse.json({
     ok: true,

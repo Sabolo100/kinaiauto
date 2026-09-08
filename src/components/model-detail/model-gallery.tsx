@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { ModelPhoto } from "@/lib/types";
+import { photoUrl } from "@/lib/media-urls";
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const KIND_ORDER = ["hero", "exterior", "interior", "dashboard", "rear", "trunk", "gallery"] as const;
 const KIND_LABEL: Record<string, string> = {
   hero: "Külső fő nézet", exterior: "Külső", interior: "Belső",
@@ -12,8 +12,7 @@ const KIND_LABEL: Record<string, string> = {
 const PLACEHOLDER_LABELS = ["Külső fő nézet", "Belső", "Műszerfal", "Hátsó nézet", "Csomagtartó"];
 
 function imgUrl(path: string) {
-  if (!SUPABASE_URL || !path) return null;
-  return `${SUPABASE_URL}/storage/v1/object/public/car-photos/${path}`;
+  return photoUrl(path);
 }
 
 function sortPhotos(photos: ModelPhoto[]): ModelPhoto[] {

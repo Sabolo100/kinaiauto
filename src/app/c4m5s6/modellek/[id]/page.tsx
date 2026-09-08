@@ -2,48 +2,58 @@ import { notFound } from "next/navigation";
 import { CmsShell } from "@/components/cms/cms-shell";
 import { ModelForm, type EngineOptionInput } from "@/components/cms/model-form";
 import { getLookups } from "@/lib/cms-lookups";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditModelPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const sa = supabaseAdmin();
+// Raw `models` table row (the v_models view type in lib/types differs).
+type ModelDbRow = {
+  id: string; brand_id: string; category_id: number; drive_id: number; slug: string; name: string;
+  price_min_m_ft: number | null; price_max_m_ft: number | null; is_deal: boolean | null; deal_text: string | null;
+  length_mm: number | null; width_mm: number | null; height_mm: number | null; wheelbase_mm: number | null;
+  trunk_l: number | null; seats: number | null; power_hp: number | null; battery_kwh: number | null;
+  range_km: number | null; consumption_text: string | null; charging_ac_kw: number | null;
+  charging_dc_kw: number | null; charging_text: string | null; acceleration_s: number | null;
+  warranty_years: number | null; warranty_km: number | null; battery_warranty_years: number | null;
+  battery_warranty_km: number | null; source_url: string | null; data_updated_at: string | null;
+  is_available: boolean | null; is_featured: boolean | null; archived_at: string | null; segment: string | null;
+};
+type EngineOptRow = {
+  id: string; name: string | null; range_km: number | null; power_hp: number | null; battery_kwh: number | null;
+  trunk_l: number | null; seats: number | null; consumption_text: string | null; charging_ac_kw: number | null;
+  charging_dc_kw: number | null; charging_text: string | null; acceleration_s: number | null;
+};
 
-  const [m, photos, options, lk] = await Promise.all([
-    sa.from("models").select("*").eq("id", id).single(),
-    sa
-      .from("model_photos")
-      .select("id, storage_path, kind, is_primary")
-      .eq("model_id", id)
-      .order("sort_order", { ascending: true }),
-    sa
-      .from("model_engine_options")
-      .select("id, name, range_km, power_hp, battery_kwh, trunk_l, seats, consumption_text, charging_ac_kw, charging_dc_kw, charging_text, acceleration_s")
-      .eq("model_id", id)
-      .order("sort_order", { ascending: true }),
+export default async function EditModelPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const sql = db();
+
+  const [[r], photos, options, lk] = await Promise.all([
+    sql<ModelDbRow[]>`select * from models where id = ${id}`,
+    sql<{ id: string; storage_path: string; kind: string; is_primary: boolean }[]>`
+      select id, storage_path, kind, is_primary from model_photos
+      where model_id = ${id} order by sort_order asc`,
+    sql<EngineOptRow[]>`
+      select id, name, range_km, power_hp, battery_kwh, trunk_l, seats, consumption_text,
+             charging_ac_kw, charging_dc_kw, charging_text, acceleration_s
+      from model_engine_options where model_id = ${id} order by sort_order asc`,
     getLookups(),
   ]);
-  if (m.error || !m.data) return notFound();
+  if (!r) return notFound();
 
-  const r = m.data;
-  const engineOptions: EngineOptionInput[] = (options.data ?? []).map((o) => ({
-    id: o.id as string,
-    name: (o.name as string) ?? "Base",
-    range_km: o.range_km as number | null,
-    power_hp: o.power_hp as number | null,
-    battery_kwh: o.battery_kwh as number | null,
-    trunk_l: o.trunk_l as number | null,
-    seats: o.seats as number | null,
-    consumption_text: o.consumption_text as string | null,
-    charging_ac_kw: o.charging_ac_kw as number | null,
-    charging_dc_kw: o.charging_dc_kw as number | null,
-    charging_text: o.charging_text as string | null,
-    acceleration_s: o.acceleration_s as number | null,
+  const engineOptions: EngineOptionInput[] = options.map((o) => ({
+    id: o.id,
+    name: o.name ?? "Base",
+    range_km: o.range_km,
+    power_hp: o.power_hp,
+    battery_kwh: o.battery_kwh,
+    trunk_l: o.trunk_l,
+    seats: o.seats,
+    consumption_text: o.consumption_text,
+    charging_ac_kw: o.charging_ac_kw,
+    charging_dc_kw: o.charging_dc_kw,
+    charging_text: o.charging_text,
+    acceleration_s: o.acceleration_s,
   }));
 
   return (
@@ -55,7 +65,7 @@ export default async function EditModelPage({
         brands={lk.brands}
         categories={lk.categories}
         drives={lk.drives}
-        photos={(photos.data ?? []) as { id: string; storage_path: string; kind: string; is_primary: boolean }[]}
+        photos={photos}
         initialEngineOptions={engineOptions}
         initial={{
           id: r.id,

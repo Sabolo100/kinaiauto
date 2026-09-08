@@ -1,4 +1,4 @@
-// Shared types — match the Supabase v_models / brands / etc. shapes 1:1.
+// Shared types — match the Postgres v_models / brands / etc. shapes 1:1.
 // All field names match the SQL columns; lookups join in the brand/category/drive
 // labels for convenience.
 

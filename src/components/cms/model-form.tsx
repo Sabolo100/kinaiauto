@@ -1,5 +1,6 @@
 "use client";
 
+import { photoUrl, HAS_MEDIA } from "@/lib/media-urls";
 import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { TestLinksEditor } from "./test-links-editor";
@@ -499,7 +500,6 @@ export function ModelForm({
   );
 }
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const KINDS = ["hero", "exterior", "interior", "dashboard", "rear", "trunk", "gallery"] as const;
 const KIND_LABELS: Record<string, string> = {
   hero: "Hero", exterior: "Exterior", interior: "Interior",
@@ -507,8 +507,7 @@ const KIND_LABELS: Record<string, string> = {
 };
 
 function thumbUrl(path: string) {
-  if (!SUPABASE_URL) return "";
-  return `${SUPABASE_URL}/storage/v1/object/public/car-photos/${path}`;
+  return photoUrl(path) ?? "";
 }
 
 type QueueItem = { file: File; preview: string; kind: string; isPrimary: boolean; id: string };
@@ -602,7 +601,7 @@ function PhotoGallery({ modelId, initialPhotos }: { modelId: string; initialPhot
         <div className="photo-grid">
           {photos.map((p) => (
             <div key={p.id} className={`photo-card${p.is_primary ? " is-primary" : ""}`}>
-              {SUPABASE_URL ? (
+              {HAS_MEDIA ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={thumbUrl(p.storage_path)} alt={p.kind} loading="lazy" />
               ) : (

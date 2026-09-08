@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Grid2x2, LayoutGrid, List, MapPin } from "lucide-react";
 import type { Brand, Dealer, ModelPhoto, ModelRow } from "@/lib/types";
-import { brandLogoUrl } from "@/lib/data";
+import { brandLogoUrl } from "@/lib/media-urls";
 import { ModelCard } from "@/components/model-card";
 import { CompareProvider, useCompare } from "@/components/compare-context";
 import { CompareBar } from "@/components/compare-bar";

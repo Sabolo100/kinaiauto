@@ -1,62 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db, updateById } from "@/lib/db";
+import { removeObjects } from "@/lib/storage";
 
 export const runtime = "nodejs";
 
-export async function PATCH(
-  req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "invalid body" }, { status: 400 });
+  const sql = db();
 
-  const sa = supabaseAdmin();
-
-  if (body.is_primary === true) {
-    const cur = await sa.from("model_photos").select("model_id").eq("id", id).single();
-    if (!cur.error && cur.data) {
-      await sa
-        .from("model_photos")
-        .update({ is_primary: false })
-        .eq("model_id", cur.data.model_id)
-        .eq("is_primary", true);
+  try {
+    if (body.is_primary === true) {
+      const [cur] = await sql<{ model_id: string }[]>`select model_id from model_photos where id = ${id}`;
+      if (cur) {
+        await sql`update model_photos set is_primary = false where model_id = ${cur.model_id} and is_primary = true`;
+      }
     }
+    const patch: Record<string, unknown> = {};
+    if (body.kind !== undefined) patch.kind = body.kind;
+    if (body.is_primary !== undefined) patch.is_primary = body.is_primary;
+
+    const row = await updateById("model_photos", id, patch);
+    if (!row) return NextResponse.json({ error: "fotó nem található" }, { status: 404 });
+    return NextResponse.json({ ok: true, row });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
-
-  const patch: Record<string, unknown> = {};
-  if (body.kind !== undefined) patch.kind = body.kind;
-  if (body.is_primary !== undefined) patch.is_primary = body.is_primary;
-
-  const { data, error } = await sa
-    .from("model_photos")
-    .update(patch)
-    .eq("id", id)
-    .select("*")
-    .single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true, row: data });
 }
 
-export async function DELETE(
-  _req: NextRequest,
-  ctx: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
-  const sa = supabaseAdmin();
+  const sql = db();
+  const [photo] = await sql<{ storage_path: string }[]>`select storage_path from model_photos where id = ${id}`;
+  if (!photo) return NextResponse.json({ error: "fotó nem található" }, { status: 404 });
 
-  const photo = await sa
-    .from("model_photos")
-    .select("storage_path")
-    .eq("id", id)
-    .single();
-  if (photo.error || !photo.data) {
-    return NextResponse.json({ error: "fotó nem található" }, { status: 404 });
+  try {
+    await removeObjects("car-photos", [photo.storage_path]);
+    await sql`delete from model_photos where id = ${id}`;
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
-
-  await sa.storage.from("car-photos").remove([photo.data.storage_path]);
-
-  const { error } = await sa.from("model_photos").delete().eq("id", id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true });
 }

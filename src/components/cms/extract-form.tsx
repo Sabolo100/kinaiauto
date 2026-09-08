@@ -61,7 +61,7 @@ export function ExtractForm({
       }
       const { path, signedUrl } = await presignRes.json() as { path: string; signedUrl: string };
 
-      // Step 2: upload file directly to Supabase Storage (bypasses Vercel body limit)
+      // Step 2: upload file directly to object storage (bypasses Vercel body limit)
       const contentType = kind === "pdf" ? "application/pdf" : (file.type || "image/jpeg");
       setStep(`2/3 — ${kind === "pdf" ? "PDF" : "Kép"} feltöltése (${(file.size / 1024 / 1024).toFixed(1)} MB)…`);
       try {

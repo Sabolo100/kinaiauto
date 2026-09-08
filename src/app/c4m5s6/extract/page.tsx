@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CmsShell } from "@/components/cms/cms-shell";
 import { ExtractForm } from "@/components/cms/extract-form";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 import { HAS_ANTHROPIC, HAS_OPENAI } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
@@ -19,29 +19,29 @@ type Row = {
 };
 
 async function getData() {
-  const sa = supabaseAdmin();
+  const sql = db();
   const [extractions, models] = await Promise.all([
-    sa
-      .from("model_extractions")
-      .select(
-        "id, status, source_kind, source_url, source_filename, llm_provider, llm_model, created_at, model:models(name, brand:brands(name))",
-      )
-      .order("created_at", { ascending: false })
-      .limit(50),
-    sa
-      .from("models")
-      .select("id, name, brand:brands(name)")
-      .is("archived_at", null)
-      .order("name"),
+    // nested embed: model{name, brand{name}} — null when no model attached
+    sql<Row[]>`
+      select e.id, e.status, e.source_kind, e.source_url, e.source_filename,
+             e.llm_provider, e.llm_model, e.created_at,
+        case when m.id is null then null else json_build_object(
+          'name', m.name,
+          'brand', case when b.id is null then null else json_build_object('name', b.name) end
+        ) end as model
+      from model_extractions e
+      left join models m on m.id = e.model_id
+      left join brands b on b.id = m.brand_id
+      order by e.created_at desc
+      limit 50`,
+    sql<{ id: string; name: string; brand: { name: string } | null }[]>`
+      select m.id, m.name,
+        case when b.id is null then null else json_build_object('name', b.name) end as brand
+      from models m left join brands b on b.id = m.brand_id
+      where m.archived_at is null
+      order by m.name`,
   ]);
-  return {
-    extractions: (extractions.data ?? []) as unknown as Row[],
-    models: (models.data ?? []) as unknown as {
-      id: string;
-      name: string;
-      brand: { name: string } | null;
-    }[],
-  };
+  return { extractions, models };
 }
 
 const STATUS_PILL: Record<string, string> = {

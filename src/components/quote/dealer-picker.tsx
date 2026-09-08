@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, List, MapPin, X } from "lucide-react";
 import type { Brand, Dealer } from "@/lib/types";
-import { brandLogoUrl } from "@/lib/data";
+import { brandLogoUrl } from "@/lib/media-urls";
 import { SelectableDealerMap } from "./selectable-dealer-map";
 
 type Props = {

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight, Check, GitCompareArrows, Plus, ShoppingBag } from "lucide-react";
 import type { ModelPhoto, ModelRow } from "@/lib/types";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
-import { photoUrl } from "@/lib/data";
+import { photoUrl } from "@/lib/media-urls";
 import { useQuoteCart } from "./quote-context";
 
 /** Returns #fff or #1a1a1a depending on which has better contrast against `hex`. */

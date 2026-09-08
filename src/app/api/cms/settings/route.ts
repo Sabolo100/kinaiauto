@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -14,17 +14,15 @@ const ALLOWED_KEYS = new Set<string>([
 ]);
 
 export async function GET() {
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("site_settings")
-    .select("key, value")
-    .in("key", Array.from(ALLOWED_KEYS));
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const out: Record<string, string> = {};
-  for (const row of data ?? []) {
-    out[(row as { key: string }).key] = (row as { value: string | null }).value ?? "";
+  try {
+    const rows = await db()<{ key: string; value: string | null }[]>`
+      select key, value from site_settings where key = any(${Array.from(ALLOWED_KEYS)})`;
+    const out: Record<string, string> = {};
+    for (const row of rows) out[row.key] = row.value ?? "";
+    return NextResponse.json({ data: out });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
-  return NextResponse.json({ data: out });
 }
 
 export async function POST(req: NextRequest) {
@@ -35,26 +33,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid body" }, { status: 400 });
   }
 
-  const sa = supabaseAdmin();
   const rows: { key: string; value: string; updated_at: string }[] = [];
   const now = new Date().toISOString();
-
   for (const [k, v] of Object.entries(body)) {
     if (!ALLOWED_KEYS.has(k)) continue;
     if (typeof v !== "string") continue;
     rows.push({ key: k, value: v, updated_at: now });
   }
-
   if (rows.length === 0) {
     return NextResponse.json({ error: "Nincs menthető mező." }, { status: 400 });
   }
 
-  const { error } = await sa
-    .from("site_settings")
-    .upsert(rows, { onConflict: "key" });
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  try {
+    const sql = db();
+    await sql`
+      insert into site_settings ${sql(rows)}
+      on conflict (key) do update set value = excluded.value, updated_at = excluded.updated_at`;
+    return NextResponse.json({ ok: true, saved: rows.length });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, saved: rows.length });
 }

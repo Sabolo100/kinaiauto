@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db, insertOne } from "@/lib/db";
+import { downloadObject } from "@/lib/storage";
 import { extractPdfText } from "@/lib/pdf-text";
 import { fetchUrlText } from "@/lib/url-text";
 import { extractWith, extractWithVision, type LlmProvider, type VisionMediaType } from "@/lib/llm-extract";
@@ -43,17 +44,15 @@ async function handlePost(req: NextRequest) {
     return NextResponse.json({ error: "ismeretlen provider" }, { status: 400 });
   }
 
-  const sa = supabaseAdmin();
-  const m = await sa
-    .from("models")
-    .select("*, brand:brands(name,slug)")
-    .eq("id", payload.model_id)
-    .single();
-  if (m.error || !m.data) {
+  const [mrow] = await db()<Record<string, unknown>[]>`
+    select m.*, json_build_object('name', b.name, 'slug', b.slug) as brand
+    from models m left join brands b on b.id = m.brand_id
+    where m.id = ${payload.model_id}`;
+  if (!mrow) {
     return NextResponse.json({ error: "modell nem található" }, { status: 404 });
   }
 
-  const r = m.data as Record<string, unknown> & { brand: { name: string; slug: string } | null };
+  const r = mrow as Record<string, unknown> & { brand: { name: string; slug: string } | null };
   const hint = [
     `Brand: ${r.brand?.name ?? "-"}`,
     `Model: ${r.name}`,
@@ -80,16 +79,16 @@ async function handlePost(req: NextRequest) {
         );
       }
 
-      // Download from Supabase Storage (private bucket, no Vercel body limit)
-      const dl = await sa.storage.from("pdf-uploads").download(payload.storage_path);
-      if (dl.error || !dl.data) {
+      // Download from object storage (private bucket, no Vercel body limit)
+      let buf: Buffer;
+      try {
+        buf = await downloadObject("pdf-uploads", payload.storage_path);
+      } catch (e) {
         return NextResponse.json(
-          { error: `PDF letöltési hiba a Storage-ból: ${dl.error?.message ?? "ismeretlen"}` },
+          { error: `PDF letöltési hiba a Storage-ból: ${(e as Error).message ?? "ismeretlen"}` },
           { status: 400 },
         );
       }
-
-      const buf = Buffer.from(await dl.data.arrayBuffer());
       rawText = await extractPdfText(buf);
       storage_path = payload.storage_path;
       source_filename = payload.source_filename ?? storage_path.split("/").pop() ?? "upload.pdf";
@@ -110,15 +109,15 @@ async function handlePost(req: NextRequest) {
         );
       }
 
-      const dl = await sa.storage.from("pdf-uploads").download(payload.storage_path);
-      if (dl.error || !dl.data) {
+      let buf: Buffer;
+      try {
+        buf = await downloadObject("pdf-uploads", payload.storage_path);
+      } catch (e) {
         return NextResponse.json(
-          { error: `Kép letöltési hiba a Storage-ból: ${dl.error?.message ?? "ismeretlen"}` },
+          { error: `Kép letöltési hiba a Storage-ból: ${(e as Error).message ?? "ismeretlen"}` },
           { status: 400 },
         );
       }
-
-      const buf = Buffer.from(await dl.data.arrayBuffer());
       visionBase64 = buf.toString("base64");
       visionMediaType = (payload.image_media_type ?? "image/jpeg") as VisionMediaType;
       storage_path = payload.storage_path;
@@ -168,9 +167,9 @@ async function handlePost(req: NextRequest) {
     console.error("[cms/extract] LLM error:", errorMessage);
   }
 
-  const ins = await sa
-    .from("model_extractions")
-    .insert({
+  let ins: { id: string };
+  try {
+    ins = await insertOne<{ id: string }>("model_extractions", {
       model_id: payload.model_id,
       source_kind: payload.source_kind,
       source_url,
@@ -179,24 +178,22 @@ async function handlePost(req: NextRequest) {
       llm_provider: payload.provider,
       llm_model: llmModel || llmProviderLabel,
       raw_text: rawText.slice(0, 200_000),
-      parsed_json: parsed,
+      parsed_json: JSON.stringify(parsed), // jsonb — sent as JSON text, server infers the type
       status,
       error_message: errorMessage,
-    })
-    .select("*")
-    .single();
-
-  if (ins.error) {
-    console.error("[cms/extract] Supabase insert error:", ins.error);
+    });
+  } catch (e) {
+    const err = e as Error & { code?: string };
+    console.error("[cms/extract] DB insert error:", err);
     return NextResponse.json(
-      { error: `DB hiba: ${ins.error.message} (code: ${ins.error.code})` },
+      { error: `DB hiba: ${err.message} (code: ${err.code ?? "?"})` },
       { status: 500 },
     );
   }
 
   return NextResponse.json({
     ok: true,
-    id: ins.data.id,
+    id: ins.id,
     status,
     error_message: errorMessage,
   });

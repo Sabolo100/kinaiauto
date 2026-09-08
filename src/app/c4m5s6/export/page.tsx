@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { Fragment } from "react";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 import { PrintBtn } from "@/components/cms/print-btn";
 import { CmsShell } from "@/components/cms/cms-shell";
 
@@ -52,26 +52,21 @@ type BrandGroup = {
 // ─── data ────────────────────────────────────────────────────────────────────
 
 async function fetchExportData(): Promise<BrandGroup[]> {
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("models")
-    .select(
-      [
-        "id, name, slug, is_available",
-        "price_min_m_ft, price_max_m_ft",
-        "power_hp, range_km, length_mm, battery_kwh, trunk_l",
-        "brand:brands!inner(name, slug)",
-        "category:categories(label_hu)",
-        "drive:drives(label_hu)",
-        "photos:model_photos(id)",
-        "trims:model_trims(id)",
-      ].join(", "),
-    )
-    .is("archived_at", null);
-
-  if (error) throw error;
-
-  const rows = (data ?? []) as unknown as RawRow[];
+  // brands!inner → JOIN; category/drive → LEFT JOIN; photos/trims → arrays of {id}
+  const rows = await db()<RawRow[]>`
+    select m.id, m.name, m.slug, m.is_available,
+      m.price_min_m_ft, m.price_max_m_ft,
+      m.power_hp, m.range_km, m.length_mm, m.battery_kwh, m.trunk_l,
+      json_build_object('name', b.name, 'slug', b.slug) as brand,
+      case when c.id is null then null else json_build_object('label_hu', c.label_hu) end as category,
+      case when d.id is null then null else json_build_object('label_hu', d.label_hu) end as drive,
+      coalesce((select json_agg(json_build_object('id', p.id)) from model_photos p where p.model_id = m.id), '[]'::json) as photos,
+      coalesce((select json_agg(json_build_object('id', t.id)) from model_trims  t where t.model_id = m.id), '[]'::json) as trims
+    from models m
+    join      brands     b on b.id = m.brand_id
+    left join categories c on c.id = m.category_id
+    left join drives     d on d.id = m.drive_id
+    where m.archived_at is null`;
 
   // Map to clean shape
   const mapped: ModelExport[] = rows.map((r) => ({

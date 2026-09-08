@@ -1,24 +1,12 @@
-// GET /api/cms/test-links/search/[jobId]
-// Polling endpoint — client polls every 2-3s for job status
+// GET /api/cms/test-links/search/[jobId] — polling endpoint
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-export async function GET(
-  _req: NextRequest,
-  ctx: { params: Promise<{ jobId: string }> },
-) {
+export async function GET(_req: NextRequest, ctx: { params: Promise<{ jobId: string }> }) {
   const { jobId } = await ctx.params;
-  const sa = supabaseAdmin();
-
-  const { data, error } = await sa
-    .from("test_link_search_jobs")
-    .select("*")
-    .eq("id", jobId)
-    .single();
-
-  if (error || !data) return NextResponse.json({ error: "not found" }, { status: 404 });
-
+  const [data] = await db()`select * from test_link_search_jobs where id = ${jobId}`;
+  if (!data) return NextResponse.json({ error: "not found" }, { status: 404 });
   return NextResponse.json(data);
 }

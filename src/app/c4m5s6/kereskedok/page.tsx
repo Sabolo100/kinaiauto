@@ -1,19 +1,19 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { CmsShell } from "@/components/cms/cms-shell";
-import { supabaseAdmin } from "@/lib/supabase-admin";
+import { db } from "@/lib/db";
 import { DealersTable, type DealerRow } from "@/components/cms/dealers-table";
 
 async function getDealers(): Promise<DealerRow[]> {
-  const sa = supabaseAdmin();
-  const { data, error } = await sa
-    .from("dealers")
-    .select("id, name, city, zip_code, phone, email, is_active, brand:brands(name), contacts:dealer_contacts(id)");
-  if (error) throw error;
-  return ((data ?? []) as unknown as (DealerRow & { contacts: { id: string }[] })[]).map((d) => ({
-    ...d,
-    contact_count: d.contacts?.length ?? 0,
-  }));
+  const rows = await db()<(DealerRow & { contacts: { id: string }[] })[]>`
+    select d.id, d.name, d.city, d.zip_code, d.phone, d.email, d.is_active,
+      json_build_object('name', b.name) as brand,
+      coalesce(
+        (select json_agg(json_build_object('id', c.id)) from dealer_contacts c where c.dealer_id = d.id),
+        '[]'::json) as contacts
+    from dealers d
+    left join brands b on b.id = d.brand_id`;
+  return rows.map((d) => ({ ...d, contact_count: d.contacts?.length ?? 0 }));
 }
 
 export default async function DealersListPage() {

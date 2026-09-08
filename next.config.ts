@@ -1,25 +1,26 @@
 import type { NextConfig } from "next";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : "";
+// Public media (car photos, brand logos) is served from S3-compatible object
+// storage. Allow-list its host for next/image in case it is used later.
+const mediaBase = process.env.NEXT_PUBLIC_S3_PUBLIC_BASE ?? "";
+let mediaHost = "";
+let mediaProtocol: "https" | "http" = "https";
+try {
+  if (mediaBase) {
+    const u = new URL(mediaBase);
+    mediaHost = u.hostname;
+    mediaProtocol = u.protocol === "http:" ? "http" : "https";
+  }
+} catch {}
 
 const config: NextConfig = {
   reactStrictMode: true,
   images: {
-    remotePatterns: [
-      ...(supabaseHost
-        ? [
-            {
-              protocol: "https" as const,
-              hostname: supabaseHost,
-              pathname: "/storage/v1/object/public/**",
-            },
-          ]
-        : []),
-    ],
+    remotePatterns: mediaHost
+      ? [{ protocol: mediaProtocol, hostname: mediaHost, pathname: "/**" }]
+      : [],
     formats: ["image/avif", "image/webp"],
   },
-  // The Tiggo .avif file ships in /public/assets and is also referenced from src.
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
