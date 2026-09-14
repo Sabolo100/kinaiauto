@@ -36,4 +36,5 @@ npx tsx scripts/migrate/07-smoke-test.mts      # key app queries + type/jsonb be
 
 ## 3. Decommission (explicit confirmation required)
 Only after the site has run correctly on the new stack: delete the Supabase project.
-Rollback before that point: `git checkout main -- .` restores the old code; Supabase is untouched.
+Rollback **after** cutover, if the new deployment misbehaves: Vercel → Deployments → previous (Supabase-era) deployment → **Instant Rollback**. That works even though the Supabase env vars were deleted, because every Vercel deployment carries its own env snapshot from build time. Supabase itself is untouched until the final, confirmed deletion.
+Rollback **before** cutover: nothing to do — `main` still holds the old code.
