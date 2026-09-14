@@ -1,0 +1,56 @@
+# MinIO on Coolify — Docker Compose resource ("Docker Compose Empty").
+# Traefik routing is declared EXPLICITLY via labels (Coolify did not generate
+# them for this service), and the service joins Coolify's `coolify` proxy
+# network directly. Entrypoints `http`/`https` and the `letsencrypt` resolver
+# are Coolify's Traefik defaults. Set MINIO_ROOT_USER / MINIO_ROOT_PASSWORD in
+# the resource's Environment Variables.
+services:
+  minio:
+    image: quay.io/minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_SERVER_URL=https://minio.kinaiauto.com
+      - MINIO_BROWSER_REDIRECT_URL=https://minio-console.kinaiauto.com
+    volumes:
+      - minio-data:/data
+    networks:
+      - coolify
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=coolify
+      # ── S3 API · port 9000 ──
+      - traefik.http.routers.minio-api.rule=Host(`minio.kinaiauto.com`)
+      - traefik.http.routers.minio-api.entrypoints=https
+      - traefik.http.routers.minio-api.tls=true
+      - traefik.http.routers.minio-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.minio-api.service=minio-api
+      - traefik.http.services.minio-api.loadbalancer.server.port=9000
+      # ── Console · port 9001 ──
+      - traefik.http.routers.minio-console.rule=Host(`minio-console.kinaiauto.com`)
+      - traefik.http.routers.minio-console.entrypoints=https
+      - traefik.http.routers.minio-console.tls=true
+      - traefik.http.routers.minio-console.tls.certresolver=letsencrypt
+      - traefik.http.routers.minio-console.service=minio-console
+      - traefik.http.services.minio-console.loadbalancer.server.port=9001
+      # ── http → https ──
+      - traefik.http.middlewares.minio-redirect.redirectscheme.scheme=https
+      - traefik.http.routers.minio-api-http.rule=Host(`minio.kinaiauto.com`)
+      - traefik.http.routers.minio-api-http.entrypoints=http
+      - traefik.http.routers.minio-api-http.middlewares=minio-redirect
+      - traefik.http.routers.minio-console-http.rule=Host(`minio-console.kinaiauto.com`)
+      - traefik.http.routers.minio-console-http.entrypoints=http
+      - traefik.http.routers.minio-console-http.middlewares=minio-redirect
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  coolify:
+    external: true
+
+volumes:
+  minio-data:
