@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, jsonb } from "@/lib/db";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -102,10 +102,9 @@ export async function POST(req: NextRequest) {
   const BATCH = 50;
   let imported = 0;
   for (let i = 0; i < resolvedRows.length; i += BATCH) {
-    // extra_emails / extra_phones are jsonb → send as JSON text (server infers jsonb);
-    // a raw JS array would be sent as text[] and the insert would fail.
+    // extra_emails / extra_phones are jsonb arrays → jsonb() (a raw JS array would be sent as text[]).
     const batch = resolvedRows.slice(i, i + BATCH).map(({ brand_slug: _slug, extra_emails, extra_phones, ...rest }) => ({
-      ...rest, extra_emails: JSON.stringify(extra_emails), extra_phones: JSON.stringify(extra_phones),
+      ...rest, extra_emails: jsonb(extra_emails), extra_phones: jsonb(extra_phones),
     }));
     try {
       await sql`insert into dealers ${sql(batch)}`;

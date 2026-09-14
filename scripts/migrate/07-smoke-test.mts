@@ -76,28 +76,29 @@ const checks: Check[] = [
         coalesce((select json_agg(json_build_object('id', p.id)) from model_photos p where p.model_id=m.id), '[]'::json) as photos
         from models m join brands b on b.id=m.brand_id where m.archived_at is null`;
       if (r.length && !Array.isArray(r[0].photos)) throw new Error("photos not array"); return `${r.length} rows`; } },
-  { name: "jsonb array write (::jsonb) — rolled back", run: async () => {
-      let ok = false;
-      await sql.begin(async (tx) => {
-        const [j] = await tx<{ id: string; brand_ids: unknown }[]>`insert into model_discovery_jobs (status, brand_ids, progress, total_found)
-          values ('pending', ${JSON.stringify(["a","b"])}::jsonb, '{}'::jsonb, 0) returning id, brand_ids`;
-        ok = Array.isArray(j.brand_ids) && j.brand_ids.length === 2;
-        throw new Error("ROLLBACK");   // never persist test rows
-      }).catch((e: Error) => { if (e.message !== "ROLLBACK") throw e; });
-      if (!ok) throw new Error("brand_ids did not round-trip as array"); return "insert+readback ok, rolled back"; } },
-  { name: "jsonb via sql(obj) helper (pre-stringified) — rolled back", run: async () => {
-      let ok = false;
-      await sql.begin(async (tx) => {
-        const [b] = await tx<{ id: string }[]>`select id from brands limit 1`;
-        if (!b) { ok = true; return; } // empty DB → nothing to test
-        const [d] = await tx<{ extra_emails: unknown }[]>`insert into dealers ${tx({
-          brand_id: b.id, name: "__smoke__", city: "x", is_active: false, sort_order: 0,
-          extra_emails: JSON.stringify(["a@x.hu", "b@x.hu"]), extra_phones: JSON.stringify([]),
-        })} returning extra_emails`;
-        ok = Array.isArray(d.extra_emails) && d.extra_emails.length === 2;
-        throw new Error("ROLLBACK");
-      }).catch((e: Error) => { if (e.message !== "ROLLBACK") throw e; });
-      if (!ok) throw new Error("helper-path jsonb did not round-trip"); return "sql(obj) insert + readback ok, rolled back"; } },
+  { name: "jsonb array write → re-select (app pattern)", run: async () => {
+      // Mirrors db.ts insertOne: write with `returning id`, then re-SELECT (outside a transaction).
+      const [j] = await sql<{ id: string }[]>`insert into model_discovery_jobs (status, brand_ids, progress, total_found)
+        values ('smoke', ${sql.json(["a","b"])}, '{}'::jsonb, 0) returning id`;
+      try {
+        const [r] = await sql<{ brand_ids: unknown }[]>`select brand_ids from model_discovery_jobs where id = ${j.id}`;
+        if (!Array.isArray(r.brand_ids) || r.brand_ids.length !== 2) throw new Error("brand_ids did not round-trip as array");
+        return "insert → re-select ok (row removed)";
+      } finally { await sql`delete from model_discovery_jobs where id = ${j.id}`; }
+    } },
+  { name: "jsonb via sql(obj) → re-select (app pattern)", run: async () => {
+      const [b] = await sql<{ id: string }[]>`select id from brands limit 1`;
+      if (!b) return "empty DB → skipped";
+      const [ins] = await sql<{ id: string }[]>`insert into dealers ${sql({
+        brand_id: b.id, name: "__smoke__", city: "x", is_active: false, sort_order: 0,
+        extra_emails: sql.json(["a@x.hu", "b@x.hu"]), extra_phones: sql.json([]),
+      })} returning id`;
+      try {
+        const [d] = await sql<{ extra_emails: unknown }[]>`select extra_emails from dealers where id = ${ins.id}`;
+        if (!Array.isArray(d.extra_emails) || d.extra_emails.length !== 2) throw new Error("helper-path jsonb did not round-trip");
+        return "sql(obj) insert → re-select ok (row removed)";
+      } finally { await sql`delete from dealers where id = ${ins.id}`; }
+    } },
   { name: "app roles exist", run: async () => {
       const r = await sql<{ rolname: string }[]>`select rolname from pg_roles where rolname in ('kinaiauto_ro','kinaiauto_rw')`;
       return r.length === 2 ? "kinaiauto_ro, kinaiauto_rw" : `WARN only ${r.map((x) => x.rolname).join(",") || "none"} (run 03-roles.sql)`; } },

@@ -1,7 +1,7 @@
 // POST /api/cms/model-discovery/search
 // Creates a discovery job (which brands to research) and returns the jobId.
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, jsonb } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     // brand_ids is jsonb → stringify + cast (a bare JS array would become text[]).
     const [job] = await sql<{ id: string }[]>`
       insert into model_discovery_jobs (status, brand_ids, progress, total_found)
-      values ('pending', ${JSON.stringify(brandIds)}::jsonb, '{}'::jsonb, 0)
+      values ('pending', ${jsonb(brandIds)}, '{}'::jsonb, 0)
       returning id`;
     return NextResponse.json({ jobId: job.id });
   } catch (e) {

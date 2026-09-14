@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, insertOne } from "@/lib/db";
+import { db, insertOne, jsonb } from "@/lib/db";
 import { downloadObject } from "@/lib/storage";
 import { extractPdfText } from "@/lib/pdf-text";
 import { fetchUrlText } from "@/lib/url-text";
@@ -178,7 +178,7 @@ async function handlePost(req: NextRequest) {
       llm_provider: payload.provider,
       llm_model: llmModel || llmProviderLabel,
       raw_text: rawText.slice(0, 200_000),
-      parsed_json: JSON.stringify(parsed), // jsonb — sent as JSON text, server infers the type
+      parsed_json: jsonb(parsed),
       status,
       error_message: errorMessage,
     });

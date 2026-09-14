@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, findById, updateById } from "@/lib/db";
+import { db, findById, updateById, jsonb } from "@/lib/db";
 import { extractedToModelPatch, type ExtractedFields } from "@/lib/llm-extract";
 
 export const runtime = "nodejs";
@@ -19,7 +19,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
       // Replace parsed_json with admin-edited version.
       const json = body.parsed_json as Record<string, unknown> | undefined;
       if (!json) return NextResponse.json({ error: "parsed_json kötelező" }, { status: 400 });
-      const row = await updateById("model_extractions", id, { parsed_json: JSON.stringify(json) }); // jsonb as JSON text
+      const row = await updateById("model_extractions", id, { parsed_json: jsonb(json) }); // jsonb as JSON text
       return NextResponse.json(row);
     }
 
@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
         await tx`update models set ${tx(patch)} where id = ${exr.model_id}`;
         await tx`update model_extractions
           set status = 'approved', decided_at = now(), applied_at = now(),
-              parsed_json = ${JSON.stringify(fields)}::jsonb
+              parsed_json = ${jsonb(fields)}
           where id = ${id}`;
       });
       return NextResponse.json({ ok: true, applied: patch });

@@ -6,7 +6,7 @@
 //   { finalize:true} → mark the job completed.
 //   {}               → legacy: process every brand in one request (fallback).
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, jsonb } from "@/lib/db";
 import { discoverNewModelsForBrand, normalizeModelName } from "@/lib/model-discovery";
 
 export const runtime = "nodejs";
@@ -30,7 +30,7 @@ async function processBrand(job: JobRow, brandId: string): Promise<{ found: numb
 
   const saveProgress = async (extra?: { total_found: number }) =>
     sql`update model_discovery_jobs
-      set progress = ${JSON.stringify(progress)}::jsonb,
+      set progress = ${jsonb(progress)},
           total_found = ${extra?.total_found ?? job.total_found},
           updated_at = now()
       where id = ${job.id}`;
@@ -62,7 +62,7 @@ async function processBrand(job: JobRow, brandId: string): Promise<{ found: numb
         await sql`insert into discovered_models
           (brand_id, name, category_guess, drive_guess, reason, sources, confidence, status, found_by_job)
           values (${brandId}, ${c.name}, ${c.category_guess}, ${c.drive_guess}, ${c.reason},
-                  ${JSON.stringify(c.sources)}::jsonb, ${c.confidence}, 'pending', ${job.id})`;
+                  ${jsonb(c.sources)}, ${c.confidence}, 'pending', ${job.id})`;
       }
       found = toInsert.length;
     }

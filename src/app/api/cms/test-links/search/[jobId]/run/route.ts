@@ -1,7 +1,7 @@
 // POST /api/cms/test-links/search/[jobId]/run
 // Runs the actual search job. Called fire-and-forget from the client.
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, jsonb } from "@/lib/db";
 import { searchTestLinksVerified } from "@/lib/test-link-search";
 
 export const runtime = "nodejs";
@@ -41,7 +41,7 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ jobId: st
     const label = `${brandName} ${model.name}`.trim();
 
     await sql`update test_link_search_jobs
-      set current_model = ${label}, progress = ${JSON.stringify(progress)}::jsonb,
+      set current_model = ${label}, progress = ${jsonb(progress)},
           total_found = ${totalFound}, updated_at = now()
       where id = ${jobId}`;
 
@@ -73,7 +73,7 @@ export async function POST(_req: NextRequest, ctx: { params: Promise<{ jobId: st
   }
 
   await sql`update test_link_search_jobs
-    set status = 'completed', current_model = null, progress = ${JSON.stringify(progress)}::jsonb,
+    set status = 'completed', current_model = null, progress = ${jsonb(progress)},
         total_found = ${totalFound}, updated_at = now()
     where id = ${jobId}`;
   return NextResponse.json({ ok: true, total_found: totalFound });

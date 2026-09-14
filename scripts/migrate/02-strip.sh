@@ -15,7 +15,9 @@ perl -0777 -pe '
   s/^CREATE POLICY .*?;\n//msg;
   s/^ALTER POLICY .*?;\n//msg;
   s/^(GRANT|REVOKE) .*?;\n//mg;
-  s/\bextensions\.//g;
+  s/^SET transaction_timeout = 0;\n//mg;   # pg_dump 17 emits this; PG16 does not know it
+  s/^CREATE SCHEMA public;\n//mg;          # a fresh database already has it
+  s/\bextensions\./public./g;             # keep objects schema-qualified: the dump runs with search_path=''
   s/^CREATE EXTENSION IF NOT EXISTS (\S+) WITH SCHEMA \S+;/CREATE EXTENSION IF NOT EXISTS $1;/mg;
 ' "$IN" > "$CLEAN"
 # Make sure the three extensions we rely on are present up-front (idempotent).

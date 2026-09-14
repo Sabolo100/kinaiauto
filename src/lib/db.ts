@@ -69,6 +69,17 @@ export function dbRo(): Sql {
 
 export type Row = Record<string, unknown>;
 
+/**
+ * jsonb/json column values. postgres.js learns the parameter type from the
+ * server and JSON-serializes the JS value — so pass RAW arrays/objects (never a
+ * pre-`JSON.stringify`-ed string: that gets encoded twice and is stored as a
+ * jsonb *string*). Plain objects are fine as-is; arrays MUST go through this
+ * helper, otherwise postgres.js infers a Postgres array type (text[]).
+ */
+export function jsonb(value: unknown) {
+  return db().json(value as Parameters<Sql["json"]>[0]);
+}
+
 /** INSERT one row, return it. */
 export async function insertOne<T extends Row = Row>(table: string, row: Row): Promise<T> {
   const s = db();
@@ -89,13 +100,11 @@ export async function updateById<T extends Row = Row>(
   id: string | number,
   patch: Row,
 ): Promise<T | null> {
-  const keys = Object.keys(patch);
-  if (keys.length === 0) {
-    const s = db();
+  const s = db();
+  if (Object.keys(patch).length === 0) {
     const [row] = await s<T[]>`select * from ${s(table)} where id = ${id}`;
     return row ?? null;
   }
-  const s = db();
   const [row] = await s<T[]>`update ${s(table)} set ${s(patch)} where id = ${id} returning *`;
   return row ?? null;
 }

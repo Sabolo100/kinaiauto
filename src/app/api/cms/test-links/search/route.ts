@@ -1,7 +1,7 @@
 // POST /api/cms/test-links/search
 // Creates a search job and returns the jobId. The client triggers /run after this.
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { db, jsonb } from "@/lib/db";
 
 export const runtime = "nodejs";
 
@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     // model_ids is jsonb → stringify + cast (a bare JS array would become text[]).
     const [job] = await db()<{ id: string }[]>`
       insert into test_link_search_jobs (status, model_ids, progress, total_found)
-      values ('pending', ${JSON.stringify(modelIds)}::jsonb, '{}'::jsonb, 0)
+      values ('pending', ${jsonb(modelIds)}, '{}'::jsonb, 0)
       returning id`;
     return NextResponse.json({ jobId: job.id });
   } catch (e) {
