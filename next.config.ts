@@ -24,6 +24,26 @@ const config: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+  async headers() {
+    return [
+      {
+        // Service worker must never be served stale, otherwise updates stall.
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+      {
+        source: "/manifest.webmanifest",
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
+      },
+      {
+        source: "/icons/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
+  },
 };
 
 export default config;

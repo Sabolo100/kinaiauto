@@ -8,6 +8,7 @@ import { QuoteToast } from "@/components/quote-toast";
 import { CookieBanner } from "@/components/cookie-banner";
 import { WelcomePopupWrapper } from "@/components/welcome-popup-wrapper";
 import { TutorialWrapper } from "@/components/tutorial-wrapper";
+import { AppShell } from "@/components/app-shell/app-shell";
 import { getDataLastUpdated } from "@/lib/data";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { JsonLd } from "@/components/json-ld";
@@ -15,6 +16,7 @@ import { organizationSchema, websiteSchema } from "@/lib/seo";
 import "./globals.css";
 import "./welcome-popup.css";
 import "./tutorial.css";
+import "./mobile-app.css";
 
 const GA_ID  = process.env.NEXT_PUBLIC_GA_ID         ?? "";
 const ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID ?? "";
@@ -48,6 +50,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -59,6 +62,19 @@ export const metadata: Metadata = {
   description:
     "Független magyar nyelvű kínai autó-iránytű. Kategória, ársáv és hajtás alapján szűrhető 60+ modell, 15 márkától. Áttekinthető, vásárlói gondolkodásra szabva.",
   applicationName: SITE_NAME,
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "kínaiautó",
+  },
+  icons: {
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  other: {
+    // Older iOS still keys off this vendor meta for standalone mode.
+    "apple-mobile-web-app-capable": "yes",
+  },
   authors: [{ name: SITE_NAME, url: SITE_URL }],
   keywords: [
     "kínai autó",
@@ -159,8 +175,10 @@ export default async function RootLayout({
 
         <QuoteProvider>
           <Topbar />
-          {children}
-          <Footer lastUpdated={lastUpdated} />
+          <AppShell lastUpdated={lastUpdated}>
+            {children}
+            <Footer lastUpdated={lastUpdated} />
+          </AppShell>
           <QuoteToast />
           <CookieBanner />
           <WelcomePopupWrapper />
