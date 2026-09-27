@@ -1,0 +1,351 @@
+issue,severity,url,detail
+title length outside 30-65,low,https://www.kinaiauto.com/,"72: Találd meg a számodra megfelelő kínai modellt — kategória, ársáv, hajtás"
+meta description length outside 70-160,low,https://www.kinaiauto.com/,"163: Kategória, ársáv és hajtás alapján szűrhető 60+ kínai autómodell, 15 márkától. Vizuális kí"
+og:url != canonical,medium,https://www.kinaiauto.com/kinalat,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/kinalat
+meta description length outside 70-160,low,https://www.kinaiauto.com/kinalat,"181: Szűrj kategóriára, hajtásra, márkára, ársávra. Válaszd ki, melyik adatot mutassuk: ár, hat"
+H1 count != 1,low,https://www.kinaiauto.com/kinalat,2
+og:url != canonical,medium,https://www.kinaiauto.com/osszehasonlitas,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/osszehasonlitas
+sitemap URL not 200,high,https://www.kinaiauto.com/markak,307 chain=307:https://www.kinaiauto.com/markak/byd 
+canonical != own URL,high,https://www.kinaiauto.com/markak,https://www.kinaiauto.com/markak/byd
+og:url != canonical,medium,https://www.kinaiauto.com/markak,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/byd
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak,44: A világ legnagyobb új energiás autógyártója.
+sitemap URL not 200,high,https://www.kinaiauto.com/modellek,307 chain=307:https://www.kinaiauto.com/modellek/byd/atto-2-dm-i 
+canonical != own URL,high,https://www.kinaiauto.com/modellek,https://www.kinaiauto.com/modellek/byd/atto-2-dm-i
+og:url != canonical,medium,https://www.kinaiauto.com/modellek,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/atto-2-dm-i
+H1 count != 1,low,https://www.kinaiauto.com/modellek,2
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar
+og:url != canonical,medium,https://www.kinaiauto.com/markak/byd,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/byd
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/byd,44: A világ legnagyobb új energiás autógyártója.
+og:url != canonical,medium,https://www.kinaiauto.com/markak/chery,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/chery
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/chery,"58: Kína egyik vezető exportőre, hatalmas globális hálózattal."
+og:url != canonical,medium,https://www.kinaiauto.com/markak/omoda,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/omoda
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/omoda,"41: A Chery prémiumosabb, fiatalos almárkája."
+og:url != canonical,medium,https://www.kinaiauto.com/markak/jaecoo,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/jaecoo
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/jaecoo,"44: Robusztus SUV-karakter, prémium technológia."
+og:url != canonical,medium,https://www.kinaiauto.com/markak/mg,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/mg
+og:url != canonical,medium,https://www.kinaiauto.com/markak/nio,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/nio
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/nio,60: Prémium elektromos márka csere-akkumulátoros technológiával.
+og:url != canonical,medium,https://www.kinaiauto.com/markak/firefly,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/firefly
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/firefly,"54: A NIO új lifestyle almárkája — városi, design-fókuszú."
+og:url != canonical,medium,https://www.kinaiauto.com/markak/xpeng,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/xpeng
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/xpeng,"61: Tech-fókuszú prémium EV-gyártó, erős vezető-asszisztensekkel."
+og:url != canonical,medium,https://www.kinaiauto.com/markak/leapmotor,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/leapmotor
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/leapmotor,58: A Stellantis kínai stratégiai partnere — kedvező árú EV-k.
+og:url != canonical,medium,https://www.kinaiauto.com/markak/geely,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/geely
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/geely,"69: A kínai autóipar globális óriása — Volvo, Polestar, Lotus tulajdonos."
+og:url != canonical,medium,https://www.kinaiauto.com/markak/dongfeng,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/dongfeng
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/dongfeng,"67: Kína egyik legnagyobb állami autógyártója, széles modellpalettával."
+og:url != canonical,medium,https://www.kinaiauto.com/markak/voyah,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/voyah
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/voyah,57: A Dongfeng prémium elektromos / range extender almárkája.
+og:url != canonical,medium,https://www.kinaiauto.com/markak/baic,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/baic
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/baic,51: A Pekingi Autóipar (BAIC) klasszikus tömeggyártója.
+og:url != canonical,medium,https://www.kinaiauto.com/markak/maxus,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/markak/maxus
+meta description length outside 70-160,low,https://www.kinaiauto.com/markak/maxus,44: A SAIC kishaszon-járműves és pickup márkája.
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mg3-hybrid-plus,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mg3-hybrid-plus
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mg3-hybrid-plus,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo-hev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo-hev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo-hev,"78: Dongfeng Forthing T5 EVO HEV — adatlap · listaár 15,8 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo-hev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/sealion-7,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/sealion-7
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/sealion-7,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/nio/el6,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/nio/el6
+H1 count != 1,low,https://www.kinaiauto.com/modellek/nio/el6,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/seal-u-dm-i,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/seal-u-dm-i
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/seal-u-dm-i,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/chery/tiggo-9,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/chery/tiggo-9
+H1 count != 1,low,https://www.kinaiauto.com/modellek/chery/tiggo-9,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/nio/et5-touring,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/nio/et5-touring
+H1 count != 1,low,https://www.kinaiauto.com/modellek/nio/et5-touring,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/leapmotor/t03,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/leapmotor/t03
+H1 count != 1,low,https://www.kinaiauto.com/modellek/leapmotor/t03,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/omoda/omoda-9-shs-p,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/omoda/omoda-9-shs-p
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/omoda/omoda-9-shs-p,"69: Omoda Omoda 9 SHS-P — adatlap · listaár 22,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/omoda/omoda-9-shs-p,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/seal,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/seal
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/seal,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/Sealion_5_DM-i,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/Sealion_5_DM-i
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/byd/Sealion_5_DM-i,"68: BYD Sealion 5 DM-i — adatlap · listaár 13,2 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/Sealion_5_DM-i,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/atto-2-dm-i,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/atto-2-dm-i
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/atto-2-dm-i,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/baic/baicbj60,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/baic/baicbj60
+H1 count != 1,low,https://www.kinaiauto.com/modellek/baic/baicbj60,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/dfmage,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/dfmage
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/dfmage,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/voyah/voy_passion,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/voyah/voy_passion
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/voyah/voy_passion,"68: Voyah Passion PHEV — adatlap · listaár 26,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/voyah/voy_passion,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/atto3evo,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/atto3evo
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/atto3evo,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/dfs7,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/dfs7
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/dfs7,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/leapmotor/b10,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/leapmotor/b10
+H1 count != 1,low,https://www.kinaiauto.com/modellek/leapmotor/b10,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/omoda/omoda-5,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/omoda/omoda-5
+H1 count != 1,low,https://www.kinaiauto.com/modellek/omoda/omoda-5,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/xpeng/xpengg9,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/xpeng/xpengg9
+H1 count != 1,low,https://www.kinaiauto.com/modellek/xpeng/xpengg9,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/voyah/voy_dreambev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/voyah/voy_dreambev
+H1 count != 1,low,https://www.kinaiauto.com/modellek/voyah/voy_dreambev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/xpeng/g6,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/xpeng/g6
+H1 count != 1,low,https://www.kinaiauto.com/modellek/xpeng/g6,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mg4-electric,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mg4-electric
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mg4-electric,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mgs5-ev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mgs5-ev
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mgs5-ev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mg-hs-hybrid-plus,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mg-hs-hybrid-plus
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/mg/mg-hs-hybrid-plus,"66: MG MG HS Hybrid+ — adatlap · listaár 11,9 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mg-hs-hybrid-plus,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mg-hs-phev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mg-hs-phev
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mg-hs-phev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/dfshine,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/dfshine
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/dfshine,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/voyah/dream-phev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/voyah/dream-phev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/voyah/dream-phev,"66: Voyah Dream PHEV — adatlap · listaár 41,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/voyah/dream-phev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/dfmherobev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/dfmherobev
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/dfmherobev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/seal-u,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/seal-u
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/seal-u,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/nio/et5,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/nio/et5
+H1 count != 1,low,https://www.kinaiauto.com/modellek/nio/et5,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/geely/e5,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/geely/e5
+H1 count != 1,low,https://www.kinaiauto.com/modellek/geely/e5,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/leapmotor/c10,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/leapmotor/c10
+H1 count != 1,low,https://www.kinaiauto.com/modellek/leapmotor/c10,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mg-zs-hybrid-plus,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mg-zs-hybrid-plus
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/mg/mg-zs-hybrid-plus,"66: MG MG ZS Hybrid+ — adatlap · listaár 10,4 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mg-zs-hybrid-plus,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5
+H1 count != 1,low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/dfbox,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/dfbox
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/dfbox,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/xpeng/g9,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/xpeng/g9
+H1 count != 1,low,https://www.kinaiauto.com/modellek/xpeng/g9,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/atto-2,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/atto-2
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/atto-2,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/forthing-u-tour-hev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/forthing-u-tour-hev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/dongfeng/forthing-u-tour-hev,"78: Dongfeng Forthing U-Tour HEV — adatlap · listaár 16,9 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/forthing-u-tour-hev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/voyah/free-rev-318,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/voyah/free-rev-318
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/voyah/free-rev-318,"68: Voyah Free REV 318 — adatlap · listaár 26,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/voyah/free-rev-318,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7
+H1 count != 1,low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5-ev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5-ev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5-ev,"68: Jaecoo Jaecoo 5 ev — adatlap · listaár 15,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5-ev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/chery/tiggo-8,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/chery/tiggo-8
+H1 count != 1,low,https://www.kinaiauto.com/modellek/chery/tiggo-8,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/chery/tiggo-4,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/chery/tiggo-4
+H1 count != 1,low,https://www.kinaiauto.com/modellek/chery/tiggo-4,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/tang,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/tang
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/tang,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/firefly/firefly,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/firefly/firefly
+H1 count != 1,low,https://www.kinaiauto.com/modellek/firefly/firefly,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/zs,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/zs
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/zs,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/atto-3,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/atto-3
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/atto-3,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/baic/x55,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/baic/x55
+H1 count != 1,low,https://www.kinaiauto.com/modellek/baic/x55,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/leapmotor/c10-hibrid-ev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/leapmotor/c10-hibrid-ev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/leapmotor/c10-hibrid-ev,"73: Leapmotor C10 Hibrid-EV — adatlap · listaár 15,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/leapmotor/c10-hibrid-ev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/shine-gs,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/shine-gs
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/dongfeng/shine-gs,"66: Dongfeng Shine GS — adatlap · listaár 8,7 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/shine-gs,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/omoda/omoda-5-shs-h,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/omoda/omoda-5-shs-h
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/omoda/omoda-5-shs-h,"69: Omoda Omoda 5 SHS-H — adatlap · listaár 12,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/omoda/omoda-5-shs-h,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/baic/bj30e,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/baic/bj30e
+H1 count != 1,low,https://www.kinaiauto.com/modellek/baic/bj30e,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/omoda/omoda-7-shs,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/omoda/omoda-7-shs
+H1 count != 1,low,https://www.kinaiauto.com/modellek/omoda/omoda-7-shs,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/seal-6-dm-i,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/seal-6-dm-i
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/seal-6-dm-i,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/hs,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/hs
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/hs,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/dolphin,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/dolphin
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/dolphin,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/xpeng/p7-plus,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/xpeng/p7-plus
+H1 count != 1,low,https://www.kinaiauto.com/modellek/xpeng/p7-plus,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/dfutourv9phev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/dfutourv9phev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/dongfeng/dfutourv9phev,"73: Dongfeng U Tour V9 PHEV — adatlap · listaár 19,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/dfutourv9phev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/df_t5evo_ev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/df_t5evo_ev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/dongfeng/df_t5evo_ev,"68: Dongfeng T5 EVO EV — adatlap · listaár 22,8 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/df_t5evo_ev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mg3ice,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mg3ice
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mg3ice,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo,"74: Dongfeng Forthing T5 EVO — adatlap · listaár 13,5 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7-shs-p,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7-shs-p
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7-shs-p,"71: Jaecoo Jaecoo 7 SHS-P — adatlap · listaár 13,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7-shs-p,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/geely/starray-em-i,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/geely/starray-em-i
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/geely/starray-em-i,"68: Geely Starray EM-i — adatlap · listaár 13,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/geely/starray-em-i,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/maxus/t60-max-pickup,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/maxus/t60-max-pickup
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/maxus/t60-max-pickup,"70: Maxus T60 MAX Pickup — adatlap · listaár 19,0 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/maxus/t60-max-pickup,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/chery/tiggo-7,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/chery/tiggo-7
+H1 count != 1,low,https://www.kinaiauto.com/modellek/chery/tiggo-7,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/voyah/courage-ev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/voyah/courage-ev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/voyah/courage-ev,"66: Voyah Courage EV — adatlap · listaár 24,1 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/voyah/courage-ev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/leapmotor/lmb10phev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/leapmotor/lmb10phev
+H1 count != 1,low,https://www.kinaiauto.com/modellek/leapmotor/lmb10phev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/seal-6-dm-i-touring,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/seal-6-dm-i-touring
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/byd/seal-6-dm-i-touring,"73: BYD Seal 6 DM-i Touring — adatlap · listaár 15,2 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/seal-6-dm-i-touring,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/voyah/voy_freebev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/voyah/voy_freebev
+H1 count != 1,low,https://www.kinaiauto.com/modellek/voyah/voy_freebev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/baic/baicx7,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/baic/baicx7
+H1 count != 1,low,https://www.kinaiauto.com/modellek/baic/baicx7,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/df_df6,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/df_df6
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/df_df6,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/nio/EL_8,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/nio/EL_8
+H1 count != 1,low,https://www.kinaiauto.com/modellek/nio/EL_8,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/fr_mhero917rev,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/fr_mhero917rev
+title length outside 30-65,low,https://www.kinaiauto.com/modellek/dongfeng/fr_mhero917rev,"72: Dongfeng MHERO 917 REV — adatlap · listaár 71,2 M Ft-tól — kinaiauto.com"
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/fr_mhero917rev,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/omoda/omoda-e5,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/omoda/omoda-e5
+H1 count != 1,low,https://www.kinaiauto.com/modellek/omoda/omoda-e5,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/dongfeng/dfutour,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/dongfeng/dfutour
+H1 count != 1,low,https://www.kinaiauto.com/modellek/dongfeng/dfutour,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/mg/mg-cyberster,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/mg/mg-cyberster
+H1 count != 1,low,https://www.kinaiauto.com/modellek/mg/mg-cyberster,2
+og:url != canonical,medium,https://www.kinaiauto.com/modellek/byd/dolphin-surf,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/modellek/byd/dolphin-surf
+H1 count != 1,low,https://www.kinaiauto.com/modellek/byd/dolphin-surf,2
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/hajtastipusok-egyszeruen,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/hajtastipusok-egyszeruen
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/hajtastipusok-egyszeruen,"61: Benzin, hibrid, PHEV, EV — melyik hogy működik és kinek való."
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/miert-nem-annyi-a-valos-hatotav,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/miert-nem-annyi-a-valos-hatotav
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/miert-nem-annyi-a-valos-hatotav,"55: Hideg, meleg, autópálya, fűtés, vezetési stílus hatása."
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/plug-in-hibrid-zsenialis-vagy-felreertett,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/plug-in-hibrid-zsenialis-vagy-felreertett
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/plug-in-hibrid-zsenialis-vagy-felreertett,"45: Csak akkor igazán jó, ha rendszeresen töltik."
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/otthoni-toltes-konnektor-wallbox-napelem,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/otthoni-toltes-konnektor-wallbox-napelem
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/otthoni-toltes-konnektor-wallbox-napelem,50: Gyakorlati útmutató vásárlás előtti ellenőrzéshez.
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/nyilvanos-toltes-magyarorszagon,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/nyilvanos-toltes-magyarorszagon
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/nyilvanos-toltes-magyarorszagon,"52: Szolgáltatók, applikációk, töltőtípusok és árlogika."
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/elektromos-auto-ceges-vasarlasa,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/elektromos-auto-ceges-vasarlasa
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/elektromos-auto-ceges-vasarlasa,"45: Adózási, finanszírozási és lízing szempontok."
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/maganvasarlokent-mire-figyelj,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/maganvasarlokent-mire-figyelj
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/maganvasarlokent-mire-figyelj,"65: Ár, hatótáv, garancia, töltés, szerviz, biztosítás, értékvesztés."
+og:url != canonical,medium,https://www.kinaiauto.com/tudastar/kinai-auto-garancia-es-szervizhatter,og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/tudastar/kinai-auto-garancia-es-szervizhatter
+meta description length outside 70-160,low,https://www.kinaiauto.com/tudastar/kinai-auto-garancia-es-szervizhatter,49: Márkánként eltérő — vásárlás előtt ellenőrizendő.
+duplicate title,medium,https://www.kinaiauto.com/markak,"2 URLs share ""BYD — modellek és háttér — kinaiauto.com"""
+duplicate title,medium,https://www.kinaiauto.com/markak/byd,"2 URLs share ""BYD — modellek és háttér — kinaiauto.com"""
+duplicate title,medium,https://www.kinaiauto.com/modellek,"2 URLs share ""BYD Atto 2 DM-i — adatlap · listaár 10,0 M Ft-tól — kinaiauto.com"""
+duplicate title,medium,https://www.kinaiauto.com/modellek/byd/atto-2-dm-i,"2 URLs share ""BYD Atto 2 DM-i — adatlap · listaár 10,0 M Ft-tól — kinaiauto.com"""
+duplicate meta description,medium,https://www.kinaiauto.com/markak,"2 URLs share ""A világ legnagyobb új energiás autógyártója."""
+duplicate meta description,medium,https://www.kinaiauto.com/markak/byd,"2 URLs share ""A világ legnagyobb új energiás autógyártója."""
+duplicate meta description,medium,https://www.kinaiauto.com/modellek,"2 URLs share ""BYD Atto 2 DM-i (Mini SUV, plug-in hibrid) magyarországi adatlap: ár, méretek, h"""
+duplicate meta description,medium,https://www.kinaiauto.com/modellek/byd/atto-2-dm-i,"2 URLs share ""BYD Atto 2 DM-i (Mini SUV, plug-in hibrid) magyarországi adatlap: ár, méretek, h"""
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/kinalat,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/osszehasonlitas,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/byd,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/chery,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/omoda,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/jaecoo,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/mg,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/nio,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/firefly,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/xpeng,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/leapmotor,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/geely,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/dongfeng,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/voyah,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/baic,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/markak/maxus,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mg3-hybrid-plus,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo-hev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/sealion-7,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/nio/el6,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/seal-u-dm-i,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/chery/tiggo-9,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/nio/et5-touring,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/leapmotor/t03,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/omoda/omoda-9-shs-p,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/seal,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/Sealion_5_DM-i,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/atto-2-dm-i,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/baic/baicbj60,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/dfmage,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/voyah/voy_passion,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/atto3evo,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/dfs7,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/leapmotor/b10,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/omoda/omoda-5,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/xpeng/xpengg9,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/voyah/voy_dreambev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/xpeng/g6,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mg4-electric,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mgs5-ev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mg-hs-hybrid-plus,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mg-hs-phev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/dfshine,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/voyah/dream-phev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/dfmherobev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/seal-u,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/nio/et5,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/geely/e5,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/leapmotor/c10,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mg-zs-hybrid-plus,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/dfbox,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/xpeng/g9,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/atto-2,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/forthing-u-tour-hev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/voyah/free-rev-318,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-5-ev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/chery/tiggo-8,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/chery/tiggo-4,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/tang,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/firefly/firefly,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/zs,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/atto-3,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/baic/x55,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/leapmotor/c10-hibrid-ev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/shine-gs,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/omoda/omoda-5-shs-h,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/baic/bj30e,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/omoda/omoda-7-shs,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/seal-6-dm-i,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/hs,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/dolphin,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/xpeng/p7-plus,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/dfutourv9phev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/df_t5evo_ev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mg3ice,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/forthing-t5-evo,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/jaecoo/jaecoo-7-shs-p,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/geely/starray-em-i,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/maxus/t60-max-pickup,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/chery/tiggo-7,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/voyah/courage-ev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/leapmotor/lmb10phev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/seal-6-dm-i-touring,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/voyah/voy_freebev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/baic/baicx7,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/df_df6,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/nio/EL_8,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/fr_mhero917rev,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/omoda/omoda-e5,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/dongfeng/dfutour,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/mg/mg-cyberster,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/modellek/byd/dolphin-surf,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/hajtastipusok-egyszeruen,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/miert-nem-annyi-a-valos-hatotav,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/plug-in-hibrid-zsenialis-vagy-felreertett,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/otthoni-toltes-konnektor-wallbox-napelem,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/nyilvanos-toltes-magyarorszagon,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/elektromos-auto-ceges-vasarlasa,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/maganvasarlokent-mire-figyelj,
+hreflang missing (fine only for single-language pages),low,https://www.kinaiauto.com/tudastar/kinai-auto-garancia-es-szervizhatter,

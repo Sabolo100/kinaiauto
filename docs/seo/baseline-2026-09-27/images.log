@@ -1,0 +1,24 @@
+  100/106 pages parsed
+measuring 13 unique image files (of 433) ...
+106 pages, 2649 <img> occurrences, 433 unique src (420 external not measured)
+Formats by extension (unique): {'.jpg': 194, '.webp': 164, '.png': 72, '.svg': 2, '.avif': 1}
+Formats by Content-Type (measured): {'image/png': 12, 'image/avif': 1}
+Alt state (occurrences): {'ok': 2357, 'empty': 292}
+Empty/missing alt by category and image role (occurrences / unique src):
+  decorative           content          (no class)               150 /   75  e.g. /kinalat https://minio.kinaiauto.com/car-photos/mg/mg3ice/hero-1778752294210.webp
+  content              content          photo-secondary           92 /   78  e.g. /markak https://minio.kinaiauto.com/car-photos/byd/sealion-7/exterior-1778761893456.jpg
+  decorative           content          cat-chip-icon             24 /   12  e.g. / /cat-icons/1varosikisauto.png
+  in-labelled-control  logo             brand-chip-logo           14 /   14  e.g. / https://minio.kinaiauto.com/brand-logos/baic/primary-1778559758227.webp
+  in-labelled-control  content          (no class)                12 /   12  e.g. / /cat-icons/1varosikisauto.png
+Alt quality: {'same-alt-for-4-different-images': 236, 'same-alt-for-3-different-images': 24, 'same-alt-for-5-different-images': 20}
+  e.g. /modellek: alt="Külső" (same-alt-for-4-different-images)
+  e.g. /modellek/mg/mg3-hybrid-plus: alt="Külső" (same-alt-for-3-different-images)
+  e.g. /modellek/dongfeng/forthing-t5-evo-hev: alt="Külső" (same-alt-for-4-different-images)
+
+FILES > 300 kB: 0 (of 13 measured; total measured 0.7 MB)
+
+No width+height attributes (occurrences, by class): 1332  {'(no class)': 1187, 'photo-secondary': 92, 'cat-chip-icon': 24, 'brand-logo-hero': 15, 'brand-chip-logo': 14}
+First image inside <main> is loading="lazy" (possible LCP delay): 94 pages, e.g. ('/markak', 'https://minio.kinaiauto.com/brand-logos/baic/primary-1778559758227.webp', 'brand-tab-logo')
+Cache-Control on image files: {'public, max-age=0, must-revalidate': 13}
+Heaviest pages by total unique same-host image bytes: [('/', '0.7 MB'), ('/kinalat', '0.7 MB'), ('/modellek/xpeng/xpengg9', '0.0 MB'), ('/modellek/xpeng/p7-plus', '0.0 MB'), ('/modellek/xpeng/g9', '0.0 MB'), ('/modellek/xpeng/g6', '0.0 MB'), ('/modellek/voyah/voy_passion', '0.0 MB'), ('/modellek/voyah/voy_freebev', '0.0 MB')]
+Files: images-www.kinaiauto.com-img-occurrences.csv, images-www.kinaiauto.com-img-files.csv; network requests this run: 13

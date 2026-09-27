@@ -1,0 +1,15 @@
+  100/106
+106 URLs; with JSON-LD: 106; without: 0; invalid JSON blocks on 0 pages
+Pages per @type: ListItem×106, Organization×106, SearchAction×106, BreadcrumbList×106, WebSite×106, QuantitativeValue×79, Brand×79, Vehicle×79, EngineSpecification×78, Country×76, AggregateOffer×76, Article×9, FAQPage×1, Question×1, Answer×1
+Sections (pages / with JSON-LD): /modellek/* 78/78, /markak/* 14/14, /tudastar/* 8/8, / 1/1, /kinalat 1/1, /osszehasonlitas 1/1, /markak 1/1, /modellek 1/1, /tudastar 1/1
+Organization defined in full on 106 page(s): @id=https://www.kinaiauto.com#organization sameAs=MISSING logo=https://www.kinaiauto.com/icon.png
+  pages: ['/', '/kinalat', '/osszehasonlitas', '/markak', '/modellek', '/tudastar', '/markak/byd', '/markak/chery', '/markak/omoda', '/markak/jaecoo']
+Expectation ^/modellek/[^/]+/[^/?]+$ -> BreadcrumbList|Car|Product: 78/78 pages OK
+Expectation ^/markak/[^/?]+$ -> Brand|BreadcrumbList|Organization: 14/14 pages OK
+Expectation ^/tudastar/[^/?]+$ -> Article|BreadcrumbList: 8/8 pages OK
+FAQ-like visible content: 1 pages; of those without FAQPage markup: 0
+  /tudastar  markup=Y  «label=-; 1 question items; Magánemberként kell cégautóadót fizetni?»
+Pages with a video embed/thumbnail: 0; with VideoObject: 0
+Problems (pages):
+   106  Organization: sameAs has 0 profile(s)
+File: jsonld-www.kinaiauto.com-jsonld.csv; network requests this run: 0

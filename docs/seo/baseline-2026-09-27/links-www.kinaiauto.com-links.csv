@@ -1,0 +1,107 @@
+page,inbound_any,inbound_content,inbound_editorial,inbound_chrome_only,content_link_occurrences,outbound_content_unique,outbound_any_unique,sample_content_sources
+/,105,105,0,0,105,79,83,/kinalat /markak /markak/baic /markak/byd /markak/chery
+/kinalat,105,1,1,104,1,76,80,/
+/osszehasonlitas,105,0,0,105,0,1,5,
+/markak,105,14,14,91,14,29,33,/markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+/modellek,105,0,0,105,0,15,20,
+/tudastar,105,8,8,97,16,9,13,/tudastar/elektromos-auto-ceges-vasarlasa /tudastar/hajtastipusok-egyszeruen /tudastar/kinai-auto-garancia-es-szervizhatter /tudastar/maganvasarlokent-mire-figyelj /tudastar/miert-nem-annyi-a-valos-hatotav
+/markak/byd,29,14,14,15,14,29,33,/markak /markak/baic /markak/chery /markak/dongfeng /markak/firefly
+/markak/chery,18,14,14,4,14,19,23,/markak /markak/baic /markak/byd /markak/dongfeng /markak/firefly
+/markak/omoda,19,14,14,5,14,20,24,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/jaecoo,18,14,14,4,14,19,23,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/mg,24,14,14,10,14,25,29,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/nio,18,14,14,4,14,19,23,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/firefly,15,14,14,1,14,16,20,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/xpeng,18,14,14,4,14,19,23,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/leapmotor,19,14,14,5,14,20,24,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/geely,16,14,14,2,14,17,21,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/dongfeng,28,14,14,14,14,29,33,/markak /markak/baic /markak/byd /markak/chery /markak/firefly
+/markak/voyah,20,14,14,6,14,21,25,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/markak/baic,18,14,14,4,14,19,23,/markak /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+/markak/maxus,15,14,14,1,14,16,20,/markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+/modellek/mg/mg3-hybrid-plus,16,12,12,4,16,10,17,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/dongfeng/forthing-t5-evo-hev,22,16,16,6,20,14,23,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/byd/sealion-7,23,18,18,5,24,14,23,/ /kinalat /markak /markak/byd /modellek
+/modellek/nio/el6,14,6,6,8,10,4,13,/ /kinalat /markak/nio /modellek/nio/EL_8 /modellek/nio/et5
+/modellek/byd/seal-u-dm-i,27,18,18,9,24,14,24,/ /kinalat /markak /markak/byd /modellek
+/modellek/chery/tiggo-9,10,6,6,4,10,4,14,/ /kinalat /markak/chery /modellek/chery/tiggo-4 /modellek/chery/tiggo-7
+/modellek/nio/et5-touring,8,6,6,2,10,4,12,/ /kinalat /markak/nio /modellek/nio/EL_8 /modellek/nio/el6
+/modellek/leapmotor/t03,13,7,7,6,11,5,15,/ /kinalat /markak/leapmotor /modellek/leapmotor/b10 /modellek/leapmotor/c10
+/modellek/omoda/omoda-9-shs-p,11,7,7,4,11,5,15,/ /kinalat /markak/omoda /modellek/omoda/omoda-5 /modellek/omoda/omoda-5-shs-h
+/modellek/byd/seal,23,18,18,5,24,14,23,/ /kinalat /markak /markak/byd /modellek
+/modellek/byd/Sealion_5_DM-i,19,18,18,1,24,14,22,/ /kinalat /markak /markak/byd /modellek
+/modellek/byd/atto-2-dm-i,18,18,18,0,24,14,20,/ /kinalat /markak /markak/byd /modellek
+/modellek/baic/baicbj60,8,6,6,2,10,4,14,/ /kinalat /markak/baic /modellek/baic/baicx7 /modellek/baic/bj30e
+/modellek/dongfeng/dfmage,23,16,16,7,20,14,24,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/voyah/voy_passion,9,8,8,1,12,6,15,/ /kinalat /markak/voyah /modellek/voyah/courage-ev /modellek/voyah/dream-phev
+/modellek/byd/atto3evo,24,18,18,6,24,14,23,/ /kinalat /markak /markak/byd /modellek
+/modellek/dongfeng/dfs7,19,16,16,3,20,14,23,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/leapmotor/b10,13,7,7,6,11,5,15,/ /kinalat /markak/leapmotor /modellek/leapmotor/c10 /modellek/leapmotor/c10-hibrid-ev
+/modellek/omoda/omoda-5,12,7,7,5,11,5,15,/ /kinalat /markak/omoda /modellek/omoda/omoda-5-shs-h /modellek/omoda/omoda-7-shs
+/modellek/xpeng/xpengg9,10,6,6,4,10,4,13,/ /kinalat /markak/xpeng /modellek/xpeng/g6 /modellek/xpeng/g9
+/modellek/voyah/voy_dreambev,9,8,8,1,12,6,15,/ /kinalat /markak/voyah /modellek/voyah/courage-ev /modellek/voyah/dream-phev
+/modellek/xpeng/g6,11,6,6,5,10,4,14,/ /kinalat /markak/xpeng /modellek/xpeng/g9 /modellek/xpeng/p7-plus
+/modellek/mg/mg4-electric,13,12,12,1,16,10,19,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/mg/mgs5-ev,18,12,12,6,16,10,20,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/mg/mg-hs-hybrid-plus,15,12,12,3,16,10,18,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/mg/mg-hs-phev,18,12,12,6,16,10,20,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/dongfeng/dfshine,16,16,16,0,20,14,21,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/voyah/dream-phev,10,8,8,2,12,6,14,/ /kinalat /markak/voyah /modellek/voyah/courage-ev /modellek/voyah/free-rev-318
+/modellek/dongfeng/dfmherobev,20,15,15,5,19,14,24,/ /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev /modellek/dongfeng/dfbox
+/modellek/byd/seal-u,22,18,18,4,24,14,23,/ /kinalat /markak /markak/byd /modellek
+/modellek/nio/et5,10,6,6,4,10,4,13,/ /kinalat /markak/nio /modellek/nio/EL_8 /modellek/nio/el6
+/modellek/geely/e5,9,4,4,5,8,2,12,/ /kinalat /markak/geely /modellek/geely/starray-em-i
+/modellek/leapmotor/c10,11,7,7,4,11,5,15,/ /kinalat /markak/leapmotor /modellek/leapmotor/b10 /modellek/leapmotor/c10-hibrid-ev
+/modellek/mg/mg-zs-hybrid-plus,15,12,12,3,16,10,19,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/jaecoo/jaecoo-5,12,6,6,6,10,4,14,/ /kinalat /markak/jaecoo /modellek/jaecoo/jaecoo-5-ev /modellek/jaecoo/jaecoo-7
+/modellek/dongfeng/dfbox,19,16,16,3,20,14,24,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/xpeng/g9,14,6,6,8,10,4,14,/ /kinalat /markak/xpeng /modellek/xpeng/g6 /modellek/xpeng/p7-plus
+/modellek/byd/atto-2,18,18,18,0,24,14,20,/ /kinalat /markak /markak/byd /modellek
+/modellek/dongfeng/forthing-u-tour-hev,17,16,16,1,20,14,21,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/voyah/free-rev-318,11,8,8,3,12,6,16,/ /kinalat /markak/voyah /modellek/voyah/courage-ev /modellek/voyah/dream-phev
+/modellek/jaecoo/jaecoo-7,8,6,6,2,10,4,13,/ /kinalat /markak/jaecoo /modellek/jaecoo/jaecoo-5 /modellek/jaecoo/jaecoo-5-ev
+/modellek/jaecoo/jaecoo-5-ev,12,6,6,6,10,4,14,/ /kinalat /markak/jaecoo /modellek/jaecoo/jaecoo-5 /modellek/jaecoo/jaecoo-7
+/modellek/chery/tiggo-8,7,6,6,1,10,4,12,/ /kinalat /markak/chery /modellek/chery/tiggo-4 /modellek/chery/tiggo-7
+/modellek/chery/tiggo-4,9,6,6,3,10,4,14,/ /kinalat /markak/chery /modellek/chery/tiggo-7 /modellek/chery/tiggo-8
+/modellek/byd/tang,24,18,18,6,24,14,24,/ /kinalat /markak /markak/byd /modellek
+/modellek/firefly/firefly,6,3,3,3,7,1,11,/ /kinalat /markak/firefly
+/modellek/mg/zs,15,12,12,3,16,10,19,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/byd/atto-3,21,18,18,3,24,14,23,/ /kinalat /markak /markak/byd /modellek
+/modellek/baic/x55,10,6,6,4,10,4,13,/ /kinalat /markak/baic /modellek/baic/baicbj60 /modellek/baic/baicx7
+/modellek/leapmotor/c10-hibrid-ev,12,7,7,5,11,5,15,/ /kinalat /markak/leapmotor /modellek/leapmotor/b10 /modellek/leapmotor/c10
+/modellek/dongfeng/shine-gs,18,16,16,2,20,14,23,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/omoda/omoda-5-shs-h,10,7,7,3,11,5,14,/ /kinalat /markak/omoda /modellek/omoda/omoda-5 /modellek/omoda/omoda-7-shs
+/modellek/baic/bj30e,8,6,6,2,10,4,14,/ /kinalat /markak/baic /modellek/baic/baicbj60 /modellek/baic/baicx7
+/modellek/omoda/omoda-7-shs,6,6,6,0,10,5,15,/ /markak/omoda /modellek/omoda/omoda-5 /modellek/omoda/omoda-5-shs-h /modellek/omoda/omoda-9-shs-p
+/modellek/byd/seal-6-dm-i,19,18,18,1,24,14,21,/ /kinalat /markak /markak/byd /modellek
+/modellek/mg/hs,14,12,12,2,16,10,19,/ /kinalat /markak/mg /modellek/mg/mg-cyberster /modellek/mg/mg-hs-hybrid-plus
+/modellek/byd/dolphin,19,18,18,1,24,14,21,/ /kinalat /markak /markak/byd /modellek
+/modellek/xpeng/p7-plus,9,6,6,3,10,4,13,/ /kinalat /markak/xpeng /modellek/xpeng/g6 /modellek/xpeng/g9
+/modellek/dongfeng/dfutourv9phev,18,16,16,2,20,14,22,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/dongfeng/df_t5evo_ev,16,16,16,0,20,14,24,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/dfbox
+/modellek/mg/mg3ice,12,12,12,0,16,10,17,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-cyberster
+/modellek/dongfeng/forthing-t5-evo,16,16,16,0,20,14,23,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/jaecoo/jaecoo-7-shs-p,11,6,6,5,10,4,14,/ /kinalat /markak/jaecoo /modellek/jaecoo/jaecoo-5 /modellek/jaecoo/jaecoo-5-ev
+/modellek/geely/starray-em-i,8,4,4,4,8,2,12,/ /kinalat /markak/geely /modellek/geely/e5
+/modellek/maxus/t60-max-pickup,4,3,3,1,7,1,8,/ /kinalat /markak/maxus
+/modellek/chery/tiggo-7,8,6,6,2,10,4,14,/ /kinalat /markak/chery /modellek/chery/tiggo-4 /modellek/chery/tiggo-8
+/modellek/voyah/courage-ev,8,8,8,0,12,6,16,/ /kinalat /markak/voyah /modellek/voyah/dream-phev /modellek/voyah/free-rev-318
+/modellek/leapmotor/lmb10phev,7,6,6,1,10,5,14,/ /markak/leapmotor /modellek/leapmotor/b10 /modellek/leapmotor/c10 /modellek/leapmotor/c10-hibrid-ev
+/modellek/byd/seal-6-dm-i-touring,18,18,18,0,24,14,21,/ /kinalat /markak /markak/byd /modellek
+/modellek/voyah/voy_freebev,11,8,8,3,12,6,16,/ /kinalat /markak/voyah /modellek/voyah/courage-ev /modellek/voyah/dream-phev
+/modellek/baic/baicx7,7,6,6,1,10,4,13,/ /kinalat /markak/baic /modellek/baic/baicbj60 /modellek/baic/bj30e
+/modellek/dongfeng/df_df6,17,16,16,1,20,14,21,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_t5evo_ev /modellek/dongfeng/dfbox
+/modellek/nio/EL_8,6,6,6,0,10,4,13,/ /kinalat /markak/nio /modellek/nio/el6 /modellek/nio/et5
+/modellek/dongfeng/fr_mhero917rev,19,16,16,3,20,14,23,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/omoda/omoda-e5,7,7,7,0,11,5,15,/ /kinalat /markak/omoda /modellek/omoda/omoda-5 /modellek/omoda/omoda-5-shs-h
+/modellek/dongfeng/dfutour,16,16,16,0,20,14,20,/ /kinalat /markak/dongfeng /modellek/dongfeng/df_df6 /modellek/dongfeng/df_t5evo_ev
+/modellek/mg/mg-cyberster,12,12,12,0,16,10,19,/ /kinalat /markak/mg /modellek/mg/hs /modellek/mg/mg-hs-hybrid-plus
+/modellek/byd/dolphin-surf,21,18,18,3,24,14,24,/ /kinalat /markak /markak/byd /modellek
+/tudastar/hajtastipusok-egyszeruen,1,1,1,0,1,2,6,/tudastar
+/tudastar/miert-nem-annyi-a-valos-hatotav,1,1,1,0,1,2,6,/tudastar
+/tudastar/plug-in-hibrid-zsenialis-vagy-felreertett,1,1,1,0,1,2,6,/tudastar
+/tudastar/otthoni-toltes-konnektor-wallbox-napelem,1,1,1,0,1,2,6,/tudastar
+/tudastar/nyilvanos-toltes-magyarorszagon,1,1,1,0,1,2,6,/tudastar
+/tudastar/elektromos-auto-ceges-vasarlasa,1,1,1,0,1,2,6,/tudastar
+/tudastar/maganvasarlokent-mire-figyelj,1,1,1,0,1,2,6,/tudastar
+/tudastar/kinai-auto-garancia-es-szervizhatter,1,1,1,0,1,2,6,/tudastar

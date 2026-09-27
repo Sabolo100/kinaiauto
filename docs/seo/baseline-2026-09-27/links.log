@@ -1,0 +1,98 @@
+  100/106
+106 sitemap pages, 6113 internal links parsed (1804 in content). Pages without <main>: 0
+Boilerplate content links (same target+text on >30% of pages, excluded from "editorial"):
+  /  «főoldal»  on 105 pages
+
+TRUE ORPHANS (no inbound link at all): 0
+CONTENT ORPHANS (only nav/footer links or none): 2
+   /osszehasonlitas  (any=105)
+   /modellek  (any=105)
+
+FEWEST CONTENT INBOUND (page / any / content / editorial / outbound content):
+  /osszehasonlitas                                                        105     0     0     1
+  /modellek                                                               105     0     0    15
+  /tudastar/hajtastipusok-egyszeruen                                        1     1     1     2
+  /tudastar/miert-nem-annyi-a-valos-hatotav                                 1     1     1     2
+  /tudastar/plug-in-hibrid-zsenialis-vagy-felreertett                       1     1     1     2
+  /tudastar/otthoni-toltes-konnektor-wallbox-napelem                        1     1     1     2
+  /tudastar/nyilvanos-toltes-magyarorszagon                                 1     1     1     2
+  /tudastar/elektromos-auto-ceges-vasarlasa                                 1     1     1     2
+  /tudastar/maganvasarlokent-mire-figyelj                                   1     1     1     2
+  /tudastar/kinai-auto-garancia-es-szervizhatter                            1     1     1     2
+  /kinalat                                                                105     1     1    76
+  /modellek/maxus/t60-max-pickup                                            4     3     3     1
+  /modellek/firefly/firefly                                                 6     3     3     1
+  /modellek/geely/starray-em-i                                              8     4     4     2
+  /modellek/geely/e5                                                        9     4     4     2
+  /modellek/omoda/omoda-7-shs                                               6     6     6     5
+  /modellek/nio/EL_8                                                        6     6     6     4
+  /modellek/chery/tiggo-8                                                   7     6     6     4
+  /modellek/leapmotor/lmb10phev                                             7     6     6     5
+  /modellek/baic/baicx7                                                     7     6     6     4
+  /modellek/nio/et5-touring                                                 8     6     6     4
+  /modellek/baic/baicbj60                                                   8     6     6     4
+  /modellek/jaecoo/jaecoo-7                                                 8     6     6     4
+  /modellek/baic/bj30e                                                      8     6     6     4
+  /modellek/chery/tiggo-7                                                   8     6     6     4
+  /modellek/chery/tiggo-4                                                   9     6     6     4
+  /modellek/xpeng/p7-plus                                                   9     6     6     4
+  /modellek/chery/tiggo-9                                                  10     6     6     4
+  /modellek/xpeng/xpengg9                                                  10     6     6     4
+  /modellek/nio/et5                                                        10     6     6     4
+
+FOCUS /markak: 15 pages (any / content / editorial inbound; content sources)
+  /markak                                                       105   14   14  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/byd                                                    29   14   14  /markak /markak/baic /markak/chery /markak/dongfeng /markak/firefly
+  /markak/chery                                                  18   14   14  /markak /markak/baic /markak/byd /markak/dongfeng /markak/firefly
+  /markak/omoda                                                  19   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/jaecoo                                                 18   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/mg                                                     24   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/nio                                                    18   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/firefly                                                15   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/xpeng                                                  18   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/leapmotor                                              19   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/geely                                                  16   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/dongfeng                                               28   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/firefly
+  /markak/voyah                                                  20   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+  /markak/baic                                                   18   14   14  /markak /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/maxus                                                  15   14   14  /markak /markak/baic /markak/byd /markak/chery /markak/dongfeng
+
+FOCUS /tudastar: 9 pages (any / content / editorial inbound; content sources)
+  /tudastar                                                     105    8    8  /tudastar/elektromos-auto-ceges-vasarlasa /tudastar/hajtastipusok-egyszeruen /tudastar/kinai-auto-garancia-es-szervizhat
+  /tudastar/hajtastipusok-egyszeruen                              1    1    1  /tudastar
+  /tudastar/miert-nem-annyi-a-valos-hatotav                       1    1    1  /tudastar
+  /tudastar/plug-in-hibrid-zsenialis-vagy-felreertett             1    1    1  /tudastar
+  /tudastar/otthoni-toltes-konnektor-wallbox-napelem              1    1    1  /tudastar
+  /tudastar/nyilvanos-toltes-magyarorszagon                       1    1    1  /tudastar
+  /tudastar/elektromos-auto-ceges-vasarlasa                       1    1    1  /tudastar
+  /tudastar/maganvasarlokent-mire-figyelj                         1    1    1  /tudastar
+  /tudastar/kinai-auto-garancia-es-szervizhatter                  1    1    1  /tudastar
+
+INTERNAL LINK TARGETS NOT IN SITEMAP: 115 (top by linking pages)
+   106  /ajanlatkeres
+   106  /impresszum
+   106  /aszf
+   106  /adatkezeles
+   106  /cookie
+   106  /adatok-torlese
+   106  /jogi-nyilatkozat
+   106  /llms.txt
+    16  /osszehasonlitas?models=
+     7  /kinalat?category=Kompakt SUV&drive=Benzin
+     7  /kinalat?category=Kompakt SUV&drive=Elektromos
+     6  /kinalat?category=Középméretű SUV&drive=Elektromos
+     6  /kinalat?category=Nagy SUV&drive=Elektromos
+     6  /kinalat?category=Középméretű SUV&drive=Plug-in hibrid
+     5  /osszehasonlitas?models=BYD|Atto 2 DM-i
+     4  /osszehasonlitas?models=BYD|Dolphin Surf
+     4  /osszehasonlitas?models=BYD|Atto 2
+     4  /osszehasonlitas?models=BYD|Atto 3
+     4  /osszehasonlitas?models=BYD|Dolphin
+     4  /osszehasonlitas?models=BYD|Sealion 5 DM-i
+     4  /osszehasonlitas?models=BYD|Seal U DM-i
+     4  /osszehasonlitas?models=BYD|Seal 6 DM-i
+     4  /osszehasonlitas?models=BYD|Atto 3 EVO
+     4  /osszehasonlitas?models=BYD|Seal 6 DM-i Touring
+     4  /osszehasonlitas?models=BYD|Seal
+
+Files: links-www.kinaiauto.com-links.csv, links-www.kinaiauto.com-edges.csv; network requests this run: 0

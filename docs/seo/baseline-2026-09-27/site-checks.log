@@ -1,0 +1,119 @@
+== 1. Bot access matrix (status / bytes / seconds / where the <title> is / H1 count)
+  BROWSER              /                                        200 555711 0.775459  title:head h1:1
+  BROWSER              /kinalat                                 200 289857 2.102634  title:head h1:2
+  BROWSER              /modellek/byd/sealion-7                  200 287216 0.454451  title:head h1:2
+  OAI-SearchBot/1.0    /                                        200 555711 0.947625  title:head h1:1
+  OAI-SearchBot/1.0    /kinalat                                 200 289857 0.883418  title:head h1:2
+  OAI-SearchBot/1.0    /modellek/byd/sealion-7                  200 287302 0.584905  title:head h1:2
+  ChatGPT-User/1.0     /                                        200 555711 0.844336  title:head h1:1
+  ChatGPT-User/1.0     /kinalat                                 200 289857 0.913637  title:head h1:2
+  ChatGPT-User/1.0     /modellek/byd/sealion-7                  200 287302 0.524333  title:head h1:2
+  GPTBot/1.0           /                                        200 555711 0.827736  title:head h1:1
+  GPTBot/1.0           /kinalat                                 200 289857 0.973779  title:head h1:2
+  GPTBot/1.0           /modellek/byd/sealion-7                  200 287302 0.514912  title:head h1:2
+  ClaudeBot/1.0        /                                        200 555711 0.963225  title:head h1:1
+  ClaudeBot/1.0        /kinalat                                 200 289857 0.839961  title:head h1:2
+  ClaudeBot/1.0        /modellek/byd/sealion-7                  200 287302 0.591409  title:head h1:2
+  Claude-SearchBot/1.0 /                                        200 555711 0.852980  title:head h1:1
+  Claude-SearchBot/1.0 /kinalat                                 200 289857 0.974373  title:head h1:2
+  Claude-SearchBot/1.0 /modellek/byd/sealion-7                  200 287302 0.447258  title:head h1:2
+  PerplexityBot/1.0    /                                        200 555711 0.713535  title:head h1:1
+  PerplexityBot/1.0    /kinalat                                 200 289857 0.889659  title:head h1:2
+  PerplexityBot/1.0    /modellek/byd/sealion-7                  200 287302 0.546053  title:head h1:2
+  Googlebot/2.1        /                                        200 555711 0.843240  title:head h1:1
+  Googlebot/2.1        /kinalat                                 200 289857 0.962361  title:head h1:2
+  Googlebot/2.1        /modellek/byd/sealion-7                  200 287302 0.641195  title:head h1:2
+  Bingbot/2.0          /                                        200 555711 0.858869  title:head h1:1
+  Bingbot/2.0          /kinalat                                 200 289228 0.934741  title:head h1:2
+  Bingbot/2.0          /modellek/byd/sealion-7                  200 287302 0.643715  title:head h1:2
+  CCBot/2.0            /                                        200 555711 0.927920  title:head h1:1
+  CCBot/2.0            /kinalat                                 200 289857 0.994508  title:head h1:2
+  CCBot/2.0            /modellek/byd/sealion-7                  200 287302 0.502293  title:head h1:2
+  Google-Extended      /                                        200 555711 0.923515  title:head h1:1
+  Google-Extended      /kinalat                                 200 289228 1.107160  title:head h1:2
+  Google-Extended      /modellek/byd/sealion-7                  200 287302 0.463741  title:head h1:2
+  -> responses that are not 200 or differ >10% in size from the browser UA: 0
+  -> responses with <title>/<meta>/<link rel=canonical> outside <head> (streamed metadata): 0
+
+== 2. CDN / WAF / server headers (browser UA, home page)
+  server: Vercel
+  vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+  x-powered-by: Next.js
+
+== 3. llms.txt family
+  /llms.txt        status=200 bytes=4409 type=text/plain; charset=utf-8
+  /llms-full.txt   status=200 bytes=30284 type=text/plain; charset=utf-8
+  /en/llms.txt     status=404 bytes=33279 type=text/html; charset=utf-8
+  lines with bare relative paths: 0; markdown [title](url) links: 28
+  --- links inside /llms.txt, absolute URLs AND bare relative paths (GET each, sequential; non-200 listed):
+  30 unique URLs
+    307  https://www.kinaiauto.com/markak
+    307  https://www.kinaiauto.com/modellek
+  (end of link check)
+
+== 4. Server-side rendering (plain curl UA, no JS): H1 + first <main> paragraph in raw HTML
+  -- /
+     title: [('Találd meg a számodra megfelelő kínai modellt — kategória, ársáv, hajtás', 'head')] | description in head | canonical in head
+     H1 count: 1 -> ['Találd meg új kínai autódat kategória és ár alapján — majd kérj ajánlatokat egy kattintással.']
+     first <main> paragraph: Nem kell ismerned a márkákat vagy modellneveket. Válassz autókategóriát, add meg az ársávot, és nézd meg, milyen kínai autók érhetők el ma Magyarországon — egy helyen, áttekinthetően.
+     <main> text chars: 15574; og/twitter tags: 15; JSON-LD blocks: 3
+     icon links: [{'rel': 'apple-touch-icon', 'href': '/icons/apple-touch-icon.png', 'sizes': '180x180', 'type': 'image/png'}]
+  -- /kinalat
+     title: [('Kínálat — vizuális hasáb a kínai modellekről — kinaiauto.com', 'head')] | description in head | canonical in head
+     H1 count: 2 -> ['Lásd a tényleges különbségeket.', 'Lásd a tényleges különbségeket.']
+     first <main> paragraph: Szűrj kategóriára, hajtásra, márkára, ársávra. Válaszd ki, melyik adatot mutassuk: ár, hatótáv, csomagtartó, teljesítmény. A modellek a függőleges hasábon arányosan helyezkednek el a kiválasztott érték szerint.
+     <main> text chars: 4384; og/twitter tags: 15; JSON-LD blocks: 3
+     icon links: [{'rel': 'apple-touch-icon', 'href': '/icons/apple-touch-icon.png', 'sizes': '180x180', 'type': 'image/png'}]
+  -- /modellek/byd/sealion-7
+     title: [('BYD Sealion 7 — adatlap · listaár 19,0 M Ft-tól — kinaiauto.com', 'head')] | description in head | canonical in head
+     H1 count: 2 -> ['Válassz márkát, majd modellt.', 'Sealion 7']
+     first <main> paragraph: Felül a márka, alatta a választott márka modelljei. Bármelyik modellre kattintva a teljes adatlap megnyílik.
+     <main> text chars: 423; og/twitter tags: 15; JSON-LD blocks: 4
+     icon links: [{'rel': 'apple-touch-icon', 'href': '/icons/apple-touch-icon.png', 'sizes': '180x180', 'type': 'image/png'}]
+  -- /markak/byd
+     title: [('BYD — modellek és háttér — kinaiauto.com', 'head')] | description in head | canonical in head
+     H1 count: 1 -> ['BYD']
+     first <main> paragraph: A világ legnagyobb új energiás autógyártója.
+     <main> text chars: 3836; og/twitter tags: 15; JSON-LD blocks: 3
+     icon links: [{'rel': 'apple-touch-icon', 'href': '/icons/apple-touch-icon.png', 'sizes': '180x180', 'type': 'image/png'}]
+  -- /tudastar
+     title: [('Tudástár — kínai autó vásárlás érthetően — kinaiauto.com', 'head')] | description in head | canonical in head
+     H1 count: 1 -> ['Kínai autók vásárlása érthetően.']
+     first <main> paragraph: Nem az a kérdés, hogy van-e választék — hanem az, hogy a saját használati logikádhoz melyik hajtás, ársáv és finanszírozási forma illik. Ez a Tudástár ehhez ad gyakorlati támpontot.
+     <main> text chars: 10678; og/twitter tags: 15; JSON-LD blocks: 5
+     icon links: [{'rel': 'apple-touch-icon', 'href': '/icons/apple-touch-icon.png', 'sizes': '180x180', 'type': 'image/png'}]
+  -- /osszehasonlitas
+     title: [('Összehasonlítás — kínai autók egymás mellett — kinaiauto.com', 'head')] | description in head | canonical in head
+     H1 count: 1 -> ['Tedd egymás mellé, és döntsd el.']
+     first <main> paragraph: Válaszd ki a márkát, modellt és felszereltségi szintet minden oszlopban. A táblázat automatikusan kiemeli az alacsonyabb árat, nagyobb csomagtartót, hosszabb hatótávot és a többi nyertest.
+     <main> text chars: 283; og/twitter tags: 15; JSON-LD blocks: 3
+     icon links: [{'rel': 'apple-touch-icon', 'href': '/icons/apple-touch-icon.png', 'sizes': '180x180', 'type': 'image/png'}]
+
+== 5. Favicon
+  /favicon.ico          status=404 bytes=33279 type=text/html; charset=utf-8 redirect=
+  icon links: [{'rel': 'apple-touch-icon', 'href': '/icons/apple-touch-icon.png', 'sizes': '180x180', 'type': 'image/png'}]
+  google s2 favicons    status=200 bytes=231 type=image/png final=https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://www.kinaiauto.com&size=48
+  (open ./site-checks-raw-2026-09-27/google-s2-favicon.img: that is the icon Google shows in results; compare with your current icon)
+
+== 6. Performance hints
+  / run1: ttfb=0.123310s total=0.156958s bytes_on_wire=47927
+  / run2: ttfb=0.102171s total=0.145705s bytes_on_wire=47927
+  / run3: ttfb=0.204747s total=0.255918s bytes_on_wire=47927
+  /                            Accept-Encoding: br       -> content-encoding: br  
+  /                            Accept-Encoding: gzip     -> content-encoding: gzip  
+  /                            Accept-Encoding: identity -> content-length: 555711  
+  /modellek/byd/sealion-7 run1: ttfb=0.091130s total=0.157339s bytes_on_wire=43486
+  /modellek/byd/sealion-7 run2: ttfb=0.104368s total=0.149495s bytes_on_wire=43486
+  /modellek/byd/sealion-7 run3: ttfb=0.295672s total=0.345176s bytes_on_wire=43486
+  /modellek/byd/sealion-7      Accept-Encoding: br       -> content-encoding: br  
+  /modellek/byd/sealion-7      Accept-Encoding: gzip     -> content-encoding: gzip  
+  /modellek/byd/sealion-7      Accept-Encoding: identity -> content-length: 287302  
+  /                                                            cache-control: public, max-age=0, must-revalidate  etag: "ewx6odb0m4bt14"  
+  /modellek/byd/sealion-7                                      cache-control: public, max-age=0, must-revalidate  etag: "c7p1chgao63mw"  
+  /_next/static/css/646548baa547db5d.css                       cache-control: public,max-age=31536000,immutable  etag: "f9ef2376726531bc48717f22c932c197"  last-modified: Sun, 20 Sep 2026 07:00:18 GMT  
+  /_next/static/chunks/webpack-2caeeae25a8298a7.js             cache-control: public,max-age=31536000,immutable  etag: "6bafc02e1f324f05e5c51fb835dff4e3"  last-modified: Sun, 20 Sep 2026 07:00:18 GMT  
+  /robots.txt                                                  cache-control: public, max-age=0, must-revalidate  etag: "153a102614fe3cd75eda5daba67c555b"  
+  /sitemap.xml                                                 cache-control: public, max-age=0, must-revalidate  etag: "a5fe452252d3a38dd136ef380eadfaa7"  
+  /llms.txt                                                    cache-control: public, s-maxage=3600, stale-while-revalidate=86400  etag: "a1fe2c2f6175eee53e251365e518a30b"  
+
+raw files in ./site-checks-raw-2026-09-27; bot matrix in ./bot-access-www.kinaiauto.com-2026-09-27.tsv

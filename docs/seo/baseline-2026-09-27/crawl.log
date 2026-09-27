@@ -1,0 +1,102 @@
+== 1. Domain variants (every hop is shown; 301/308 = permanent, 302/303/307 = temporary)
+  http://www.kinaiauto.com/ -> [308] https://www.kinaiauto.com/ -> [200]
+  https://www.kinaiauto.com/ -> [200]
+  http://www.www.kinaiauto.com/ -> [308] https://www.www.kinaiauto.com/ -> [curl:]   << FINAL-NOT-www.kinaiauto.com FINAL-curl:
+  https://www.www.kinaiauto.com/ -> [curl:]   << FINAL-NOT-www.kinaiauto.com FINAL-curl:
+  http://kinaiauto.com/ -> [308] https://kinaiauto.com/ -> [307] https://www.kinaiauto.com/ -> [200]   << TEMPORARY-REDIRECT 2-HOPS
+  https://kinaiauto.com/ -> [307] https://www.kinaiauto.com/ -> [200]   << TEMPORARY-REDIRECT
+  http://www.kinaiauto.com/ -> [308] https://www.kinaiauto.com/ -> [200]
+  https://www.kinaiauto.com/ -> [200]
+  path preservation / trailing slash:
+  http://www.kinaiauto.com/robots.txt -> [308] https://www.kinaiauto.com/robots.txt -> [200]
+  https://www.www.kinaiauto.com/robots.txt -> [curl:]   << FINAL-NOT-www.kinaiauto.com FINAL-curl:
+  https://kinaiauto.com/robots.txt -> [307] https://www.kinaiauto.com/robots.txt -> [200]   << TEMPORARY-REDIRECT
+
+== 2. robots.txt (full) and per-bot verdict (Google longest-match semantics)
+  robots.txt: HTTP 200, 423 bytes, content-type text/plain
+  ----- full content -----
+  User-Agent: *
+  Allow: /
+  Disallow: /api/
+  
+  User-Agent: GPTBot
+  Allow: /
+  
+  User-Agent: ClaudeBot
+  Allow: /
+  
+  User-Agent: Claude-Web
+  Allow: /
+  
+  User-Agent: PerplexityBot
+  Allow: /
+  
+  User-Agent: Google-Extended
+  Allow: /
+  
+  User-Agent: CCBot
+  Allow: /
+  
+  User-Agent: anthropic-ai
+  Allow: /
+  
+  User-Agent: Applebot-Extended
+  Allow: /
+  
+  User-Agent: Bytespider
+  Allow: /
+  
+  Host: https://www.kinaiauto.com
+  Sitemap: https://www.kinaiauto.com/sitemap.xml
+  ------------------------
+  Other directives: [('host', 'https://www.kinaiauto.com')]
+  
+  bot                  group          /              /admin         /api/x        
+  Googlebot            *              allow          allow          BLOCK         
+  Bingbot              *              allow          allow          BLOCK         
+  OAI-SearchBot        *              allow          allow          BLOCK         
+  ChatGPT-User         *              allow          allow          BLOCK         
+  GPTBot               gptbot         allow          allow          allow         
+  ClaudeBot            claudebot      allow          allow          allow         
+  Claude-SearchBot     *              allow          allow          BLOCK         
+  Claude-User          *              allow          allow          BLOCK         
+  PerplexityBot        perplexitybot  allow          allow          allow         
+  Perplexity-User      *              allow          allow          BLOCK         
+  CCBot                ccbot          allow          allow          allow         
+  Google-Extended      google-extende allow          allow          allow         
+  Applebot-Extended    applebot-exten allow          allow          allow         
+  Bytespider           bytespider     allow          allow          allow         
+  meta-externalagent   *              allow          allow          BLOCK         
+  
+  User-agents with their own group: ['anthropic-ai', 'applebot-extended', 'bytespider', 'ccbot', 'claude-web', 'claudebot', 'google-extended', 'gptbot', 'perplexitybot']
+
+== 3. sitemap.xml
+  HTTP 200, 18633 bytes, application/xml
+
+== 4. Per-page audit of every sitemap URL -> audit-www.kinaiauto.com-2026-09-27-*.csv (cache: cache)
+106 sitemap URLs; fetching (cache=cache) ...
+  50/106
+  100/106
+
+== Sitemap: 106 URLs, 106 unique, 0 outside www.kinaiauto.com
+== Status of sitemap URLs (no redirect following): {200: 104, 307: 2}
+== Sections: {'/': 1, '/kinalat': 1, '/osszehasonlitas': 1, '/markak': 1, '/modellek': 1, '/tudastar': 1, '/markak/*': 14, '/modellek/*': 78, '/tudastar/*': 8}
+== Issues (350 rows) by type:
+  [high  ] sitemap URL not 200: 2  e.g. https://www.kinaiauto.com/markak  307 chain=307:https://www.kinaiauto.com/markak/byd 
+  [high  ] canonical != own URL: 2  e.g. https://www.kinaiauto.com/markak  https://www.kinaiauto.com/markak/byd
+  [medium] og:url != canonical: 105  e.g. https://www.kinaiauto.com/kinalat  og:url=https://www.kinaiauto.com canonical=https://www.kinaiauto.com/kinalat
+  [medium] duplicate title: 4  e.g. https://www.kinaiauto.com/markak  2 URLs share "BYD — modellek és háttér — kinaiauto.com"
+  [medium] duplicate meta description: 4  e.g. https://www.kinaiauto.com/markak  2 URLs share "A világ legnagyobb új energiás autógyártója."
+  [low   ] hreflang missing (fine only for single-language pages): 106  e.g. https://www.kinaiauto.com/  
+  [low   ] H1 count != 1: 80  e.g. https://www.kinaiauto.com/kinalat  2
+  [low   ] meta description length outside 70-160: 24  e.g. https://www.kinaiauto.com/  163: Kategória, ársáv és hajtás alapján szűrhető 60+ kínai autómodell, 15 márkától. Vizuális kí
+  [low   ] title length outside 30-65: 23  e.g. https://www.kinaiauto.com/  72: Találd meg a számodra megfelelő kínai modellt — kategória, ársáv, hajtás
+== Duplicate title groups: 2; duplicate description groups: 2
+  2x title "BYD — modellek és háttér — kinaiauto.com": ['https://www.kinaiauto.com/markak', 'https://www.kinaiauto.com/markak/byd']
+  2x title "BYD Atto 2 DM-i — adatlap · listaár 10,0 M Ft-tól — kinaiauto.com": ['https://www.kinaiauto.com/modellek', 'https://www.kinaiauto.com/modellek/byd/atto-2-dm-i']
+  2x desc "A világ legnagyobb új energiás autógyártója.…": ['https://www.kinaiauto.com/markak', 'https://www.kinaiauto.com/markak/byd']
+  2x desc "BYD Atto 2 DM-i (Mini SUV, plug-in hibrid) magyarországi adatlap: ár, …": ['https://www.kinaiauto.com/modellek', 'https://www.kinaiauto.com/modellek/byd/atto-2-dm-i']
+== hreflang pairs checked: 0, fully OK: 0
+
+Files: audit-www.kinaiauto.com-2026-09-27-pages.csv, audit-www.kinaiauto.com-2026-09-27-issues.csv, audit-www.kinaiauto.com-2026-09-27-hreflang.csv; network requests this run: 107
+done.
