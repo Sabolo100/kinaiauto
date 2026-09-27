@@ -92,6 +92,7 @@ export default async function ModelPage({ params }: Props) {
           description: modelCopy(m).description,
           mainEntityId: absUrl(`${modelPath(m)}#car`),
           dateModified: m.data_updated_at ?? m.updated_at,
+          speakable: true,
         })}
       />
       <JsonLd data={carSchema(m, { image: photoUrl(m.primary_photo_path) })} />

@@ -29,7 +29,7 @@ export const CATEGORIES: Category[] = [
 export const DRIVES: Drive[] = [
   { id: 1, slug: "benzin", label_hu: "Benzin", short_code: "ICE", sort_order: 10 },
   { id: 2, slug: "dizel", label_hu: "Dízel", short_code: "DIESEL", sort_order: 20 },
-  { id: 3, slug: "onttolto-hibrid", label_hu: "Önttöltő hibrid", short_code: "HEV", sort_order: 30 },
+  { id: 3, slug: "onttolto-hibrid", label_hu: "Öntöltő hibrid", short_code: "HEV", sort_order: 30 },
   { id: 4, slug: "plug-in-hibrid", label_hu: "Plug-in hibrid", short_code: "PHEV", sort_order: 40 },
   { id: 5, slug: "elektromos", label_hu: "Elektromos", short_code: "BEV", sort_order: 50 },
 ];
@@ -295,13 +295,16 @@ export function trimsForModel(model: ModelRow): ModelTrim[] {
 }
 
 // Articles index (used on /tudastar bottom block + as the content index)
+// Tudástár topics. The long-form articles are not written yet: each topic
+// points to the chapter of /tudastar that covers it (`anchor`), and the old
+// /tudastar/<slug> URLs 308-redirect there (next.config.ts).
 export const ARTICLE_INDEX = [
-  { slug: "hajtastipusok-egyszeruen",            num: "7.1 · Technika",  title: "Hajtástípusok egyszerűen",                 excerpt: "Benzin, hibrid, PHEV, EV — melyik hogy működik és kinek való." },
-  { slug: "miert-nem-annyi-a-valos-hatotav",     num: "7.2 · Hatótáv",   title: "Miért nem annyi a valós hatótáv?",         excerpt: "Hideg, meleg, autópálya, fűtés, vezetési stílus hatása." },
-  { slug: "plug-in-hibrid-zsenialis-vagy-felreertett", num: "7.3 · Hibrid", title: "Plug-in hibrid: zseniális vagy félreértett?", excerpt: "Csak akkor igazán jó, ha rendszeresen töltik." },
-  { slug: "otthoni-toltes-konnektor-wallbox-napelem", num: "7.4 · Töltés", title: "Otthoni töltés: konnektor, wallbox, napelem", excerpt: "Gyakorlati útmutató vásárlás előtti ellenőrzéshez." },
-  { slug: "nyilvanos-toltes-magyarorszagon",     num: "7.5 · Töltés",    title: "Nyilvános töltés Magyarországon",          excerpt: "Szolgáltatók, applikációk, töltőtípusok és árlogika." },
-  { slug: "elektromos-auto-ceges-vasarlasa",     num: "7.6 · Pénzügy",   title: "Elektromos autó céges vásárlása",          excerpt: "Adózási, finanszírozási és lízing szempontok." },
-  { slug: "maganvasarlokent-mire-figyelj",       num: "7.7 · Magán",     title: "Magánvásárlóként mire figyelj?",           excerpt: "Ár, hatótáv, garancia, töltés, szerviz, biztosítás, értékvesztés." },
-  { slug: "kinai-auto-garancia-es-szervizhatter",num: "7.8 · Garancia",  title: "Kínai autó garancia és szervizháttér",     excerpt: "Márkánként eltérő — vásárlás előtt ellenőrizendő." },
+  { slug: "hajtastipusok-egyszeruen", anchor: "technika",            num: "7.1 · Technika",  title: "Hajtástípusok egyszerűen",                 excerpt: "Benzin, hibrid, PHEV, EV — melyik hogy működik és kinek való." },
+  { slug: "miert-nem-annyi-a-valos-hatotav", anchor: "hatotav",     num: "7.2 · Hatótáv",   title: "Miért nem annyi a valós hatótáv?",         excerpt: "Hideg, meleg, autópálya, fűtés, vezetési stílus hatása." },
+  { slug: "plug-in-hibrid-zsenialis-vagy-felreertett", anchor: "technika", num: "7.3 · Hibrid", title: "Plug-in hibrid: zseniális vagy félreértett?", excerpt: "Csak akkor igazán jó, ha rendszeresen töltik." },
+  { slug: "otthoni-toltes-konnektor-wallbox-napelem", anchor: "toltes", num: "7.4 · Töltés", title: "Otthoni töltés: konnektor, wallbox, napelem", excerpt: "Gyakorlati útmutató vásárlás előtti ellenőrzéshez." },
+  { slug: "nyilvanos-toltes-magyarorszagon", anchor: "toltes",     num: "7.5 · Töltés",    title: "Nyilvános töltés Magyarországon",          excerpt: "Szolgáltatók, applikációk, töltőtípusok és árlogika." },
+  { slug: "elektromos-auto-ceges-vasarlasa", anchor: "penzugy",     num: "7.6 · Pénzügy",   title: "Elektromos autó céges vásárlása",          excerpt: "Adózási, finanszírozási és lízing szempontok." },
+  { slug: "maganvasarlokent-mire-figyelj", anchor: "dontes",       num: "7.7 · Magán",     title: "Magánvásárlóként mire figyelj?",           excerpt: "Ár, hatótáv, garancia, töltés, szerviz, biztosítás, értékvesztés." },
+  { slug: "kinai-auto-garancia-es-szervizhatter", anchor: "szerviz",num: "7.8 · Garancia",  title: "Kínai autó garancia és szervizháttér",     excerpt: "Márkánként eltérő — vásárlás előtt ellenőrizendő." },
 ];

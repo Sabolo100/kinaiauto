@@ -18,6 +18,8 @@ type Props = {
   dealers: Dealer[];
   brandCounts: Record<string, number>;
   photoMap?: Record<string, ModelPhoto[]>;
+  /** Data-generated answer block (entity name first), shown under the tagline. */
+  summary?: string;
 };
 
 export function BrandPage(props: Props) {
@@ -29,7 +31,7 @@ export function BrandPage(props: Props) {
   );
 }
 
-function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap = {} }: Props) {
+function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap = {}, summary }: Props) {
   const [zoom, setZoom] = useState<1 | 2>(2);
   const [dealerView, setDealerView] = useState<"list" | "map">("list");
   const compare = useCompare();
@@ -83,6 +85,7 @@ function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap 
               <h1 className="brand-name"><em>{brand.name}</em></h1>
             )}
             <p className="brand-tagline">{brand.tagline}</p>
+            {summary ? <p className="brand-summary answer-capsule">{summary}</p> : null}
             <div className="brand-quickstats">
               <div className="qs"><div className="l">Modellek</div><div className="v">{models.length}</div></div>
               <div className="qs"><div className="l">Ársáv</div><div className="v">{minP.toFixed(1).replace(".", ",")} <small>—{maxP.toFixed(1).replace(".", ",")} M Ft</small></div></div>

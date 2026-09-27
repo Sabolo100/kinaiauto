@@ -11,6 +11,8 @@ import { brandLogoUrl, photoUrl } from "@/lib/media-urls";
 import { JsonLd } from "@/components/json-ld";
 import { absUrl, brandSchema, breadcrumbSchema, modelListSchema, pageMeta, webPageSchema } from "@/lib/seo";
 import type { Brand, ModelRow } from "@/lib/types";
+import { brandAnswer, brandFaq } from "@/lib/answers";
+import { FaqList } from "@/components/faq-list";
 import { BrandPage } from "@/components/brands/brand-page";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -96,6 +98,13 @@ export default async function BrandDetailPage({ params }: Props) {
         dealers={dealers}
         brandCounts={brandCounts}
         photoMap={photoMap}
+        summary={brandAnswer(brand, brandModels, dealers)}
+      />
+
+      <FaqList
+        items={brandFaq(brand, brandModels, dealers)}
+        title={<>{brand.name}: gyakori <em>kérdések</em>.</>}
+        sub="Modellek, árak, importőr és kereskedők — az oldal adataiból."
       />
 
       <JsonLd
@@ -106,6 +115,7 @@ export default async function BrandDetailPage({ params }: Props) {
           description: copy.description,
           mainEntityId: absUrl(`/markak/${slug}#models`),
           about: { "@id": absUrl(`/markak/${slug}#brand`) },
+          speakable: true,
         })}
       />
       <JsonLd data={brandSchema(brand, { logo: brandLogoUrl(brand.logo_path) })} />

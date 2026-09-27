@@ -275,3 +275,12 @@
   border: 1px dashed var(--line-strong);
   border-radius: 10px;
 }
+
+/* Data-generated answer block under the tagline (quotable first paragraph). */
+.brand-summary {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 600px;
+  margin: -14px 0 24px;
+}

@@ -27,6 +27,7 @@ import {
   ZapOff,
 } from "lucide-react";
 import "./tudastar.css";
+import { TUDASTAR_FAQ } from "./content";
 
 const SECTIONS = [
   { id: "technika", label: "Technika · hajtástípusok" },
@@ -35,12 +36,15 @@ const SECTIONS = [
   { id: "penzugy", label: "Pénzügy, adózás, lízing" },
   { id: "dontes", label: "Gyors döntési segítség" },
   { id: "osszehasonlitas", label: "Összehasonlító táblázat" },
-  { id: "cikkek", label: "Kapcsolódó cikkek" },
+  { id: "cikkek", label: "Témák röviden" },
+  { id: "gyik", label: "Gyakori kérdések" },
   { id: "figyelmeztetes", label: "Figyelmeztetés" },
 ];
 
 type ArticleIdx = {
   slug: string;
+  /** Chapter id on this page that covers the topic. */
+  anchor: string;
   num: string;
   title: string;
   excerpt: string;
@@ -81,7 +85,7 @@ export function TudastarPage({
           <div className="pagehead-inner">
             <div>
               <div className="eyebrow">
-                Vásárlói útmutató · 8 fejezet · ~12 perc olvasás
+                Vásárlói útmutató · {SECTIONS.length} fejezet · ~12 perc olvasás
               </div>
               <h1>
                 Kínai autók vásárlása <em>érthetően</em>.
@@ -95,7 +99,7 @@ export function TudastarPage({
             <aside className="head-meta">
               <div className="row">
                 <span className="k">Fejezetek</span>
-                <span className="v">8</span>
+                <span className="v">{SECTIONS.length}</span>
               </div>
               <div className="row">
                 <span className="k">Témák</span>
@@ -414,7 +418,7 @@ export function TudastarPage({
                 az előny érzékelhetően kisebb.
               </p>
 
-              <h3 className="sub-h">EV szervizköltség</h3>
+              <h3 className="sub-h" id="szerviz">EV szervizköltség</h3>
               <p className="body">
                 A teljesen elektromos autókban kevesebb klasszikus karbantartási
                 elem van — nincs motorolaj, gyújtógyertya, turbó, kipufogó,
@@ -882,28 +886,47 @@ export function TudastarPage({
               <div className="chap-h">
                 <span className="chap-num">07 · Részletesebben</span>
                 <h2>
-                  Tovább <em>olvasásra</em>.
+                  Témák <em>röviden</em>.
                 </h2>
                 <p className="sub">
-                  Mélyebb tudástár-cikkek minden témakörhöz — tervezett bővítés.
+                  A leggyakoribb vásárlói témák — egy kattintással a hozzájuk
+                  tartozó fejezetre ugorhatsz.
                 </p>
               </div>
 
               <div className="related">
                 {articleIndex.map((a) => (
-                  <Link key={a.slug} href={`/tudastar/${a.slug}`}>
+                  <a key={a.slug} href={`#${a.anchor}`}>
                     <span className="num">{a.num}</span>
                     <h5>{a.title}</h5>
                     <p>{a.excerpt}</p>
-                  </Link>
+                  </a>
                 ))}
               </div>
             </section>
 
-            {/* 8. DISCLAIMER */}
+            {/* 8. FAQ — the same items feed the FAQPage JSON-LD (app/tudastar/page.tsx) */}
+            <section className="chap" id="gyik">
+              <div className="chap-h">
+                <span className="chap-num">08 · Gyakori kérdések</span>
+                <h2>
+                  Röviden <em>megválaszolva</em>.
+                </h2>
+              </div>
+              {TUDASTAR_FAQ.map((f, i) => (
+                <details key={f.question} className="fin" open={i === 0}>
+                  <summary>{f.question}</summary>
+                  <div className="body">
+                    <p className="body">{f.answer}</p>
+                  </div>
+                </details>
+              ))}
+            </section>
+
+            {/* 9. DISCLAIMER */}
             <section className="chap" id="figyelmeztetes">
               <div className="chap-h">
-                <span className="chap-num">08 · Figyelmeztetés</span>
+                <span className="chap-num">09 · Figyelmeztetés</span>
                 <h2>
                   Tájékoztató jellegű <em>információk</em>.
                 </h2>

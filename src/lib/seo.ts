@@ -210,6 +210,8 @@ export function webPageSchema(p: {
   mainEntityId?: string;
   about?: object;
   dateModified?: string | null;
+  /** Points voice/AI assistants at the page's answer block (.answer-capsule). */
+  speakable?: boolean;
 }) {
   const url = absUrl(p.path);
   const node: Record<string, unknown> = {
@@ -226,6 +228,7 @@ export function webPageSchema(p: {
   if (p.mainEntityId) node.mainEntity = { "@id": p.mainEntityId };
   if (p.about) node.about = p.about;
   if (p.dateModified) node.dateModified = p.dateModified.slice(0, 10);
+  if (p.speakable) node.speakable = { "@type": "SpeakableSpecification", cssSelector: [".answer-capsule"] };
   return node;
 }
 

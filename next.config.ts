@@ -30,6 +30,21 @@ const config: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react"],
   },
+  // The planned long-form Tudástár articles were "coming soon" placeholders;
+  // their URLs now point to the chapter covering the topic (keep in sync with
+  // ARTICLE_INDEX anchors in src/data/seed.ts).
+  async redirects() {
+    return [
+      { source: "/tudastar/hajtastipusok-egyszeruen", destination: "/tudastar#technika", permanent: true },
+      { source: "/tudastar/miert-nem-annyi-a-valos-hatotav", destination: "/tudastar#hatotav", permanent: true },
+      { source: "/tudastar/plug-in-hibrid-zsenialis-vagy-felreertett", destination: "/tudastar#technika", permanent: true },
+      { source: "/tudastar/otthoni-toltes-konnektor-wallbox-napelem", destination: "/tudastar#toltes", permanent: true },
+      { source: "/tudastar/nyilvanos-toltes-magyarorszagon", destination: "/tudastar#toltes", permanent: true },
+      { source: "/tudastar/elektromos-auto-ceges-vasarlasa", destination: "/tudastar#penzugy", permanent: true },
+      { source: "/tudastar/maganvasarlokent-mire-figyelj", destination: "/tudastar#dontes", permanent: true },
+      { source: "/tudastar/kinai-auto-garancia-es-szervizhatter", destination: "/tudastar#szerviz", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

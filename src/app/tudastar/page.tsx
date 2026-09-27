@@ -8,7 +8,7 @@ import { TUDASTAR_FAQ, TUDASTAR_UPDATED } from "@/components/tudastar/content";
 
 const TITLE = "Tudástár — kínai autó vásárlás érthetően";
 const DESCRIPTION =
-  "Hajtástípusok, valós hatótáv, otthoni és nyilvános töltés, cégautóadó, illeték, lízing: vásárlói útmutató kínai autókhoz Magyarországon, 8 fejezetben.";
+  "Hajtástípusok, valós hatótáv, otthoni és nyilvános töltés, cégautóadó, illeték, lízing: vásárlói útmutató kínai autókhoz Magyarországon, gyakori kérdésekkel.";
 
 export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/tudastar", type: "article" });
 

@@ -93,6 +93,7 @@
 .strip-tab.model-tab[data-drive="Dízel"] .drive-dot {
   background: #5a4a3a;
 }
+.strip-tab.model-tab[data-drive="Öntöltő hibrid"] .drive-dot,
 .strip-tab.model-tab[data-drive="Önttöltő hibrid"] .drive-dot {
   background: oklch(60% 0.10 90);
 }

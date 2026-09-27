@@ -3,9 +3,12 @@
 export function Hero({
   modelsCount,
   brandsCount,
+  answer,
 }: {
   modelsCount: number;
   brandsCount: number;
+  /** Quotable first paragraph (entity name first), generated on the server. */
+  answer: string;
 }) {
   return (
     <section className="hero">
@@ -18,11 +21,7 @@ export function Hero({
             Találd meg új <em>kínai autódat</em> kategória és ár alapján —
             majd kérj ajánlatokat egy kattintással.
           </h1>
-          <p className="lede">
-            Nem kell ismerned a márkákat vagy modellneveket. Válassz
-            autókategóriát, add meg az ársávot, és nézd meg, milyen kínai autók
-            érhetők el ma Magyarországon — egy helyen, áttekinthetően.
-          </p>
+          <p className="lede answer-capsule">{answer}</p>
           <div className="hero-stats">
             <div className="hero-stat">
               <div className="n">{modelsCount}</div>

@@ -26,6 +26,8 @@ import { Visualization } from "./visualization";
 import "./home.css";
 
 type Props = {
+  /** Quotable hero paragraph, built on the server (lib/answers.ts). */
+  answer: string;
   models: ModelRow[];
   brands: Brand[];
   categories: Category[];
@@ -42,7 +44,7 @@ export function HomeApp(props: Props) {
   );
 }
 
-function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
+function HomeAppInner({ answer, models, brands, categories, drives, bands }: Props) {
   const [cats, setCats] = useState<Set<string>>(new Set());
   const [prices, setPrices] = useState<Set<string>>(new Set());
   const [drv, setDrv] = useState<Set<string>>(new Set());
@@ -110,6 +112,7 @@ function HomeAppInner({ models, brands, categories, drives, bands }: Props) {
       <Hero
         modelsCount={models.length}
         brandsCount={new Set(models.map((m) => m.brand_name)).size}
+        answer={answer}
       />
 
       <Finder

@@ -1338,3 +1338,64 @@ footer.foot .foot-disclaimer {
     justify-content: flex-end;
   }
 }
+
+/* =============================================================
+   FAQ (shared: model, brand, Tudástár) + answer capsule
+   ============================================================= */
+.faq-list {
+  max-width: 860px;
+}
+.faq-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+.faq-item[open] {
+  box-shadow: var(--shadow);
+}
+.faq-item summary {
+  cursor: pointer;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  list-style: none;
+  font-family: var(--font-instrument), serif;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.15;
+}
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.faq-item summary::after {
+  content: "+";
+  font-family: var(--font-mono), monospace;
+  font-size: 18px;
+  color: var(--ink-mute);
+  transition: transform 0.18s;
+  flex-shrink: 0;
+}
+.faq-item[open] summary::after {
+  transform: rotate(45deg);
+}
+.faq-item p {
+  margin: 0;
+  padding: 0 20px 18px;
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 1.6;
+}
+@media (max-width: 767px) {
+  .faq-item summary {
+    font-size: 18px;
+    padding: 14px 16px;
+  }
+  .faq-item p {
+    padding: 0 16px 16px;
+    font-size: 14px;
+  }
+}

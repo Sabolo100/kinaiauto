@@ -522,7 +522,8 @@
   .app-page .hero-grid { display: grid; grid-template-columns: 1fr; }
   .app-page .hero-text { max-width: 100%; }
   .app-page h1.headline { font-size: 27px; line-height: 1.06; margin: 0 0 8px; }
-  .app-page .hero .lede { display: none; }
+  /* The answer block stays visible on phones (mobile-first indexing, AI quotes it). */
+  .app-page .hero .lede { font-size: 13.5px; line-height: 1.5; margin: 0 0 10px; max-width: none; }
   .app-page .hero-stats { gap: 18px; padding-top: 0; border-top: 0; margin-bottom: 4px; }
   .app-page .hero-stat { display: flex; align-items: baseline; gap: 5px; }
   .app-page .hero-stat .n { font-size: 20px; }
@@ -572,6 +573,8 @@
 
   /* ── Model detail ── */
   .app-page .model-hero { padding: 12px 0 18px; }
+  .app-page .model-tagline { font-size: 14.5px; margin-bottom: 18px; }
+  .app-page .brand-summary { font-size: 14px; margin: -10px 0 18px; }
   .app-page .model-hero-inner { gap: 18px; }
 
   /* ── Quote page: sticky summary above the tab bar ── */

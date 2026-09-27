@@ -34,6 +34,8 @@ import { QuoteButtonLarge } from "../quote-button-large";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
 import { modelFullName } from "@/lib/seo";
+import { modelAnswer, modelFaq } from "@/lib/answers";
+import { FaqList } from "../faq-list";
 import "./model-detail.css";
 
 export function ModelDetail({
@@ -52,7 +54,7 @@ export function ModelDetail({
   const tone = model.brand_tone ?? "#374151";
   const isEV = model.drive === "Elektromos";
   const isPHEV = model.drive === "Plug-in hibrid";
-  const isHEV = model.drive === "Önttöltő hibrid";
+  const isHEV = model.drive_code === "HEV" || /^önt?töltő hibrid$/i.test(model.drive);
   const hasBattery = model.battery_kwh != null;
   const heroPhoto = photoUrl(model.primary_photo_path);
 
@@ -143,11 +145,8 @@ export function ModelDetail({
               )}
               <em>{model.name}</em>
             </h1>
-            <p className="model-tagline">
-              {model.is_deal
-                ? `${catLabel(model.category, model.segment)}, ${model.drive.toLowerCase()} hajtás. Aktuálisan akciós listaárral elérhető a hazai kereskedői hálózatban.`
-                : `${catLabel(model.category, model.segment)}, ${model.drive.toLowerCase()} hajtás. ${model.seats ?? 5} ülőhely, ${model.length_mm ? `${model.length_mm} mm hossz` : "—"}.`}
-            </p>
+            {/* Quotable, data-generated answer block (entity name first). */}
+            <p className="model-tagline answer-capsule">{modelAnswer(model, dealers.length)}</p>
             <div className={`price-row ${model.is_deal ? "deal" : ""}`}>
               <span className="lbl">
                 {model.is_deal ? "Akciós listaár" : "Listaár (alaptól)"}
@@ -483,15 +482,22 @@ export function ModelDetail({
       {/* TEST LINKS */}
       <TestLinksSection modelId={model.id} />
 
-      {/* DEALERS — 07 */}
+      {/* DEALERS — 06 */}
       <DealerSection dealers={dealers} brandName={model.brand_name} />
+
+      {/* FAQ — 07 (visible Q&A + FAQPage from the same data) */}
+      <FaqList
+        items={modelFaq(model, dealers)}
+        step="07 · Gyakori kérdések"
+        sub="A leggyakoribb vásárlói kérdések az adatlap adataiból."
+      />
 
       {/* SIMILAR */}
       <section className="block">
         <div className="container">
           <div className="block-head">
             <div>
-              <div className="step">07 · Hasonló modellek</div>
+              <div className="step">08 · Hasonló modellek</div>
               <h2>
                 Még <em>érdekelhet</em>.
               </h2>

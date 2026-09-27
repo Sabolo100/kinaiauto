@@ -11,6 +11,7 @@ import {
   getPriceBands,
 } from "@/lib/data";
 import { HomeApp } from "@/components/home/home-app";
+import { homeAnswer } from "@/lib/answers";
 
 function homeCopy(modelCount: number, brandCount: number) {
   return {
@@ -40,6 +41,7 @@ export default async function HomePage() {
   return (
     <main>
       <HomeApp
+        answer={homeAnswer(models, new Set(models.map((m) => m.brand_name)).size)}
         models={models}
         brands={brands}
         categories={categories}
@@ -53,6 +55,7 @@ export default async function HomePage() {
           name: copy.title,
           description: copy.description,
           about: { "@id": ORG_ID },
+          speakable: true,
         })}
       />
     </main>
