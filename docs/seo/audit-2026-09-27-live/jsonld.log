@@ -1,0 +1,27 @@
+96 URLs; with JSON-LD: 96; without: 0; invalid JSON blocks on 0 pages
+Pages per @type: Country×96, WebSite×96, ImageObject×96, Organization×96, ContactPoint×96, ListItem×95, BreadcrumbList×95, SpeakableSpecification×93, Question×93, FAQPage×93, Answer×93, Brand×92, PropertyValue×78, QuantitativeValue×78, ItemPage×78, Car×78, EngineSpecification×77, AggregateOffer×75, WarrantyPromise×38, CollectionPage×15, ItemList×14, WebPage×2, Article×1
+Sections (pages / with JSON-LD): /modellek/* 78/78, /markak/* 14/14, / 1/1, /kinalat 1/1, /osszehasonlitas 1/1, /tudastar 1/1
+Organization defined in full on 96 page(s): @id=https://www.kinaiauto.com/#organization sameAs=MISSING logo=https://www.kinaiauto.com/icons/icon-512.png
+  pages: ['/', '/kinalat', '/osszehasonlitas', '/tudastar', '/markak/byd', '/markak/chery', '/markak/omoda', '/markak/jaecoo', '/markak/mg', '/markak/nio']
+Expectation ^/modellek/[^/]+/[^/?]+$ -> BreadcrumbList|Car|Product: 78/78 pages OK
+Expectation ^/markak/[^/?]+$ -> Brand|BreadcrumbList|Organization: 14/14 pages OK
+FAQ-like visible content: 93 pages; of those without FAQPage markup: 0
+  /tudastar  markup=Y  «label=Gyakori kérdések; 7 question items; Magánemberként kell cégautóadót fizetni?; Magyarországon érdemes kín»
+  /markak/byd  markup=Y  «label=BYD: gyakori kérdések.; 5 question items; Milyen BYD modellek kaphatók Magyarországon?; Mennyibe kerül a»
+  /markak/chery  markup=Y  «label=Chery: gyakori kérdések.; 5 question items; Milyen Chery modellek kaphatók Magyarországon?; Mennyibe ker»
+  /markak/omoda  markup=Y  «label=Omoda: gyakori kérdések.; 5 question items; Milyen Omoda modellek kaphatók Magyarországon?; Mennyibe ker»
+  /markak/jaecoo  markup=Y  «label=Jaecoo: gyakori kérdések.; 5 question items; Milyen Jaecoo modellek kaphatók Magyarországon?; Mennyibe k»
+  /markak/mg  markup=Y  «label=MG: gyakori kérdések.; 5 question items; Milyen MG modellek kaphatók Magyarországon?; Mennyibe kerül a l»
+  /markak/nio  markup=Y  «label=NIO: gyakori kérdések.; 5 question items; Milyen NIO modellek kaphatók Magyarországon?; Mennyibe kerül a»
+  /markak/firefly  markup=Y  «label=Firefly: gyakori kérdések.; 4 question items; Milyen Firefly modellek kaphatók Magyarországon?; Milyen h»
+  /markak/xpeng  markup=Y  «label=XPENG: gyakori kérdések.; 5 question items; Milyen XPENG modellek kaphatók Magyarországon?; Mennyibe ker»
+  /markak/leapmotor  markup=Y  «label=Leapmotor: gyakori kérdések.; 5 question items; Milyen Leapmotor modellek kaphatók Magyarországon?; Menn»
+  /markak/geely  markup=Y  «label=Geely: gyakori kérdések.; 5 question items; Milyen Geely modellek kaphatók Magyarországon?; Mennyibe ker»
+  /markak/dongfeng  markup=Y  «label=Dongfeng: gyakori kérdések.; 5 question items; Milyen Dongfeng modellek kaphatók Magyarországon?; Mennyi»
+  /markak/voyah  markup=Y  «label=Voyah: gyakori kérdések.; 5 question items; Milyen Voyah modellek kaphatók Magyarországon?; Mennyibe ker»
+  /markak/baic  markup=Y  «label=BAIC: gyakori kérdések.; 5 question items; Milyen BAIC modellek kaphatók Magyarországon?; Mennyibe kerül»
+  /markak/maxus  markup=Y  «label=Maxus: gyakori kérdések.; 4 question items; Milyen Maxus modellek kaphatók Magyarországon?; Milyen hajtá»
+Pages with a video embed/thumbnail: 0; with VideoObject: 0
+Problems (pages):
+    96  Organization: sameAs has 0 profile(s)
+File: jsonld-www.kinaiauto.com-jsonld.csv; network requests this run: 0

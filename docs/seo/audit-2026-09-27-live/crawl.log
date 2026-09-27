@@ -1,0 +1,85 @@
+== 1. Domain variants (every hop is shown; 301/308 = permanent, 302/303/307 = temporary)
+  http://www.kinaiauto.com/ -> [308] https://www.kinaiauto.com/ -> [200]
+  https://www.kinaiauto.com/ -> [200]
+  http://kinaiauto.com/ -> [308] https://kinaiauto.com/ -> [307] https://www.kinaiauto.com/ -> [200]   << TEMPORARY-REDIRECT 2-HOPS
+  https://kinaiauto.com/ -> [307] https://www.kinaiauto.com/ -> [curl:]   << TEMPORARY-REDIRECT FINAL-curl:
+  http://www.kinaiauto.com/ -> [308] https://www.kinaiauto.com/ -> [200]
+  https://www.kinaiauto.com/ -> [200]
+  path preservation / trailing slash:
+  http://www.kinaiauto.com/robots.txt -> [308] https://www.kinaiauto.com/robots.txt -> [200]
+  https://kinaiauto.com/robots.txt -> [307] https://www.kinaiauto.com/robots.txt -> [200]   << TEMPORARY-REDIRECT
+
+== 2. robots.txt (full) and per-bot verdict (Google longest-match semantics)
+  robots.txt: HTTP 200, 656 bytes, content-type text/plain
+  ----- full content -----
+  User-Agent: *
+  Allow: /
+  Disallow: /api/
+  
+  User-Agent: Googlebot
+  User-Agent: Bingbot
+  User-Agent: Applebot
+  User-Agent: DuckDuckBot
+  User-Agent: OAI-SearchBot
+  User-Agent: ChatGPT-User
+  User-Agent: ClaudeBot
+  User-Agent: Claude-SearchBot
+  User-Agent: Claude-User
+  User-Agent: PerplexityBot
+  User-Agent: Perplexity-User
+  User-Agent: DuckAssistBot
+  User-Agent: MistralAI-User
+  Allow: /
+  Disallow: /api/
+  
+  User-Agent: GPTBot
+  User-Agent: Google-Extended
+  User-Agent: Applebot-Extended
+  User-Agent: CCBot
+  User-Agent: anthropic-ai
+  User-Agent: Claude-Web
+  User-Agent: Bytespider
+  User-Agent: meta-externalagent
+  Allow: /
+  Disallow: /api/
+  
+  Sitemap: https://www.kinaiauto.com/sitemap.xml
+  ------------------------
+  
+  bot                  group          /              /admin         /api/x        
+  Googlebot            googlebot,bing allow          allow          BLOCK         
+  Bingbot              googlebot,bing allow          allow          BLOCK         
+  OAI-SearchBot        googlebot,bing allow          allow          BLOCK         
+  ChatGPT-User         googlebot,bing allow          allow          BLOCK         
+  GPTBot               gptbot,google- allow          allow          BLOCK         
+  ClaudeBot            googlebot,bing allow          allow          BLOCK         
+  Claude-SearchBot     googlebot,bing allow          allow          BLOCK         
+  Claude-User          googlebot,bing allow          allow          BLOCK         
+  PerplexityBot        googlebot,bing allow          allow          BLOCK         
+  Perplexity-User      googlebot,bing allow          allow          BLOCK         
+  CCBot                gptbot,google- allow          allow          BLOCK         
+  Google-Extended      gptbot,google- allow          allow          BLOCK         
+  Applebot-Extended    gptbot,google- allow          allow          BLOCK         
+  Bytespider           gptbot,google- allow          allow          BLOCK         
+  meta-externalagent   gptbot,google- allow          allow          BLOCK         
+  
+  User-agents with their own group: ['anthropic-ai', 'applebot', 'applebot-extended', 'bingbot', 'bytespider', 'ccbot', 'chatgpt-user', 'claude-searchbot', 'claude-user', 'claude-web', 'claudebot', 'duckassistbot', 'duckduckbot', 'google-extended', 'googlebot', 'gptbot', 'meta-externalagent', 'mistralai-user', 'oai-searchbot', 'perplexity-user', 'perplexitybot']
+
+== 3. sitemap.xml
+  HTTP 200, 16755 bytes, application/xml
+
+== 4. Per-page audit of every sitemap URL -> audit-www.kinaiauto.com-2026-09-27-*.csv (cache: cache)
+96 sitemap URLs; fetching (cache=cache) ...
+  50/96
+
+== Sitemap: 96 URLs, 96 unique, 0 outside www.kinaiauto.com
+== Status of sitemap URLs (no redirect following): {200: 96}
+== Sections: {'/': 1, '/kinalat': 1, '/osszehasonlitas': 1, '/tudastar': 1, '/markak/*': 14, '/modellek/*': 78}
+== Issues (97 rows) by type:
+  [medium] content streamed into hidden <div hidden id="S:n"> outside <main> (Suspense/loading.tsx fallback in HTML): 1  e.g. https://www.kinaiauto.com/kinalat  1 hidden block(s); <main> text 4383 chars
+  [low   ] hreflang missing (fine only for single-language pages): 96  e.g. https://www.kinaiauto.com/  
+== Duplicate title groups: 0; duplicate description groups: 0
+== hreflang pairs checked: 0, fully OK: 0
+
+Files: audit-www.kinaiauto.com-2026-09-27-pages.csv, audit-www.kinaiauto.com-2026-09-27-issues.csv, audit-www.kinaiauto.com-2026-09-27-hreflang.csv; network requests this run: 97
+done.

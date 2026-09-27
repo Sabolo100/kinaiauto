@@ -1,0 +1,89 @@
+96 sitemap pages, 5645 internal links parsed (2380 in content). Pages without <main>: 0
+Boilerplate content links (same target+text on >30% of pages, excluded from "editorial"):
+  /  «főoldal»  on 95 pages
+  /kinalat  «vissza a kínálathoz»  on 78 pages
+
+TRUE ORPHANS (no inbound link at all): 0
+CONTENT ORPHANS (only nav/footer links or none): 2
+   /osszehasonlitas  (any=95)
+   /tudastar  (any=95)
+
+FEWEST CONTENT INBOUND (page / any / content / editorial / outbound content):
+  /osszehasonlitas                                                         95     0     0     1
+  /tudastar                                                                95     0     0     1
+  /modellek/maxus/t60-max-pickup                                            4     4     4     4
+  /modellek/firefly/firefly                                                 6     6     6     7
+  /modellek/omoda/omoda-7-shs                                               6     6     6    11
+  /modellek/nio/EL_8                                                        6     6     6     9
+  /modellek/chery/tiggo-8                                                   7     7     7     8
+  /modellek/leapmotor/lmb10phev                                             7     7     7    10
+  /modellek/baic/baicx7                                                     7     7     7     9
+  /modellek/omoda/omoda-e5                                                  7     7     7    11
+  /modellek/nio/et5-touring                                                 8     8     8     8
+  /modellek/baic/baicbj60                                                   8     8     8    10
+  /modellek/jaecoo/jaecoo-7                                                 8     8     8     9
+  /modellek/baic/bj30e                                                      8     8     8    10
+  /modellek/geely/starray-em-i                                              8     8     8     8
+  /modellek/chery/tiggo-7                                                   8     8     8    10
+  /modellek/voyah/courage-ev                                                8     8     8    12
+  /modellek/voyah/voy_passion                                               9     9     9    11
+  /modellek/voyah/voy_dreambev                                              9     9     9    11
+  /modellek/geely/e5                                                        9     9     9     8
+  /modellek/chery/tiggo-4                                                   9     9     9    10
+  /modellek/xpeng/p7-plus                                                   9     9     9     9
+  /modellek/chery/tiggo-9                                                  10    10    10    10
+  /modellek/xpeng/xpengg9                                                  10    10    10     9
+  /modellek/voyah/dream-phev                                               10    10    10    10
+  /modellek/nio/et5                                                        10    10    10     9
+  /modellek/baic/x55                                                       10    10    10     9
+  /modellek/omoda/omoda-5-shs-h                                            10    10    10    10
+  /modellek/omoda/omoda-9-shs-p                                            11    11    11    11
+  /modellek/xpeng/g6                                                       11    11    11    10
+
+FOCUS /markak: 14 pages (any / content / editorial inbound; content sources)
+  /markak/byd                                                    27   27   27  /markak/baic /markak/chery /markak/dongfeng /markak/firefly /markak/geely
+  /markak/chery                                                  17   17   17  /markak/baic /markak/byd /markak/dongfeng /markak/firefly /markak/geely
+  /markak/omoda                                                  18   18   18  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/jaecoo                                                 17   17   17  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/mg                                                     23   23   23  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/nio                                                    17   17   17  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/firefly                                                14   14   14  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/geely
+  /markak/xpeng                                                  17   17   17  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/leapmotor                                              18   18   18  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/geely                                                  15   15   15  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/dongfeng                                               27   27   27  /markak/baic /markak/byd /markak/chery /markak/firefly /markak/geely
+  /markak/voyah                                                  19   19   19  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+  /markak/baic                                                   17   17   17  /markak/byd /markak/chery /markak/dongfeng /markak/firefly /markak/geely
+  /markak/maxus                                                  14   14   14  /markak/baic /markak/byd /markak/chery /markak/dongfeng /markak/firefly
+
+FOCUS /tudastar: 1 pages (any / content / editorial inbound; content sources)
+  /tudastar                                                      95    0    0  
+
+INTERNAL LINK TARGETS NOT IN SITEMAP: 117 (top by linking pages)
+    96  /markak
+    96  /modellek
+    96  /ajanlatkeres
+    96  /impresszum
+    96  /aszf
+    96  /adatkezeles
+    96  /cookie
+    96  /adatok-torlese
+    96  /jogi-nyilatkozat
+    96  /llms.txt
+    15  /osszehasonlitas?models=
+     7  /kinalat?category=Kompakt SUV&drive=Benzin
+     7  /kinalat?category=Kompakt SUV&drive=Elektromos
+     6  /kinalat?category=Középméretű SUV&drive=Elektromos
+     6  /kinalat?category=Nagy SUV&drive=Elektromos
+     6  /kinalat?category=Középméretű SUV&drive=Plug-in hibrid
+     4  /kinalat?category=Kompakt SUV&drive=Öntöltő hibrid
+     4  /kinalat?category=Nagy SUV&drive=Plug-in hibrid
+     4  /kinalat?category=Városi kisautó&drive=Elektromos
+     4  /kinalat?category=Szedán&drive=Elektromos
+     3  /osszehasonlitas?models=Dongfeng|MHERO 917 BEV
+     3  /osszehasonlitas?models=Omoda|Omoda 7 SHS
+     3  /osszehasonlitas?models=Leapmotor|B10 PHEV
+     3  /osszehasonlitas?models=MG|MG3
+     3  /osszehasonlitas?models=MG|MG ZS
+
+Files: links-www.kinaiauto.com-links.csv, links-www.kinaiauto.com-edges.csv; network requests this run: 0

@@ -34,8 +34,34 @@ A Láthatósági kézikönyv (`../../../Lathatosag-Kezikonyv.md`) alapján. Alap
 
 **Helyi utóaudit (production build):** 350 → 96 tétel, és a 96 mind az egynyelvű oldalon indokolt „nincs hreflang”; 0 dupla H1, 0 hosszon kívüli cím/leírás, og:url = canonical 96/96, JSON-LD 96/96, 0 érvénytelen. Nyitott: `sameAs` (profilok), a rejtett blokk a modelloldalakon (jóváhagyási lista 1.), a Tudástár FAQPage (6.).
 
+## 2026-09-27 — jóváhagyott látható tételek (1–8) és élesítés
+
+A tulajdonos mind a 8 tételt és a pusht jóváhagyta. Commit `304f4c0`, Vercel-élesítés ~20 s alatt.
+
+- `lib/answers.ts`: adatból generált válaszblokk és GYIK (főoldal, 78 modell, 14 márka), magyar névelő-szabállyal („az MG3”, „a BYD”); `components/faq-list.tsx`: látható `<details>` GYIK + ugyanabból a FAQPage; `speakable` → `.answer-capsule`.
+- A modelloldal `loading.tsx`-e törölve → a teljes adatlap a `<main>`-ben.
+- Főoldali bevezető mobilon is látszik.
+- Tudástár: látható GYIK-fejezet (a FAQPage 6 kérdése), a helyőrző cikkek 308 → fejezet-horgony, a fejezetszám a listából számolva.
+- „Önttöltő” → „Öntöltő”: a kód mindkét írásmódot elfogadja, élesítés után `scripts/data-fixes/2026-09-27-drive-label-typo.mts --apply` (1 sor, második futás: 0) — élesben 0 „Önttöltő”.
+
+**Élő utóaudit (`audit-2026-09-27-live/`, a baseline paramétereivel):**
+
+| Mérőszám | Alapállapot | Élesítés után |
+|---|---|---|
+| Auditprobléma (crawl) | 350 | 97 (96 indokolt „nincs hreflang” + 1) |
+| Sitemap-URL nem 200 | 2 | 0 |
+| og:url ≠ canonical | 105 | 0 |
+| Dupla H1 | 80 | 0 |
+| Cím / leírás hosszon kívül | 23 / 24 | 0 / 0 |
+| Rejtett streamelt tartalom a `</main>` után | 80 oldal | 1 (`/kinalat`) |
+| JSON-LD-probléma | 106 (sameAs) + SearchAction, /icon.png | csak sameAs (nincs profil) |
+| Látható GYIK + FAQPage | 1 oldal (0/6 kérdés látható) | 93 oldal, minden kérdés látható |
+| Favicon | 404, nincs link | ICO + 48 px, linkelve |
+| llms.txt | 4,4 kB, 2 link 307 | 21,9 kB, minden link 200 |
+
+**Maradék (nem jóváhagyási kör része):** `/kinalat` csontváza (dinamikus oldal, a betöltési visszajelzés miatt maradt); `/osszehasonlitas` és `/tudastar` csak menüből kap linket (tartalmi link egy rokon oldalról javasolt); a márkasáv első logója lusta betöltésű; apex 307 (Vercel-beállítás, tulajdonosi tétel).
+
 ## Következő lépések
 
-1. Jóváhagyás → élesítés (push) → élő utóaudit ugyanazokkal a scriptekkel (`baseline-2026-09-27` paramétereivel).
-2. A jóváhagyott látható tételek (`Tulajdonosi-Teendok.md` A.) → újabb kör.
-3. GSC/Bing, AI-alapállapot, profilok (B.).
+1. Tulajdonosi tételek (`Tulajdonosi-Teendok.md` B.): impresszum, Vercel 308, GSC/Bing + indexelés kérése, profilok → `sameAs`, AI-alapállapot.
+2. 2–4 hét múlva: GSC „Fejlesztések” (FAQ, termék), lekérdezések; havonta az audit újrafuttatása.
