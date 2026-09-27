@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Link from "next/link";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Offline",
-  robots: { index: false, follow: false },
-};
+  description: "Nincs internetkapcsolat.",
+  path: "/offline",
+  noindexNofollow: true,
+});
 
 /** Fallback page served by the service worker when there is no network. */
 export default function OfflinePage() {

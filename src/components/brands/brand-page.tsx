@@ -75,8 +75,9 @@ function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap 
             {heroLogo ? (
               <div className="brand-logo-wrap">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={heroLogo} alt={brand.name} className="brand-logo-hero" loading="eager" />
-                <h1 className="sr-only">{brand.name}</h1>
+                <img src={heroLogo} alt={`${brand.name} logó`} className="brand-logo-hero" loading="eager" fetchPriority="high" />
+                {/* Visually hidden (the logo is the visible heading); full phrase for crawlers and screen readers. */}
+                <h1 className="sr-only">{brand.name} autók Magyarországon</h1>
               </div>
             ) : (
               <h1 className="brand-name"><em>{brand.name}</em></h1>

@@ -504,7 +504,7 @@
   .pagehead .breadcrumbs { display: none; }
   .pagehead .eyebrow { margin-bottom: 8px; font-size: 10px; }
   .pagehead .eyebrow::before { width: 16px; }
-  .pagehead h1 { font-size: 28px; margin-bottom: 6px; }
+  .pagehead h1, .pagehead .pagehead-title { font-size: 28px; margin-bottom: 6px; }
   .pagehead .lede {
     font-size: 13.5px; line-height: 1.45;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;

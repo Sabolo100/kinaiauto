@@ -3,8 +3,7 @@ export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
-import { breadcrumbSchema } from "@/lib/seo";
-import { SITE_URL } from "@/lib/env";
+import { breadcrumbSchema, pageMeta, webPageSchema } from "@/lib/seo";
 import {
   getBrands,
   getCategories,
@@ -14,12 +13,11 @@ import {
 } from "@/lib/data";
 import { CatalogApp } from "@/components/catalog/catalog-app";
 
-export const metadata: Metadata = {
-  title: "Kínálat — vizuális hasáb a kínai modellekről",
-  description:
-    "Szűrj kategóriára, hajtásra, márkára, ársávra. Válaszd ki, melyik adatot mutassuk: ár, hatótáv, csomagtartó, teljesítmény. A modellek a függőleges hasábon arányosan helyezkednek el.",
-  alternates: { canonical: `${SITE_URL}/kinalat` },
-};
+const TITLE = "Kínai autók kínálata ár, hatótáv és méret szerint";
+const DESCRIPTION =
+  "A Magyarországon kapható kínai autók egy vizuális hasábon: szűrj kategóriára, hajtásra, márkára és ársávra, és lásd arányosan az árat, hatótávot, csomagtartót, teljesítményt.";
+
+export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/kinalat" });
 
 export default async function CatalogPage({
   searchParams,
@@ -63,6 +61,9 @@ export default async function CatalogPage({
         initialDrive={params.drive}
       />
 
+      <JsonLd
+        data={webPageSchema({ type: "CollectionPage", path: "/kinalat", name: TITLE, description: DESCRIPTION })}
+      />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Főoldal", url: "/" },

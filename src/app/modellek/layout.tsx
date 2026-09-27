@@ -26,9 +26,9 @@ export default async function ModellekLayout({
           <div className="eyebrow">
             Modell-kereső · {models.length} modell · {brands.length} márka
           </div>
-          <h1>
+          <p className="pagehead-title">
             Válassz <em>márkát</em>, majd modellt.
-          </h1>
+          </p>
           <p className="lede">
             Felül a márka, alatta a választott márka modelljei. Bármelyik
             modellre kattintva a teljes adatlap megnyílik.

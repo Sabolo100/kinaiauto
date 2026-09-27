@@ -2,6 +2,20 @@
 // This is the source-of-truth content from the design prototype (tudastar.html).
 // When the user adds the article CMS, these can move to the `articles` table.
 
+/** Last editorial change of the Tudástár text (bump when the content changes).
+ *  Used for sitemap lastmod and Article dateModified. */
+export const TUDASTAR_UPDATED = "2026-05-08";
+
+/** Chapters of /tudastar (section ids on the page) — used by llms.txt. */
+export const TUDASTAR_CHAPTERS = [
+  { id: "technika", title: "Hajtástípusok érthetően", summary: "benzin, öntöltő hibrid, plug-in hibrid és elektromos hajtás — kinek melyik való" },
+  { id: "hatotav", title: "Hatótáv papíron és valóságban", summary: "mitől függ a valós hatótáv (tél, autópálya, fűtés), egyszerű értelmezés" },
+  { id: "toltes", title: "Töltés", summary: "otthoni töltés (konnektor, wallbox, napelem), nyilvános töltés, töltési szintek és költség" },
+  { id: "penzugy", title: "Pénzügy, adózás, lízing", summary: "cégautóadó, vagyonszerzési illeték, gépjárműadó, Széchenyi Lízing MAX+" },
+  { id: "dontes", title: "Döntési szempontok", summary: "melyik hajtás kinek éri meg a használati mód szerint" },
+  { id: "osszehasonlitas", title: "Hajtások összehasonlítása", summary: "a négy hajtástípus egy táblázatban" },
+] as const;
+
 export const TUDASTAR_FAQ = [
   {
     question: "Magyarországon érdemes kínai autót venni?",

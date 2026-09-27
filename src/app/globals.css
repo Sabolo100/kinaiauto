@@ -415,7 +415,8 @@ nav.menu a.active::after {
   height: 1px;
   background: var(--accent);
 }
-.pagehead h1 {
+.pagehead h1,
+.pagehead .pagehead-title {
   font-family: var(--font-instrument), serif;
   font-weight: 400;
   font-size: clamp(32px, 4.4vw, 60px);
@@ -423,7 +424,8 @@ nav.menu a.active::after {
   letter-spacing: -0.015em;
   margin: 0 0 14px;
 }
-.pagehead h1 em {
+.pagehead h1 em,
+.pagehead .pagehead-title em {
   font-style: italic;
   color: var(--accent-ink);
 }

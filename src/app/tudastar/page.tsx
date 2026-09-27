@@ -1,22 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
-import {
-  articleSchema,
-  breadcrumbSchema,
-  faqSchema,
-} from "@/lib/seo";
-import { SITE_URL } from "@/lib/env";
+import { articleSchema, breadcrumbSchema, faqSchema, pageMeta } from "@/lib/seo";
 import { getArticleIndex, getDataLastUpdated } from "@/lib/data";
 import { TudastarPage } from "@/components/tudastar/tudastar-page";
-import { TUDASTAR_FAQ } from "@/components/tudastar/content";
+import { TUDASTAR_FAQ, TUDASTAR_UPDATED } from "@/components/tudastar/content";
 
-export const metadata: Metadata = {
-  title: "Tudástár — kínai autó vásárlás érthetően",
-  description:
-    "Hajtástípusok, hatótáv, töltés, pénzügy, lízing — a kínai autó vásárláshoz minden gyakorlati tudás egy helyen. Vásárlói útmutató 8 fejezetben.",
-  alternates: { canonical: `${SITE_URL}/tudastar` },
-};
+const TITLE = "Tudástár — kínai autó vásárlás érthetően";
+const DESCRIPTION =
+  "Hajtástípusok, valós hatótáv, otthoni és nyilvános töltés, cégautóadó, illeték, lízing: vásárlói útmutató kínai autókhoz Magyarországon, 8 fejezetben.";
+
+export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/tudastar", type: "article" });
 
 export default async function TudastarPageRoot() {
   const [index, lastUpdated] = await Promise.all([
@@ -37,9 +31,9 @@ export default async function TudastarPageRoot() {
       <JsonLd
         data={articleSchema({
           title: "Kínai autók vásárlása érthetően",
-          description:
-            "Vásárlói útmutató: hajtástípusok, hatótáv, töltés, adózás, lízing.",
-          url: `${SITE_URL}/tudastar`,
+          description: DESCRIPTION,
+          url: "/tudastar",
+          dateModified: TUDASTAR_UPDATED,
         })}
       />
       <JsonLd data={faqSchema(TUDASTAR_FAQ)} />

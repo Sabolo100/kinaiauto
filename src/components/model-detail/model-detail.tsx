@@ -33,6 +33,7 @@ import { TestLinksSection } from "./test-links-section";
 import { QuoteButtonLarge } from "../quote-button-large";
 import { fmtPrice, fmtNumber, catLabel } from "@/lib/format";
 import { photoUrl } from "@/lib/data";
+import { modelFullName } from "@/lib/seo";
 import "./model-detail.css";
 
 export function ModelDetail({
@@ -136,6 +137,10 @@ export function ModelDetail({
               ) : null}
             </div>
             <h1 className="model-name">
+              {/* Brand is visible just above; in the H1 it is for crawlers and screen readers. */}
+              {modelFullName(model) !== model.name && (
+                <span className="sr-only">{model.brand_name} </span>
+              )}
               <em>{model.name}</em>
             </h1>
             <p className="model-tagline">
@@ -198,7 +203,7 @@ export function ModelDetail({
             )}
           </div>
           <TrackGalleryOpen modelId={model.id} modelSlug={model.slug}>
-            <ModelGallery photos={photos} />
+            <ModelGallery photos={photos} name={modelFullName(model)} />
           </TrackGalleryOpen>
         </div>
       </section>

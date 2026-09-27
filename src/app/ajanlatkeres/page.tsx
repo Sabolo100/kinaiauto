@@ -1,16 +1,17 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { getBrands, getAllDealers, getModels } from "@/lib/data";
 import { getSetting } from "@/lib/settings";
 import { QuotePage } from "@/components/quote/quote-page";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
   title: "Ajánlatkérés",
-  description:
-    "Kiválasztott kínai modellek listája — egy kattintással kérhetsz ajánlatot több kereskedőtől egyszerre.",
-  robots: { index: false, follow: false },
-};
+  description: "Kiválasztott kínai modellek listája — egy kattintással kérhetsz ajánlatot több márkakereskedőtől egyszerre.",
+  path: "/ajanlatkeres",
+  noindexNofollow: true,
+});
 
 export default async function AjanlatkeresPage() {
   const [brands, dealers, models, maxDealersStr] = await Promise.all([

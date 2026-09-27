@@ -15,9 +15,9 @@ export default function Loading() {
           <div className="eyebrow">
             A teljes kínai kínálat egyetlen vizuális hasábon
           </div>
-          <h1>
+          <p className="pagehead-title">
             Lásd a <em>tényleges</em> különbségeket.
-          </h1>
+          </p>
           <p className="lede">
             Szűrj kategóriára, hajtásra, márkára, ársávra. Válaszd ki, melyik
             adatot mutassuk: ár, hatótáv, csomagtartó, teljesítmény. A modellek

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { LegalPage } from "@/components/legal/legal-page";
 
-export const metadata: Metadata = {
-  title: "Cookie beállítások — kinaiauto.com",
-  robots: { index: false },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Cookie beállítások",
+  description: "A kinaiauto.com által használt sütik és a hozzájárulás kezelése.",
+  path: "/cookie",
+  noindex: true,
+});
 
 export default function CookiePage() {
   return (

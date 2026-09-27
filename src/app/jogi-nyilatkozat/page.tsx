@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { LegalPage } from "@/components/legal/legal-page";
 
-export const metadata: Metadata = {
-  title: "Jogi nyilatkozat — kinaiauto.com",
-  robots: { index: false },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Jogi nyilatkozat",
+  description: "A kinaiauto.com tartalmainak tájékoztató jellegére vonatkozó jogi nyilatkozat.",
+  path: "/jogi-nyilatkozat",
+  noindex: true,
+});
 
 export default function JogiNyilatkozatPage() {
   return (

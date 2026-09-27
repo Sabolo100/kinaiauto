@@ -2,8 +2,7 @@ export const revalidate = 300;
 
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/json-ld";
-import { breadcrumbSchema } from "@/lib/seo";
-import { SITE_URL } from "@/lib/env";
+import { pageMeta, webPageSchema, ORG_ID } from "@/lib/seo";
 import {
   getBrands,
   getCategories,
@@ -13,12 +12,19 @@ import {
 } from "@/lib/data";
 import { HomeApp } from "@/components/home/home-app";
 
-export const metadata: Metadata = {
-  title: "Találd meg a számodra megfelelő kínai modellt — kategória, ársáv, hajtás",
-  description:
-    "Kategória, ársáv és hajtás alapján szűrhető 60+ kínai autómodell, 15 márkától. Vizuális kínálat-számegyenes, modellösszehasonlítás, importőri linkek — egy oldalon.",
-  alternates: { canonical: SITE_URL },
-};
+function homeCopy(modelCount: number, brandCount: number) {
+  return {
+    title: `kinaiauto.com — kínai autók Magyarországon, ${modelCount} modell`,
+    description: `Független magyar kínai autó-iránytű: ${modelCount} Magyarországon kapható modell ${brandCount} márkától, kategória, ársáv és hajtás szerint szűrve. Árak, adatok, összehasonlítás, kereskedők.`,
+  };
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const models = await getModels();
+  const brandCount = new Set(models.map((m) => m.brand_name)).size;
+  const { title, description } = homeCopy(models.length, brandCount);
+  return pageMeta({ title, description, path: "/" });
+}
 
 export default async function HomePage() {
   const [models, brands, categories, drives, bands] = await Promise.all([
@@ -28,6 +34,8 @@ export default async function HomePage() {
     getDrives(),
     getPriceBands(),
   ]);
+
+  const copy = homeCopy(models.length, new Set(models.map((m) => m.brand_name)).size);
 
   return (
     <main>
@@ -40,7 +48,12 @@ export default async function HomePage() {
       />
 
       <JsonLd
-        data={breadcrumbSchema([{ name: "Főoldal", url: "/" }])}
+        data={webPageSchema({
+          path: "/",
+          name: copy.title,
+          description: copy.description,
+          about: { "@id": ORG_ID },
+        })}
       />
     </main>
   );

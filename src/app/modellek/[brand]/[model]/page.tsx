@@ -12,8 +12,9 @@ import {
   getDealersForBrand,
 } from "@/lib/data";
 import { JsonLd } from "@/components/json-ld";
-import { breadcrumbSchema, vehicleSchema } from "@/lib/seo";
-import { SITE_URL } from "@/lib/env";
+import { absUrl, breadcrumbSchema, carSchema, modelFactLine, modelFullName, modelPath, pageMeta, webPageSchema } from "@/lib/seo";
+import { photoUrl } from "@/lib/media-urls";
+import type { ModelRow } from "@/lib/types";
 import { ModelDetail } from "@/components/model-detail/model-detail";
 
 type Props = {
@@ -25,21 +26,27 @@ export async function generateStaticParams() {
   return models.map((m) => ({ brand: m.brand_slug, model: m.slug }));
 }
 
+function modelCopy(m: ModelRow) {
+  const name = modelFullName(m);
+  const price = m.price_min_m_ft != null ? m.price_min_m_ft.toFixed(1).replace(".", ",") : null;
+  return {
+    title: price ? `${name} ára és adatai — ${price} M Ft-tól` : `${name} — ár, adatok, adatlap`,
+    description: `${modelFactLine(m, { short: true })} Adatlap, változatok, garancia, kereskedők.`,
+  };
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { brand, model } = await params;
   const m = await getModelByBrandAndSlug(brand, model);
   if (!m) return { title: "Modell" };
-  const priceLine =
-    m.price_min_m_ft != null
-      ? ` · listaár ${m.price_min_m_ft.toFixed(1).replace(".", ",")} M Ft-tól`
-      : "";
-  return {
-    title: `${m.brand_name} ${m.name} — adatlap${priceLine}`,
-    description: `${m.brand_name} ${m.name} (${m.category}, ${m.drive.toLowerCase()}) magyarországi adatlap: ár, méretek, hatótáv, akkumulátor, töltés, garancia, importőri linkek.`,
-    alternates: {
-      canonical: `${SITE_URL}/modellek/${brand}/${model}`,
-    },
-  };
+  const { title, description } = modelCopy(m);
+  const photo = photoUrl(m.primary_photo_path);
+  return pageMeta({
+    title,
+    description,
+    path: modelPath(m),
+    image: photo ? { url: photo, alt: modelFullName(m) } : null,
+  });
 }
 
 export default async function ModelPage({ params }: Props) {
@@ -77,11 +84,20 @@ export default async function ModelPage({ params }: Props) {
     <>
       <ModelDetail model={m} brand={b} similar={similar} photos={photos} dealers={dealers} />
 
-      <JsonLd data={vehicleSchema(m)} />
+      <JsonLd
+        data={webPageSchema({
+          type: "ItemPage",
+          path: modelPath(m),
+          name: modelCopy(m).title,
+          description: modelCopy(m).description,
+          mainEntityId: absUrl(`${modelPath(m)}#car`),
+          dateModified: m.data_updated_at ?? m.updated_at,
+        })}
+      />
+      <JsonLd data={carSchema(m, { image: photoUrl(m.primary_photo_path) })} />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Főoldal", url: "/" },
-          { name: "Modellek", url: "/modellek" },
           { name: m.brand_name, url: `/markak/${m.brand_slug}` },
           { name: m.name, url: `/modellek/${m.brand_slug}/${m.slug}` },
         ])}

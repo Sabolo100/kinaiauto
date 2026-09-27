@@ -4,17 +4,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { JsonLd } from "@/components/json-ld";
-import { breadcrumbSchema } from "@/lib/seo";
-import { SITE_URL } from "@/lib/env";
+import { breadcrumbSchema, pageMeta, webPageSchema } from "@/lib/seo";
 import { getModels } from "@/lib/data";
 import { CompareApp } from "@/components/compare/compare-app";
 
-export const metadata: Metadata = {
-  title: "Összehasonlítás — kínai autók egymás mellett",
-  description:
-    "Tedd egymás mellé akár 4 kínai modellt: ár, méret, csomagtartó, hatótáv, akku, teljesítmény. A táblázat automatikusan kiemeli az adott sor legjobb értékét.",
-  alternates: { canonical: `${SITE_URL}/osszehasonlitas` },
-};
+const TITLE = "Kínai autók összehasonlítása egymás mellett";
+const DESCRIPTION =
+  "Tegyél egymás mellé akár 4 kínai autót: ár, méret, csomagtartó, hatótáv, akkumulátor, teljesítmény. A táblázat soronként kiemeli a legjobb értéket.";
+
+export const metadata: Metadata = pageMeta({ title: TITLE, description: DESCRIPTION, path: "/osszehasonlitas" });
 
 export default async function ComparePage() {
   const models = await getModels();
@@ -40,6 +38,9 @@ export default async function ComparePage() {
         <CompareApp models={models} />
       </Suspense>
 
+      <JsonLd
+        data={webPageSchema({ path: "/osszehasonlitas", name: TITLE, description: DESCRIPTION })}
+      />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Főoldal", url: "/" },

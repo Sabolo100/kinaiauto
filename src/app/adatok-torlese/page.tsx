@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { LegalPage } from "@/components/legal/legal-page";
 
-export const metadata: Metadata = {
-  title: "Adatok törlése — kinaiauto.com",
-  description:
-    "Tájékoztató a kinaiauto.com weboldalon kezelt adatok törléséhez.",
-  robots: { index: false },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Adatok törlése",
+  description: "Tájékoztató a kinaiauto.com weboldalon kezelt adatok törléséhez.",
+  path: "/adatok-torlese",
+  noindex: true,
+});
 
 export default function AdatokTorlese() {
   return (

@@ -12,7 +12,7 @@ import { AppShell } from "@/components/app-shell/app-shell";
 import { getDataLastUpdated } from "@/lib/data";
 import { SITE_NAME, SITE_URL } from "@/lib/env";
 import { JsonLd } from "@/components/json-ld";
-import { organizationSchema, websiteSchema } from "@/lib/seo";
+import { DEFAULT_OG_IMAGE, ORG_DESCRIPTION, siteGraph } from "@/lib/seo";
 import "./globals.css";
 import "./welcome-popup.css";
 import "./tutorial.css";
@@ -55,12 +55,15 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  // Pages set their own title/description/canonical/OG via pageMeta() in
+  // lib/seo.ts. Keep page-specific fields (canonical, hreflang, og:url,
+  // og:title) OUT of the root layout: Next.js would inherit them into every
+  // page that does not override them (e.g. og:url = homepage everywhere).
   title: {
-    default: `${SITE_NAME} — Találd meg a számodra megfelelő kínai modellt`,
+    default: `${SITE_NAME} — kínai autók Magyarországon`,
     template: `%s — ${SITE_NAME}`,
   },
-  description:
-    "Független magyar nyelvű kínai autó-iránytű. Kategória, ársáv és hajtás alapján szűrhető 60+ modell, 15 márkától. Áttekinthető, vásárlói gondolkodásra szabva.",
+  description: ORG_DESCRIPTION,
   applicationName: SITE_NAME,
   manifest: "/manifest.webmanifest",
   appleWebApp: {
@@ -69,6 +72,13 @@ export const metadata: Metadata = {
     title: "kínaiautó",
   },
   icons: {
+    // Declared explicitly: once `icons` is set, the app/icon file convention
+    // is no longer emitted, so every icon has to be listed here.
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   other: {
@@ -76,48 +86,14 @@ export const metadata: Metadata = {
     "apple-mobile-web-app-capable": "yes",
   },
   authors: [{ name: SITE_NAME, url: SITE_URL }],
-  keywords: [
-    "kínai autó",
-    "kínai autó vásárlás Magyarország",
-    "BYD",
-    "Chery Tiggo",
-    "MG Motor",
-    "elektromos autó",
-    "plug-in hibrid",
-    "elektromos SUV",
-    "kínai elektromos autó",
-    "autóvásárlás",
-    "autóösszehasonlítás",
-    "új autó ár",
-    "kinaiauto.com",
-  ],
-  alternates: {
-    canonical: SITE_URL,
-    languages: { "hu-HU": SITE_URL },
-  },
   openGraph: {
     type: "website",
     locale: "hu_HU",
-    url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Találd meg a számodra megfelelő kínai modellt`,
-    description:
-      "Független magyar nyelvű kínai autó-iránytű. Kategória, ársáv és hajtás alapján szűrhető teljes hazai kínálat.",
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} — Magyar kínai autó iránytű`,
-      },
-    ],
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} — Magyar kínai autó iránytű`,
-    description:
-      "Kategória, ársáv és hajtás alapján szűrhető 60+ modell, 15 márkától.",
-    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -184,8 +160,7 @@ export default async function RootLayout({
           <WelcomePopupWrapper />
           <TutorialWrapper />
         </QuoteProvider>
-        <JsonLd data={organizationSchema()} />
-        <JsonLd data={websiteSchema()} />
+        <JsonLd data={siteGraph()} />
 
         {/* ── Google Analytics + Ads ─────────────────────────────────────────── */}
         {GTAG_SRC_ID && (

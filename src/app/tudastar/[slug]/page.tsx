@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
-import { articleSchema, breadcrumbSchema } from "@/lib/seo";
-import { SITE_URL } from "@/lib/env";
+import { breadcrumbSchema, pageMeta } from "@/lib/seo";
 import { getArticleIndex } from "@/lib/data";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -18,11 +17,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const idx = await getArticleIndex();
   const a = idx.find((x) => x.slug === slug);
   if (!a) return { title: "Cikk" };
-  return {
+  // Placeholder until the article is written: kept out of the index (and the
+  // sitemap / llms.txt) but links are still followed.
+  return pageMeta({
     title: a.title,
-    description: a.excerpt,
-    alternates: { canonical: `${SITE_URL}/tudastar/${slug}` },
-  };
+    description: `${a.excerpt} A részletes cikk készül; addig a Tudástár összefoglalója segít.`,
+    path: `/tudastar/${slug}`,
+    type: "article",
+    noindex: true,
+  });
 }
 
 export default async function ArticlePage({ params }: Props) {
@@ -79,13 +82,6 @@ export default async function ArticlePage({ params }: Props) {
         </div>
       </article>
 
-      <JsonLd
-        data={articleSchema({
-          title: a.title,
-          description: a.excerpt,
-          url: `${SITE_URL}/tudastar/${slug}`,
-        })}
-      />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Főoldal", url: "/" },

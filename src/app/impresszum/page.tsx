@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { LegalPage } from "@/components/legal/legal-page";
 
-export const metadata: Metadata = {
-  title: "Impresszum — kinaiauto.com",
-  robots: { index: false },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Impresszum",
+  description: "A kinaiauto.com üzemeltetői adatai, tárhelyszolgáltató, a weboldal jellege és kapcsolatfelvétel.",
+  path: "/impresszum",
+  noindex: true,
+});
 
 export default function ImpresszumPage() {
   return (

@@ -15,6 +15,12 @@ function imgUrl(path: string) {
   return photoUrl(path);
 }
 
+/** Descriptive alt: "BYD Sealion 7 — külső, fotó 2" (unique per image). */
+function photoAlt(name: string | undefined, kind: string, n: number) {
+  const label = (KIND_LABEL[kind] ?? kind).toLowerCase();
+  return name ? `${name} — ${label}, fotó ${n}` : `${KIND_LABEL[kind] ?? kind}, fotó ${n}`;
+}
+
 function sortPhotos(photos: ModelPhoto[]): ModelPhoto[] {
   return [...photos].sort((a, b) => {
     if (a.is_primary !== b.is_primary) return a.is_primary ? -1 : 1;
@@ -26,8 +32,9 @@ function sortPhotos(photos: ModelPhoto[]): ModelPhoto[] {
 
 // ─── Lightbox ────────────────────────────────────────────────────────────────
 
-function Lightbox({ photos, startIndex, onClose }: {
+function Lightbox({ photos, startIndex, onClose, name }: {
   photos: ModelPhoto[];
+  name?: string;
   startIndex: number;
   onClose: () => void;
 }) {
@@ -89,7 +96,7 @@ function Lightbox({ photos, startIndex, onClose }: {
           <img
             key={current.id}
             src={url}
-            alt={KIND_LABEL[current.kind] ?? current.kind}
+            alt={photoAlt(name, current.kind, idx + 1)}
             style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 6 }}
           />
         ) : (
@@ -157,7 +164,7 @@ function Lightbox({ photos, startIndex, onClose }: {
 
 // ─── Main Gallery (1 big + 4 small) ─────────────────────────────────────────
 
-export function ModelGallery({ photos }: { photos: ModelPhoto[] }) {
+export function ModelGallery({ photos, name }: { photos: ModelPhoto[]; name?: string }) {
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const sorted = sortPhotos(photos);
@@ -169,7 +176,7 @@ export function ModelGallery({ photos }: { photos: ModelPhoto[] }) {
   return (
     <>
       {lightboxIdx !== null && (
-        <Lightbox photos={sorted} startIndex={lightboxIdx} onClose={close} />
+        <Lightbox photos={sorted} startIndex={lightboxIdx} onClose={close} name={name} />
       )}
 
       {hasPhotos ? (
@@ -181,7 +188,7 @@ export function ModelGallery({ photos }: { photos: ModelPhoto[] }) {
             aria-label="Galéria megnyitása"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imgUrl(sorted[0].storage_path) ?? ""} alt={KIND_LABEL[sorted[0].kind] ?? sorted[0].kind} />
+            <img src={imgUrl(sorted[0].storage_path) ?? ""} alt={photoAlt(name, sorted[0].kind, 1)} />
             <span className="gallery-tag">{KIND_LABEL[sorted[0].kind] ?? sorted[0].kind}</span>
           </button>
 
@@ -195,7 +202,7 @@ export function ModelGallery({ photos }: { photos: ModelPhoto[] }) {
                   <button key={p.id} className="gallery-small" onClick={() => open(slot)} aria-label="Galéria megnyitása">
                     {url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={url} alt={KIND_LABEL[p.kind] ?? p.kind} />
+                      <img src={url} alt={photoAlt(name, p.kind, slot + 1)} />
                     ) : null}
                     <span className="gallery-tag">{KIND_LABEL[p.kind] ?? p.kind}</span>
                     {slot === 4 && sorted.length > 5 && (
