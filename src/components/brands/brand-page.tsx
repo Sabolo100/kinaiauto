@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Grid2x2, LayoutGrid, List, MapPin } from "lucide-react";
+import { Fragment, useEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
+import { ArrowDown, Grid2x2, LayoutGrid, List, MapPin } from "lucide-react";
 import type { Brand, Dealer, ModelPhoto, ModelRow } from "@/lib/types";
 import { brandLogoUrl } from "@/lib/media-urls";
 import { ModelCard } from "@/components/model-card";
@@ -20,7 +20,62 @@ type Props = {
   photoMap?: Record<string, ModelPhoto[]>;
   /** Data-generated answer block (entity name first), shown under the tagline. */
   summary?: string;
+  /** Price extent of the whole catalogue (M Ft) — scales the price-range bar. */
+  priceScale?: { min: number; max: number };
 };
+
+const fmt = (v: number, d = 1) => v.toFixed(d).replace(".", ",");
+/** Stagger index for CSS animation-delay (`--i`). */
+const idx = (i: number) => ({ "--i": i }) as CSSProperties;
+
+/** Counts up to `value` once the tile scrolls into view. SSR / no-JS / reduced-motion show the final value. */
+function CountUp({ value, decimals = 0, delay = 0 }: { value: number; decimals?: number; delay?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [shown, setShown] = useState(value);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const mountedAt = performance.now();
+    let raf = 0, timer = 0, started = false;
+    setShown(0);
+    const run = () => {
+      if (started) return;
+      started = true;
+      const from = performance.now();
+      const tick = (now: number) => {
+        const p = Math.min(1, (now - from) / 1300);
+        setShown(value * (1 - Math.pow(1 - p, 4)));
+        if (p < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    };
+    const io = new IntersectionObserver((entries) => {
+      if (!entries[0]?.isIntersecting) return;
+      io.disconnect();
+      // Tiles that are visible on load wait for their CSS entrance; later ones start at once.
+      timer = window.setTimeout(run, Math.max(0, delay - (performance.now() - mountedAt)));
+    }, { threshold: 0.4 });
+    io.observe(el);
+    const safety = window.setTimeout(run, 5000); // never leave a rendered snapshot on 0
+    return () => { io.disconnect(); clearTimeout(timer); clearTimeout(safety); cancelAnimationFrame(raf); };
+  }, [value, delay]);
+  return <span ref={ref}>{fmt(shown, decimals)}</span>;
+}
+
+/** Tagline revealed word by word; the closing two words get the italic accent + drawn underline. */
+function Tagline({ text }: { text: string }) {
+  const words = text.trim().split(/\s+/);
+  const cut = words.length > 3 ? words.length - 2 : 0;
+  return (
+    <p className="brand-tagline">
+      {words.slice(0, cut).map((w, i) => (
+        <Fragment key={i}>{i > 0 && " "}<span className="tw"><span style={idx(i)}>{w}</span></span></Fragment>
+      ))}
+      {cut > 0 && " "}
+      <em className="tw tag-em"><span style={idx(cut)}>{words.slice(cut).join(" ")}</span></em>
+    </p>
+  );
+}
 
 export function BrandPage(props: Props) {
   return (
@@ -31,16 +86,59 @@ export function BrandPage(props: Props) {
   );
 }
 
-function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap = {}, summary }: Props) {
+function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap = {}, summary, priceScale }: Props) {
   const [zoom, setZoom] = useState<1 | 2>(2);
   const [dealerView, setDealerView] = useState<"list" | "map">("list");
   const compare = useCompare();
+  const stageRef = useRef<HTMLElement>(null);
   const heroColor = brand.hero_color ?? "#444";
   const heroLogo = brandLogoUrl(brand.logo_path);
-  const minP = models.length ? Math.min(...models.map((m) => m.price_min_m_ft ?? 0)) : 0;
-  const maxP = models.length ? Math.max(...models.map((m) => m.price_max_m_ft ?? 0)) : 0;
+  const prices = models.flatMap((m) => [m.price_min_m_ft, m.price_max_m_ft]).filter((v): v is number => v != null && v > 0);
+  const minP = prices.length ? Math.min(...prices) : 0;
+  const maxP = prices.length ? Math.max(...prices) : 0;
   const drives = Array.from(new Set(models.map((m) => m.drive)));
   const cats = Array.from(new Set(models.map((m) => m.category)));
+
+  // Price-range bar: this brand's span inside the whole catalogue's price range.
+  const lo = Math.floor(Math.min(priceScale?.min ?? minP, minP));
+  const hi = Math.ceil(Math.max(priceScale?.max ?? maxP, maxP));
+  const span = Math.max(1, hi - lo);
+  const segLeft = ((minP - lo) / span) * 100;
+  const segWidth = Math.min(100 - segLeft, Math.max(2.5, ((maxP - minP) / span) * 100));
+
+  const siteLink = brand.importer_site ? (
+    <a href={`https://${brand.importer_site}`} target="_blank" rel="noopener noreferrer">{brand.importer_site}</a>
+  ) : null;
+  const factGroups: { label: string; rows: { k: string; v: ReactNode }[] }[] = [
+    {
+      label: "A márka",
+      rows: [
+        { k: "Alapítva", v: brand.founded },
+        { k: "Székhely", v: brand.hq },
+        { k: "Anyavállalat", v: brand.parent_company },
+        { k: "Gyárak", v: brand.factories },
+      ],
+    },
+    {
+      label: "Magyarországon",
+      rows: [
+        { k: "Importőr", v: brand.importer_name },
+        { k: "Cím", v: brand.importer_addr },
+        { k: "Honlap", v: siteLink },
+        { k: "Dealerek", v: brand.dealers_text },
+      ],
+    },
+  ].map((g) => ({ ...g, rows: g.rows.filter((r) => r.v) }));
+  let factIdx = 0;
+
+  // Cursor spotlight (fine pointers only; the CSS ignores it elsewhere).
+  const onStageMove = (e: PointerEvent<HTMLElement>) => {
+    const el = stageRef.current;
+    if (!el || e.pointerType !== "mouse") return;
+    const r = el.getBoundingClientRect();
+    el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+    el.style.setProperty("--my", `${e.clientY - r.top}px`);
+  };
 
   return (
     <>
@@ -70,61 +168,106 @@ function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap 
         </div>
       </div>
 
-      {/* ── 1. Brand hero ── */}
-      <section className="brand-hero" style={{ ["--brand-tone" as string]: heroColor }}>
-        <div className="container brand-hero-inner">
-          <div>
-            {heroLogo ? (
-              <div className="brand-logo-wrap">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={heroLogo} alt={`${brand.name} logó`} className="brand-logo-hero" loading="eager" fetchPriority="high" />
-                {/* Visually hidden (the logo is the visible heading); full phrase for crawlers and screen readers. */}
-                <h1 className="sr-only">{brand.name} autók Magyarországon</h1>
-              </div>
-            ) : (
-              <h1 className="brand-name"><em>{brand.name}</em></h1>
-            )}
-            <p className="brand-tagline">{brand.tagline}</p>
-            {summary ? <p className="brand-summary answer-capsule">{summary}</p> : null}
-            <div className="brand-quickstats">
-              <div className="qs"><div className="l">Modellek</div><div className="v">{models.length}</div></div>
-              <div className="qs"><div className="l">Ársáv</div><div className="v">{minP.toFixed(1).replace(".", ",")} <small>—{maxP.toFixed(1).replace(".", ",")} M Ft</small></div></div>
-              <div className="qs"><div className="l">Hajtások</div><div className="v">{drives.length}</div></div>
-              {dealers.length > 0 && <div className="qs"><div className="l">Kereskedők</div><div className="v">{dealers.length}</div></div>}
-            </div>
-          </div>
-          <div className="brand-fact">
-            <div className="row"><div className="k">Alapítva</div><div className="v">{brand.founded ?? "—"}</div></div>
-            <div className="row"><div className="k">Székhely</div><div className="v">{brand.hq ?? "—"}</div></div>
-            <div className="row"><div className="k">Anyavállalat</div><div className="v">{brand.parent_company ?? "—"}</div></div>
-            <div className="row"><div className="k">Hivatalos</div><div className="v">{brand.importer_site ? <a href={`https://${brand.importer_site}`} target="_blank" rel="noopener noreferrer">{brand.importer_site}</a> : "—"}</div></div>
-          </div>
-        </div>
-      </section>
+      {/* ── 1. Brand stage: hero + background merged ── */}
+      <section
+        key={brand.id}
+        ref={stageRef}
+        onPointerMove={onStageMove}
+        className="brand-stage"
+        style={{ ["--brand-tone" as string]: heroColor }}
+      >
+        <div className="stage-aurora" aria-hidden><i /><i /><i /></div>
+        <div className="stage-dots" aria-hidden />
+        <div className="stage-ghost" data-name={brand.name} aria-hidden />
 
-      {/* ── 2. About / background ── */}
-      <section className="block">
         <div className="container">
-          <div className="block-head">
-            <div><div className="step">A márkáról</div><h2><em>Háttér</em>.</h2></div>
-          </div>
-          <div className="about-grid">
-            <div>
-              <p style={{ fontSize: 16.5, lineHeight: 1.65, color: "var(--ink)", maxWidth: 620, margin: "0 0 18px" }}>{brand.description}</p>
-              <div className="pill-list">{cats.map((c) => (<span key={c}>{c}</span>))}</div>
+          <div className="stage-eyebrow"><span className="dot" /><span>Márkaprofil</span><span className="line" /></div>
+
+          <div className="stage-grid">
+            <div className="stage-main">
+              {heroLogo ? (
+                <div className="brand-logo-wrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={heroLogo} alt={`${brand.name} logó`} className="brand-logo-hero" loading="eager" fetchPriority="high" />
+                  {/* Visually hidden (the logo is the visible heading); full phrase for crawlers and screen readers. */}
+                  <h1 className="sr-only">{brand.name} autók Magyarországon</h1>
+                </div>
+              ) : (
+                <h1 className="brand-name"><em>{brand.name}</em></h1>
+              )}
+              {brand.tagline ? <Tagline text={brand.tagline} /> : null}
+              {summary ? <p className="brand-summary answer-capsule">{summary}</p> : null}
+
+              {brand.description || cats.length > 0 ? (
+                <div className="stage-bg">
+                  <h2><em>Háttér</em>.</h2>
+                  {brand.description ? <p>{brand.description}</p> : null}
+                  {cats.length > 0 ? (
+                    <div className="pill-list">{cats.map((c, i) => (<span key={c} style={idx(i)}>{c}</span>))}</div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
-            <aside className="brand-fact">
-              <div className="row"><div className="k">Importőr</div><div className="v">{brand.importer_name ?? "—"}</div></div>
-              <div className="row"><div className="k">Cím</div><div className="v">{brand.importer_addr ?? "—"}</div></div>
-              <div className="row"><div className="k">Honlap</div><div className="v">{brand.importer_site ? <a href={`https://${brand.importer_site}`} target="_blank" rel="noopener noreferrer">{brand.importer_site}</a> : "—"}</div></div>
-              <div className="row"><div className="k">Dealerek</div><div className="v">{brand.dealers_text ?? "—"}</div></div>
-              <div className="row"><div className="k">Gyárak</div><div className="v">{brand.factories ?? "—"}</div></div>
-            </aside>
+
+            {factGroups.some((g) => g.rows.length > 0) ? (
+              <aside className="dossier">
+                {factGroups.filter((g) => g.rows.length > 0).map((g) => (
+                  <dl key={g.label} className="dossier-group">
+                    <div className="dossier-label">{g.label}</div>
+                    {g.rows.map((r) => (
+                      <div key={r.k} className="row" style={idx(factIdx++)}>
+                        <dt className="k">{r.k}</dt>
+                        <dd className="v">{r.v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                ))}
+              </aside>
+            ) : null}
+          </div>
+
+          <div className="stage-stats">
+            <a className="qs" href="#markamodellek" style={idx(0)}>
+              <div className="l">Modellek</div>
+              <div className="v"><CountUp value={models.length} delay={950} /></div>
+              <div className="sub">Ugrás a modellekhez <ArrowDown size={12} /></div>
+            </a>
+            <div className="qs qs-wide" style={idx(1)}>
+              <div className="l">Ársáv</div>
+              {prices.length > 0 ? (
+                <>
+                  <div className="v">
+                    <CountUp value={minP} decimals={1} delay={1040} />
+                    <span className="dash">–</span>
+                    <CountUp value={maxP} decimals={1} delay={1040} />
+                    <small>M Ft</small>
+                  </div>
+                  <div className="range" aria-hidden>
+                    <div className="range-track"><i style={{ left: `${segLeft}%`, width: `${segWidth}%` }} /></div>
+                    <div className="range-ends"><span>{lo} M</span><span>{hi} M</span></div>
+                  </div>
+                </>
+              ) : (
+                <div className="v">—</div>
+              )}
+            </div>
+            <div className="qs" style={idx(2)}>
+              <div className="l">Hajtások</div>
+              <div className="v"><CountUp value={drives.length} delay={1130} /></div>
+              <div className="sub" title={drives.join(", ")}>{drives.join(" · ")}</div>
+            </div>
+            {dealers.length > 0 && (
+              <a className="qs" href="#kereskedok" style={idx(3)}>
+                <div className="l">Kereskedők</div>
+                <div className="v"><CountUp value={dealers.length} delay={1220} /></div>
+                <div className="sub">Ugrás a listához <ArrowDown size={12} /></div>
+              </a>
+            )}
           </div>
         </div>
       </section>
 
-      {/* ── 3. Dealers ── */}
+      {/* ── 2. Dealers ── */}
       <section className="block" id="kereskedok">
         <div className="container">
           <div className="block-head">
@@ -181,8 +324,8 @@ function BrandPageInner({ brand, brands, models, dealers, brandCounts, photoMap 
         </div>
       </section>
 
-      {/* ── 4. Models ── */}
-      <section className="block">
+      {/* ── 3. Models ── */}
+      <section className="block" id="markamodellek">
         <div className="container">
           <div className="block-head">
             <div>

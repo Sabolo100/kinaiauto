@@ -574,7 +574,7 @@
   /* ── Model detail ── */
   .app-page .model-hero { padding: 12px 0 18px; }
   .app-page .model-tagline { font-size: 14.5px; margin-bottom: 18px; }
-  .app-page .brand-summary { font-size: 14px; margin: -10px 0 18px; }
+  .app-page .brand-summary { font-size: 14px; }
   .app-page .model-hero-inner { gap: 18px; }
 
   /* ── Quote page: sticky summary above the tab bar ── */

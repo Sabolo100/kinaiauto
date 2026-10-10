@@ -72,6 +72,9 @@ export default async function BrandDetailPage({ params }: Props) {
   for (const m of models) {
     brandCounts[m.brand_slug] = (brandCounts[m.brand_slug] ?? 0) + 1;
   }
+  // Price extent of the whole catalogue — scales the brand's price-range bar.
+  const allPrices = models.flatMap((m) => [m.price_min_m_ft, m.price_max_m_ft]).filter((v): v is number => v != null && v > 0);
+  const priceScale = allPrices.length ? { min: Math.min(...allPrices), max: Math.max(...allPrices) } : undefined;
   // Run photoMap and dealers fetch in parallel
   const [photoMap, dealers] = await Promise.all([
     getPhotoMapForModels(brandModels.map((m) => m.id)),
@@ -97,6 +100,7 @@ export default async function BrandDetailPage({ params }: Props) {
         models={brandModels}
         dealers={dealers}
         brandCounts={brandCounts}
+        priceScale={priceScale}
         photoMap={photoMap}
         summary={brandAnswer(brand, brandModels, dealers)}
       />
